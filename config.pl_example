@@ -1,0 +1,98 @@
+
+our $YTUrl='http://mycompany.myjetbrains.com/youtrack';
+our $YTlogin='mylogin';
+our $YTpassword='mypass';
+# Url and credentials to access Jira
+our $JiraUrl='https://mycompany.atlassian.net';
+our $JiraLogin='mylogin';
+our $JiraPassword='mypass';
+# The project to migrate from
+our $YTProject='KEY';
+# The project to migrate to
+our $JiraProject='KEY';
+
+# Export tags from YT and import them as labels in Jira
+our $exportTags='true';
+# This is quite obvious
+our $exportAttachments='true';
+our $exportLinks='true';
+
+# Issue type mapping
+our %Type = (
+	'Bug' => 'Bug',
+	'Task' => 'Task',
+	'Exception' => 'Bug',
+	'Feature' => 'New Feature',
+	'Usability Problem' => 'Bug',
+	'Epic' => 'Task',
+	'Performance Problem' => 'Bug'
+);
+
+# Issue priority mapping
+our %Priority = (
+	'Minor' => 'Lowest',
+	'Normal' => 'Low',
+	'Major' => 'Medium',
+	'Critical' => 'High',
+	'Show-stopper' => 'Highest'
+);
+
+# Issue status mapping
+# By default the Status will remain Opened
+# From Jira side there should be Transitions (not Statuses) and all Transitions should be available from the initial state
+our %Status = (
+	"In Progress" => "In Progress",
+	"Can't Reproduce" => "Rejected",
+	"Duplicate" => "Rejected",
+	"Fixed" => "Done",
+	"Won't fix" => "Rejected",
+	"Incomplete" => "Rejected",
+	"Obsolete" => "Rejected",
+	"Verified" => "Verified",
+	"On Hold" => "On Hold",
+	"To Plan" => "To Plan",
+	"Done" => "Done",
+	"Approved to go live" => "Approved to go live"
+);
+
+# Some statuses in YT can be mapped to Resolutions in Jira
+# In order to use this feature a field Resolution should be added to screens (and removed after the migration if not needed)
+our %StatusToResolution = (
+	"Can't Reproduce" => "Cannot Reproduce",
+	"Duplicate" => "Duplicate",
+	"Obsolete" => "Obsolete",
+	"Incomplete" => "Won't Do",
+	"Won't fix" => "Won't Do"
+);
+
+# Custom fields mapping
+our %CustomFields = (
+	"Found in Version" => "Affects Version/s",
+	"Found in build" => "Found in build",
+	"Target version" => "Fix Version/s",
+	"Fixed in build" => "Fixed in build",
+	"Source" => "Source"
+);
+
+# Issue link types mapping
+our %IssueLinks = (
+	"Relates" => "Relates",
+	"Duplicate" => "Duplicate",
+	"Depend" => "Blocks",
+	"Subtask" => "Relates",
+	"blocked" => "Blocks"
+);
+
+# User mapping. By default the username stays the same
+our %User = (
+	'john.doe' => 'jdoe',
+	'foo' => 'bar'
+);
+
+# This hash is optional and needed to restore the comments from appropriate users. If the user is absent then his
+# comments will be restored from $JiraUser and the original user will be mentioned in the comment body
+our %JiraPasswords = (
+	'jdoe' => 'passofjdoe',
+	'bar' => 'passofbar',
+	'onemoreuser' => 'onemorepass'
+);

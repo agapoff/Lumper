@@ -46,7 +46,7 @@ Lumper can not:
 
   --skip=N - skips the YT issues up to PROJECTKEY-N. This is useful for proceeding the migration from some breakpoint. For example if you have migrated the issues from KEY-1 to KEY-438 then you can proceed with KEY-439 by setting --skip=438.
 
-  --maxissues=N - set the maximum number of issues to migrate. Useful for some testing purposes if you need to test how the migration only for one (ony other amount) issue.
+  --maxissues=N - set the maximum number of issues to migrate. Useful for some testing purposes if you need to test the migration only for one (ony other amount) issue.
 
   --debug - overwhelms you with its standard output.
 

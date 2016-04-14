@@ -53,7 +53,6 @@ Lumper can not:
   Lean back in you chair and prepare for a very long process.
 
 ## Needed Perl modules
-  * Data::Dumper
   * LWP::UserAgent
   * JSON
   * MIME::Base64

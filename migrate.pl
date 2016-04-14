@@ -12,13 +12,13 @@ GetOptions(
     "skip=i"      => \$skip,
     "notest"      => \$notest,
     "maxissues=i" => \$maxissues,
-	"debug"       => \$debug
+    "debug"       => \$debug
 );
 
 my $yt = youtrack->new( Url      => $YTUrl,
                         Login    => $YTlogin,
-						Password => $YTpassword,
-						Debug    => $debug );
+                        Password => $YTpassword,
+                        Debug    => $debug );
 
 unless ($yt) {
 	die "Could not login to $YTUrl";
@@ -27,8 +27,8 @@ unless ($yt) {
 my $jira = jira->new( Url      => $JiraUrl,
                       Login    => $JiraLogin,
                       Password => $JiraPassword,
-					  Debug    => $debug,
-					  Project  => $JiraProject, # Project is optional - it will be used only for getting custom fields
+                      Debug    => $debug,
+                      Project  => $JiraProject, # Project is optional - it will be used only for getting custom fields
 );
 
 unless ($jira) {
@@ -99,11 +99,11 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	$header .= "]\n";
 	my %import = ( project => { key => $JiraProject },
 	               issuetype => { name => $Type{$issue->{Type}} || $issue->{Type} },
-				   assignee => { name => $User{$issue->{Assignee}} || $issue->{Assignee} },
-				   reporter => { name => $User{$issue->{reporterName}} || $issue->{reporterName} },
-				   summary => $issue->{summary},
-				   description => $header.$issue->{description},
-				   priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || 'Medium' },
+                   assignee => { name => $User{$issue->{Assignee}} || $issue->{Assignee} },
+                   reporter => { name => $User{$issue->{reporterName}} || $issue->{reporterName} },
+                   summary => $issue->{summary},
+                   description => $header.$issue->{description},
+                   priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || 'Medium' },
 	);
 
 	# Let's check throuhg custom fields

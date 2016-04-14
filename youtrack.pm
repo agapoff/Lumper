@@ -13,39 +13,29 @@ our $data;
 sub new {
 	my $class = shift;
 	my %arg = @_;
-    return unless $arg{Url};
+	return unless $arg{Url};
 	my $self;
 
-    $ua = LWP::UserAgent->new;
-    $ua->timeout(10);
+	$ua = LWP::UserAgent->new;
+	$ua->timeout(10);
 
-    my $response = $ua->post($arg{Url}.'/rest/user/login', Content => "login=".$arg{Login}."&password=".$arg{Password});
-	#print Dumper($response);
+	my $response = $ua->post($arg{Url}.'/rest/user/login', Content => "login=".$arg{Login}."&password=".$arg{Password});
 
-    if ($response->is_success) {
-        #my $parser = XML::Parser->new();
-        #$parser->setHandlers( Start => \&startElement,
-        #        End => \&endElement,
-        #        Char => \&characterData,
-        #        ); 
-        #$parser->parse($response->decoded_content); 
+	if ($response->is_success) {
 		if ($response->decoded_content eq "<login>ok</login>") {
-			#print "Logged to YT successfully\n";
-			#print Dumper($response->{'_headers'}->{'set-cookie'});
+		#print "Logged to YT successfully\n";
+		#print Dumper($response->{'_headers'}->{'set-cookie'});
 			my $cookie = getSessionID($response);
-			#print "Cookie: $cookie\n";
 			$self = { cookie => $cookie, url => $arg{Url}, debug => $arg{Debug} };
-			#${*$self}->{cookie} = $cookie;
-			#${*$self}->{url} = $arg{Url};
 		} else {
 			print "Login to YT was unsuccessfull\n";
 			print $response->decoded_content;
 			exit 2;
 		}
-    }
-    else {
-        die $response->status_line;
-    }
+	}
+	else {
+		die $response->status_line;
+	}
 
 	bless $self, $class;
 }
@@ -118,9 +108,9 @@ sub getIssue {
 		my $parser = XML::Parser->new();
 		undef $data;
 		$parser->setHandlers( Start => \&startElement,
-			End => \&endElement,
-			Char => \&characterData,
-			);
+				End => \&endElement,
+				Char => \&characterData,
+				);
 		my $decoded_content = $response->decoded_content;
 		$decoded_content =~ s/\n/\{\{newline\}\}/g;
 		$decoded_content =~ s/[^[:print:]]+//g;
@@ -143,15 +133,14 @@ sub exportIssues {
 		my $parser = XML::Parser->new();
 		undef $data;
 		$parser->setHandlers( Start => \&startElement,
-			End => \&endElement,
-			Char => \&characterData,
-			);
+				End => \&endElement,
+				Char => \&characterData,
+				);
 		my $decoded_content = $response->decoded_content;
 		$decoded_content =~ s/\n/\{\{newline\}\}/g;
 		$decoded_content =~ s/[^[:print:]]+//g;
 		$decoded_content =~ s/\{\{newline\}\}/\n/g;
 		$parser->parse($decoded_content);
-		#print Dumper($data);
 		return $data;
 	} else {
 		print "Got error while exporting issues\n";
@@ -161,7 +150,7 @@ sub exportIssues {
 
 sub getSessionID {
 	my $response = shift;
-	
+
 	foreach my $cookie (@{$response->{'_headers'}->{'set-cookie'}}) {
 		if ($cookie =~ /JSESSIONID/) {
 			$cookie =~ s/;.*$/;/;
@@ -172,16 +161,14 @@ sub getSessionID {
 }
 
 sub startAttachmentElement {
-    my( $parseinst, $element, %attrs ) = @_;
-    #print "Start element: $element\n";
+	my( $parseinst, $element, %attrs ) = @_;
 	if ($element eq 'fileUrl') {
 		push @{$data}, \%attrs;
 	}
 }
 
 sub startElement {
-    my( $parseinst, $element, %attrs ) = @_;
-    #print "Start element: $element\n";
+	my( $parseinst, $element, %attrs ) = @_;
 	if ($element eq 'field') {
 		$currentField = $attrs{name};
 	} elsif ($element eq 'comment') {
@@ -196,7 +183,6 @@ sub startElement {
 
 sub endElement {
 	my( $parseinst, $element ) = @_;
-	#print " End element: $element\n";
 	if ($element eq 'issue') {
 		push @{$data}, $currentIssue;
 		undef $currentIssue;
@@ -206,17 +192,14 @@ sub endElement {
 }
 
 sub characterData {
-    my( $parseinst, $cdata ) = @_;
+	my( $parseinst, $cdata ) = @_;
 	my $context = $parseinst->{Context}->[-1];
-	#print "   Char data: $currentField $cdata\n";
 	if ($currentField && $context eq 'value') {
 		$currentIssue->{$currentField} .= $cdata;
 	}
 	if ($context eq 'tag') {
 		push @{$currentIssue->{tags}}, $cdata;
 	}
-    #$context = (defined $mapping{$context})?$mapping{$context}:$context;
-    #$currentOdds{$context} = $cdata;
 }
 
 sub characterTagData {

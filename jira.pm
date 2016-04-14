@@ -12,14 +12,14 @@ my $ua;
 sub new {
 	my $class = shift;
 	my %arg = @_;
-    return "No URL defined" unless $arg{Url};
+	return "No URL defined" unless $arg{Url};
 	my $basic =  encode_base64($arg{Login}.":".$arg{Password});
 	my $self;
 
-    $ua = LWP::UserAgent->new;
-    $ua->timeout(30);
+	$ua = LWP::UserAgent->new;
+	$ua->timeout(30);
 	my $response = $ua->get($arg{Url}.'/rest/auth/latest/session', Authorization => 'Basic '.$basic);
-    if ($response->is_success) {
+	if ($response->is_success) {
 		#print "Logged to Jira successfully\n";
 		$self = { basic => $basic, url => $arg{Url}, debug => $arg{Debug} };
 	} else {
@@ -48,11 +48,11 @@ sub new {
 			$self->{meta} = $meta;
 		} else {
 			print 
-			die "Cannot get meta for project ".$arg{Project}." (".$response->status_line.")\n";
+				die "Cannot get meta for project ".$arg{Project}." (".$response->status_line.")\n";
 		}
 	}
 
-    bless $self, $class;
+	bless $self, $class;
 }
 
 sub getUser {
@@ -148,7 +148,7 @@ sub changeFields {
 	my %data;
 
 	foreach my $customField (keys %{$arg{Fields}}) {
-		# Ugly but quick
+	# Ugly but quick
 		my $fieldId = $self->{meta}->{fields}->{Task}->{$customField} || $self->{meta}->{fields}->{Bug}->{$customField};
 		my $fieldType = $self->{meta}->{fieldtypes}->{$customField};
 		if (defined $fieldId && defined $fieldType) {
@@ -188,9 +188,9 @@ sub doTransition {
 	my %data;
 
 	my $transitionId;
-    my $response = $ua->get($self->{url}.'/rest/api/latest/issue/'.$arg{Key}.'/transitions?expand=transitions.fields', Authorization => 'Basic '.$self->{basic});
-    if ($response->is_success) {
-        my $answer = decode_json $response->decoded_content;
+	my $response = $ua->get($self->{url}.'/rest/api/latest/issue/'.$arg{Key}.'/transitions?expand=transitions.fields', Authorization => 'Basic '.$self->{basic});
+	if ($response->is_success) {
+		my $answer = decode_json $response->decoded_content;
 		foreach (@{$answer->{transitions}}) {
 			if ($_->{name} eq $arg{Status}) {
 				$transitionId = $_->{id};
@@ -198,10 +198,10 @@ sub doTransition {
 				last;
 			}
 		}
-    } else {
-        print "Got error while getting transitions\n";
-        print $response->status_line;
-    }
+	} else {
+		print "Got error while getting transitions\n";
+		print $response->status_line;
+	}
 
 	return unless ($transitionId);
 
@@ -246,17 +246,12 @@ sub createComment {
 	my %arg = @_;
 	my %data;
 	$data{body} = substr ($arg{Body}, 0, 32766); # Jira doesn't allow to post comments longer than 32k
-	my $content = encode_json \%data;
+		my $content = encode_json \%data;
 	print $content."\n";
 	my $basic = ($arg{Login} && $arg{Password}) ? encode_base64($arg{Login}.":".$arg{Password}) : $self->{basic};
 	my $response = $ua->post($self->{url}.'/rest/api/latest/issue/'.$arg{IssueKey}.'/comment', Authorization => 'Basic '.$basic, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
 		return decode_json $response->decoded_content;
-		#print $response->status_line."\n";
-		#print $response->decoded_content."\n";
-		#my $answer = decode_json $response->decoded_content;
-		#print $answer->{key}."\n";
-		#return $answer->{key};
 	} else {
 		print "Got error while creating comment\n";
 		print $response->status_line."\n";

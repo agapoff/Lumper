@@ -144,6 +144,8 @@ sub exportIssues {
 		return $data;
 	} else {
 		print "Got error while exporting issues\n";
+		print $response->decoded_content."\n" if ($self->{debug});
+		print $response->status_line."\n" if ($self->{debug});
 	}
 	return;
 }

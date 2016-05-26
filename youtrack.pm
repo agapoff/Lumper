@@ -23,8 +23,8 @@ sub new {
 
 	if ($response->is_success) {
 		if ($response->decoded_content eq "<login>ok</login>") {
-		#print "Logged to YT successfully\n";
-		#print Dumper($response->{'_headers'}->{'set-cookie'});
+		 	print "Logged to YT successfully\n" if ($arg{Debug});
+		 	print Dumper($response->{'_headers'}->{'set-cookie'}) if ($arg{Debug});
 			my $cookie = getSessionID($response);
 			$self = { cookie => $cookie, url => $arg{Url}, debug => $arg{Debug} };
 		} else {
@@ -154,7 +154,7 @@ sub getSessionID {
 	my $response = shift;
 
 	foreach my $cookie (@{$response->{'_headers'}->{'set-cookie'}}) {
-		if ($cookie =~ /JSESSIONID/) {
+		if ($cookie =~ /SESSIONID/) {
 			$cookie =~ s/;.*$/;/;
 			return $cookie;
 		}

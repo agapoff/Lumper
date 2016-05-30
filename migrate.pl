@@ -126,7 +126,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	print "Created issue $key\n";
 
 	if ($key =~ /^[A-Z]+-(\d+)$/) {
-		if ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= 100 ) {
+		if ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
 			print "We're having a gap and will delete the issue\n";
 			unless ($jira->deleteIssue(Key => $key)) {
 				die "Error while deleting the issue $key";

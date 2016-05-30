@@ -17,6 +17,9 @@ our $exportTags='true';
 our $exportAttachments='true';
 our $exportLinks='true';
 
+# Lumper will keep the issue keys identical in YT and Jira if YT has no gaps larger than this value
+our $maximumKeyGap=100;
+
 # Issue type mapping
 our %Type = (
 	'Bug' => 'Bug',

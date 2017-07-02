@@ -6,12 +6,13 @@ require "config.pl";
 use Data::Dumper;
 use Getopt::Long;
 
-my ($skip, $notest, $maxissues, $debug);
+my ($skip, $notest, $maxissues, $cookie_file, $debug);
 Getopt::Long::Configure('bundling');
 GetOptions(
     "skip=i"      => \$skip,
     "notest"      => \$notest,
     "maxissues=i" => \$maxissues,
+    "cookie_file=s" => \$cookie_file,
     "debug"       => \$debug
 );
 
@@ -24,11 +25,12 @@ unless ($yt) {
 	die "Could not login to $YTUrl";
 }
 
-my $jira = jira->new( Url      => $JiraUrl,
-                      Login    => $JiraLogin,
-                      Password => $JiraPassword,
-                      Debug    => $debug,
-                      Project  => $JiraProject, # Project is optional - it will be used only for getting custom fields
+my $jira = jira->new( Url         => $JiraUrl,
+                      Login       => $JiraLogin,
+                      Password    => $JiraPassword,
+                      Debug       => $debug,
+                      Project     => $JiraProject, # Project is optional - it will be used only for getting custom fields
+		      cookie_file => $cookie_file,
 );
 
 unless ($jira) {

@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use LWP::UserAgent;
+use HTTP::Cookies::Netscape;
 use JSON;
 use MIME::Base64;
 
@@ -14,16 +15,28 @@ sub new {
 	my %arg = @_;
 	return "No URL defined" unless $arg{Url};
 	my $basic =  encode_base64($arg{Login}.":".$arg{Password});
+	my $basic = encode_base64($arg{Login}.":".$arg{Password});
+	my $cookie_jar;	
 	my $self;
 
+	if ($arg{cookie_file}) {
+		print "Asked to use Cookie_file at $arg{cookie_file}\n";
+		$cookie_jar = HTTP::Cookies::Netscape->new(
+		file     => $arg{cookie_file},
+		);
+	}
+
 	$ua = LWP::UserAgent->new;
+	if ($arg{cookie_file}) {
+		$ua->cookie_jar( $cookie_jar );
+	}	
 	$ua->timeout(30);
 	my $response = $ua->get($arg{Url}.'/rest/auth/latest/session', Authorization => 'Basic '.$basic);
 	if ($response->is_success) {
-		#print "Logged to Jira successfully\n";
+		print "Logged to Jira successfully\n";
 		$self = { basic => $basic, url => $arg{Url}, debug => $arg{Debug} };
 	} else {
-		#print "Login to Jira was unsuccessfull\n";
+		print "Login to Jira was unsuccessfull\n";
 		print $response->status_line;
 		return;
 	}

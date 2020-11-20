@@ -14,7 +14,6 @@ sub new {
 	my $class = shift;
 	my %arg = @_;
 	return "No URL defined" unless $arg{Url};
-	my $basic =  encode_base64($arg{Login}.":".$arg{Password});
 	my $basic = encode_base64($arg{Login}.":".$arg{Password});
 	my $cookie_jar;	
 	my $self;

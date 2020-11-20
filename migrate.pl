@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 
-require youtrack;
-require jira;
+use File::Basename qw/dirname/;
+use lib dirname(__FILE__);
+use youtrack;
+use jira;
 require "config.pl";
 use Data::Dumper;
 use Getopt::Long;

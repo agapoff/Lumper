@@ -82,6 +82,8 @@ foreach (sort keys %users) {
 	}
 	print "\n";
 }
+
+# Do you wish to proceed?
 &ifProceed;
 
 my $issuesCount = 0;
@@ -104,7 +106,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	my %import = ( project => { key => $JiraProject },
 	               issuetype => { name => $Type{$issue->{Type}} || $issue->{Type} },
                    assignee => { name => $User{$issue->{Assignee}} || $issue->{Assignee} },
-                   reporter => { name => $User{$issue->{reporter}->{login}} || $issue->{reporter}->{login}} },
+                   reporter => { name => $User{$issue->{reporter}->{login}} || $issue->{reporter}->{login} },
                    summary => $issue->{summary},
                    description => $header.$issue->{description},
                    priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || 'Medium' },

@@ -135,12 +135,18 @@ sub exportIssues {
 
 		foreach my $issue (@{$issues}) {
 			foreach my $field (@{$issue->{customFields}}) {	
-				# Place Assignee in separate field to avoid nesting in calling methods
-				if($field->{name} eq "Assignee") {
-					$issue->{Assignee} = $field->{value}->{login};
+
+				$issue->{$field->{name}} = undef;
+				next if (not($field->{value}));
+
+				if($field->{'$type'} eq "SingleUserIssueCustomField") {
+					$issue->{$field->{name}} = $field->{value}->{login};
+				} elsif ($field->{'$type'} eq "MultiUserIssueCustomField") {
+					foreach my $user (@{$field->{value}}) {
+						$issue->{$field->{name}} = $user->{login};
 				}
-				if($field->{name} eq "Type" || $field->{name} eq "Priority") {
-					$issue->{Type} = $field->{value}->{name};
+				} else {
+					$issue->{$field->{name}} = $field->{value}->{name};
 				}
 			}
 		}

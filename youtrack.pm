@@ -15,23 +15,20 @@ sub new {
 	my %arg = @_;
 	return unless $arg{Url};
 	my $self;
-
+	
 	$ua = LWP::UserAgent->new;
 	$ua->timeout(10);
+	$ua->default_headers->header(
+			'Content-Type'=>'application/json', 
+			'Accept'=>'application/json', 
+			'Authorization'=>'Bearer '.$arg{Token});
 
-	my $response = $ua->post($arg{Url}.'/rest/user/login', Content => "login=".$arg{Login}."&password=".$arg{Password});
+	my $response = $ua->get($arg{Url}.'/api/users/me');
 
 	if ($response->is_success) {
-		if ($response->decoded_content eq "<login>ok</login>") {
 		 	print "Logged to YT successfully\n" if ($arg{Debug});
-		 	print Dumper($response->{'_headers'}->{'set-cookie'}) if ($arg{Debug});
-			my $cookie = getSessionID($response);
-			$self = { cookie => $cookie, url => $arg{Url}, debug => $arg{Debug} };
-		} else {
-			print "Login to YT was unsuccessfull\n";
-			print $response->decoded_content;
-			exit 2;
-		}
+		 	print Dumper($response) if ($arg{Debug});
+			$self = { url => $arg{Url}, debug => $arg{Debug} };
 	}
 	else {
 		die $response->status_line;

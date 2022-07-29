@@ -29,6 +29,7 @@ Lumper can not:
 
 ## Prepare YouTrack
   1. Allow to export more than 500 issues if needed: Global Settings -> Max Issues to Export
+  1. Generate permanent token in your profile by clicking on profile image -> Profile -> Account Security -> Tokens -> New Token. Then copy generated token and paste to the config file described in the [next article](#do-all-the-job)
 
 ## Prepare Jira
   1. Remove from project screens all the mandatory fields that are absent in YouTrack

@@ -1,7 +1,6 @@
-
+# YouTrack Url and permanent token from Profile -> Account Security -> Tokens
 our $YTUrl='http://mycompany.myjetbrains.com/youtrack';
-our $YTlogin='mylogin';
-our $YTpassword='mypass';
+our $YTtoken='permToken';
 # Url and credentials to access Jira
 our $JiraUrl='https://mycompany.atlassian.net';
 our $JiraLogin='mylogin';

@@ -19,8 +19,7 @@ GetOptions(
 );
 
 my $yt = youtrack->new( Url      => $YTUrl,
-                        Login    => $YTlogin,
-                        Password => $YTpassword,
+                        Token    => $YTtoken,
                         Debug    => $debug );
 
 unless ($yt) {

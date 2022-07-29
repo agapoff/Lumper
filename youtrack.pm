@@ -64,17 +64,23 @@ sub getAttachments {
 	}
 }
 
+# Returns the list of tag names for specific issue id
 sub getTags {
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/issue/'.$arg{IssueKey}.'/tags', Cookie => $self->{cookie});
+
+	my $response = $ua->get($self->{url}.'/api/issues/'.$arg{IssueKey}.'/tags?fields=name');
+
 	if ($response->is_success) {
-		my $parser = XML::Parser->new();
-		undef $data;
-		$parser->setHandlers( Char => \&characterTagData );
-		$parser->parse($response->decoded_content);
-		print Dumper($data) if ($self->{debug});
-		return $data;
+		my $json = JSON->new;
+		my $tagsRaw = $json->decode($response->decoded_content);
+		
+		my @tags;
+		foreach (@{$tagsRaw}) {
+			push(@tags, $_->{name});
+		}
+
+		return @tags;
 	} else {
 		print "Got error while getting attachments\n";
 		print $response->decoded_content."\n";

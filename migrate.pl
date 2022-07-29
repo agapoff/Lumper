@@ -122,9 +122,10 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 
 	# Let's check for labels
 	if ($exportTags eq 'true') {
-		my $tags = $yt->getTags(IssueKey => $YTProject.'-'.$issue->{numberInProject});
+		my $tags = $yt->getTags(IssueKey => $issue->{id});
 		if (@{$tags}) {
 			$import{labels} = $tags;
+			print "Found tags: ".Dumper($tags) if ($debug);
 		}
 	}
 

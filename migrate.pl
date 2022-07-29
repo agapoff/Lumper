@@ -62,11 +62,12 @@ print "Exported issues: ".scalar @{$export}."\n";
 my %users;
 foreach my $issue (@{$export}) {
 	$users{$issue->{Assignee}} = 1;
-	$users{$issue->{reporterName}} = 1;
+	$users{$issue->{reporter}->{login}} = 1;
 	foreach (@{$issue->{comments}}) {
-		$users{$_->{author}} = 1;
+		$users{$_->{author}->{login}} = 1;
 	}
 }
+print Dumper(%users) if ($debug);
 print "Users found in project\n";
 foreach (sort keys %users) {
 	my $user = $_;
@@ -97,19 +98,19 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 
 	print Dumper($issue) if ($debug);
 	my $header = "[Created ";
-	if ($User{$issue->{reporterName}} eq $JiraLogin) { $header .= "by ".$issue->{reporterName}." "; }
+	if ($User{$issue->{reporter}->{login}} eq $JiraLogin) { $header .= "by ".$issue->{reporter}->{login}." "; }
 	$header .= scalar localtime ($issue->{created}/1000);
 	$header .= "]\n";
 	my %import = ( project => { key => $JiraProject },
 	               issuetype => { name => $Type{$issue->{Type}} || $issue->{Type} },
                    assignee => { name => $User{$issue->{Assignee}} || $issue->{Assignee} },
-                   reporter => { name => $User{$issue->{reporterName}} || $issue->{reporterName} },
+                   reporter => { name => $User{$issue->{reporter}->{login}} || $issue->{reporter}->{login}} },
                    summary => $issue->{summary},
                    description => $header.$issue->{description},
                    priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || 'Medium' },
 	);
 
-	# Let's check throuhg custom fields
+	# Let's check through custom fields
 	my %custom;
 	foreach my $field (keys %CustomFields) {
 		if (defined $issue->{$field}) {

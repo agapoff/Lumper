@@ -4,6 +4,7 @@ use strict;
 use Data::Dumper;
 require LWP::UserAgent;
 use XML::Parser;
+use JSON qw( decode_json );
 
 my $ua;
 our $currentField;
@@ -123,38 +124,31 @@ sub getIssue {
 sub exportIssues {
 	my $self = shift;
 	my %arg = @_;
-	my $max = $arg{Max} || 10000;
-	print $self->{url}.'/rest/export/'.$arg{Project}.'/issues?max='.$max."\n";
-	my $response = $ua->get($self->{url}.'/rest/export/'.$arg{Project}.'/issues?max='.$max, Cookie => $self->{cookie});
+	my $max = $arg{Max} || 10000
+
+	my $response = $ua->get($self->{url}.'/api/issues?query=project:%20'.$arg{Project}.'%20&$top='.$max.'&fields=created,numberInProject,comments(author(login)),idReadable,id,summary,description,reporter(login),customFields(name,value(name,login))');
+
 	if ($response->is_success) {
-		my $parser = XML::Parser->new();
-		undef $data;
-		$parser->setHandlers( Start => \&startElement,
-				End => \&endElement,
-				Char => \&characterData,
-				);
-		my $decoded_content = $response->decoded_content;
-		$decoded_content =~ s/\n/\{\{newline\}\}/g;
-		$decoded_content =~ s/[^[:print:]]+//g;
-		$decoded_content =~ s/\{\{newline\}\}/\n/g;
-		$parser->parse($decoded_content);
-		return $data;
+		
+		my $json = JSON->new;
+		my $issues = $json->decode($response->decoded_content);
+
+		foreach my $issue (@{$issues}) {
+			foreach my $field (@{$issue->{customFields}}) {	
+				# Place Assignee in separate field to avoid nesting in calling methods
+				if($field->{name} eq "Assignee") {
+					$issue->{Assignee} = $field->{value}->{login};
+				}
+				if($field->{name} eq "Type" || $field->{name} eq "Priority") {
+					$issue->{Type} = $field->{value}->{name};
+				}
+			}
+		}
+		return $issues;
 	} else {
 		print "Got error while exporting issues\n";
 		print $response->decoded_content."\n" if ($self->{debug});
 		print $response->status_line."\n" if ($self->{debug});
-	}
-	return;
-}
-
-sub getSessionID {
-	my $response = shift;
-
-	foreach my $cookie (@{$response->{'_headers'}->{'set-cookie'}}) {
-		if ($cookie =~ /SESSIONID/) {
-			$cookie =~ s/;.*$/;/;
-			return $cookie;
-		}
 	}
 	return;
 }

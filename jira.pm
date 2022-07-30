@@ -121,6 +121,7 @@ sub createIssue {
 	foreach my $customField (keys %{$arg{CustomFields}}) {
 		my $fieldId = $self->{meta}->{fields}->{$arg{Issue}->{issuetype}->{name}}->{$customField};
 		my $fieldType = $self->{meta}->{fieldtypes}->{$customField};
+		
 		if (defined $fieldId && defined $fieldType) {
 			if ($fieldType eq 'string') {
 				$data{fields}->{$fieldId} = $arg{CustomFields}->{$customField};
@@ -130,10 +131,11 @@ sub createIssue {
 				$data{fields}->{$fieldId}->[0]->{name} = $arg{CustomFields}->{$customField};
 			} elsif ($fieldType eq 'resolution') {
 				$data{fields}->{$fieldId}->{name} = $arg{CustomFields}->{$customField};
+			} elsif ($fieldType eq 'datetime') {
+				$data{fields}->{$fieldId} = $arg{CustomFields}->{$customField};
 			}
 		}
 	}
-	#print Dumper (\%data);
 
 	my $content = encode_json \%data;
 	print $content."\n" if ($self->{debug});

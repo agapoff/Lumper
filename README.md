@@ -21,11 +21,14 @@ Lumper can:
   * Copy attachments
   * Copy tags/labels
   * Copy issue links
+  * Creation time for issues
 
 Lumper can not:
 
-  * Save creation times for issues and comments (creation time will be added to the description)
+  * Save creation times for comments
   * Copy watchers and voters
+
+>Note that creation time for the YouTrack issues can be applied to the real creation time in Jira by modifying the database directly. Follow these [instructions](https://confluence.atlassian.com/jirakb/how-to-change-the-issue-creation-date-using-a-database-update-334430256.html) to transfer values from custom field `Original Creation Date` to the `Creation Time` in Jira. You can safely delete the custom field after that.
 
 ## Prepare YouTrack
   1. Allow to export more than 500 issues if needed: Global Settings -> Max Issues to Export
@@ -33,10 +36,21 @@ Lumper can not:
 
 ## Prepare Jira
   1. Remove from project screens all the mandatory fields that are absent in YouTrack
-  1. Add Reporter field to the screens and add the permission for modifying reporter to your user
+  1. Add `Reporter` field to the screens and add the permission for modifying reporter to your user
   1. Disable notifications for project and enable them after the migration to avoid overdisturbing the users
-  1. If you are going to match some YT states to some Jira resolutions then you need to add Resolution field to the screens
+  1. If you are going to match some YT states to some Jira resolutions then you need to add `Resolution` field to the screens
+  1. If you want to save the original creation date you must add `Original Creation Date` custom field in Jira (this field name is a subject to change). This must be the Date and Time type of a field. 
   1. Please make sure that your project workflow allows all needed transitions right from the initial state. Maybe you will need to prepare a simplified workflow to proceed with the migration and get back to your cool workflow afterwards.
+
+  Here's the list of minimum required issue fields:
+  - Issue Type
+  - Description
+  - Summary
+  - Assignee
+  - Reporter
+  - Priority
+  - Original Creation Date
+  - _here goes other custom fields from `config.pl` configuration file_
 
 ## Do all the job
   First you will need to rename config.pl_example to config.pl and edit it for your needs. The file is well-commented and you will have no problems with it if you have some familiarity with Perl syntax (even if not).

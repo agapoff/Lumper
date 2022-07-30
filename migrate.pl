@@ -5,6 +5,8 @@ use lib dirname(__FILE__);
 use youtrack;
 use jira;
 require "config.pl";
+
+use POSIX qw(strftime);
 use Data::Dumper;
 use Getopt::Long;
 
@@ -98,18 +100,25 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 
 	print "Will import issue $YTProject-".$issue->{numberInProject}."\n";
 
-	print Dumper($issue) if ($debug);
-	my $header = "[Created ";
-	if ($User{$issue->{reporter}->{login}} eq $JiraLogin) { $header .= "by ".$issue->{reporter}->{login}." "; }
-	$header .= scalar localtime ($issue->{created}/1000);
+	# Prepare creation time message if exportCreationTime setting is not set
+	my $creationTime = scalar localtime ($issue->{created}/1000);
+	my $header = "";
+	if (not($exportCreationTime)) {
+		$header .= "[Created ";
+		if ($User{$issue->{reporter}->{login}} eq $JiraLogin) { 
+			$header .= "by ".$issue->{reporter}->{login}." "; 
+		}
+		$header .= $creationTime;
 	$header .= "]\n";
+	}
+	
 	my %import = ( project => { key => $JiraProject },
 	               issuetype => { name => $Type{$issue->{Type}} || $issue->{Type} },
                    assignee => { name => $User{$issue->{Assignee}} || $issue->{Assignee} },
                    reporter => { name => $User{$issue->{reporter}->{login}} || $issue->{reporter}->{login} },
                    summary => $issue->{summary},
                    description => $header.$issue->{description},
-                   priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || 'Medium' },
+                   priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || 'Medium' }
 	);
 
 	# Let's check through custom fields
@@ -118,6 +127,18 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		if (defined $issue->{$field}) {
 			$custom{$CustomFields{$field}} = $issue->{$field};
 		}
+	}
+	
+	# Add YouTrack original creation date field	
+	if ($exportCreationTime) {
+		my %dateTimeFormats = (
+			RFC822 => "%a, %d %b %Y %H:%M:%S %z",
+			RFC3389 => "%Y-%m-%dT%H:%M:%S%z",
+			ISO8601 => "%FT%T%z",
+			GOST7.0.64 => "%Y%m%dT%H%M%S%z",
+			JIRA8601 => "%FT%T.00%z"
+		);
+		$custom{$creationTimeCustomFieldName} = strftime $dateTimeFormats{"$creationDateTimeFormat"}, localtime ($issue->{created}/1000);
 	}
 
 	# Let's check for labels

@@ -6,9 +6,9 @@ use youtrack;
 use jira;
 require "config.pl";
 
-use POSIX qw(strftime);
 use Data::Dumper;
 use Getopt::Long;
+use Date::Format;
 
 my ($skip, $notest, $maxissues, $cookie_file, $debug);
 Getopt::Long::Configure('bundling');
@@ -134,11 +134,12 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		my %dateTimeFormats = (
 			RFC822 => "%a, %d %b %Y %H:%M:%S %z",
 			RFC3389 => "%Y-%m-%dT%H:%M:%S%z",
-			ISO8601 => "%FT%T%z",
+			ISO8601 => "%Y-%m-%dT%T%z",
 			GOST7.0.64 => "%Y%m%dT%H%M%S%z",
-			JIRA8601 => "%FT%T.00%z"
+			JIRA8601 => "%Y-%m-%dT%T.00%z"
 		);
-		$custom{$creationTimeCustomFieldName} = strftime $dateTimeFormats{"$creationDateTimeFormat"}, localtime ($issue->{created}/1000);
+		my @parsedTime = localtime ($issue->{created}/1000);
+		$custom{$creationTimeCustomFieldName} = strftime($dateTimeFormats{"$creationDateTimeFormat"}, @parsedTime);
 	}
 
 	# Let's check for labels

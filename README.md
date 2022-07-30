@@ -74,3 +74,4 @@ Lumper can not:
   * Data::Dumper
   * Getopt::Long
   * XML::Parser
+  * Date::Format

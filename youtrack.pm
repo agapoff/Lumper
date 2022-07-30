@@ -5,6 +5,8 @@ use Data::Dumper;
 require LWP::UserAgent;
 use XML::Parser;
 use JSON qw( decode_json );
+use Encode;
+use utf8;
 
 my $ua;
 our $currentField;
@@ -72,8 +74,11 @@ sub getTags {
 	my $response = $ua->get($self->{url}.'/api/issues/'.$arg{IssueKey}.'/tags?fields=name');
 
 	if ($response->is_success) {
+		# All languages support
+		my $utf8DecodedInput = decode_utf8($response->decoded_content);	
+
 		my $json = JSON->new;
-		my $tagsRaw = $json->decode($response->decoded_content);
+		my $tagsRaw = $json->decode($utf8DecodedInput);
 		
 		my @tags;
 		foreach (@{$tagsRaw}) {
@@ -130,14 +135,17 @@ sub getIssue {
 sub exportIssues {
 	my $self = shift;
 	my %arg = @_;
-	my $max = $arg{Max} || 10000
+	my $max = $arg{Max} || 10000;
 
 	my $response = $ua->get($self->{url}.'/api/issues?query=project:%20'.$arg{Project}.'%20&$top='.$max.'&fields=created,numberInProject,comments(author(login)),idReadable,id,summary,description,reporter(login),customFields(name,value(name,login))');
 
 	if ($response->is_success) {
 		
+		# All languages support
+		my $utf8DecodedInput = decode_utf8($response->decoded_content);
+
 		my $json = JSON->new;
-		my $issues = $json->decode($response->decoded_content);
+		my $issues = $json->decode($utf8DecodedInput);
 
 		foreach my $issue (@{$issues}) {
 			foreach my $field (@{$issue->{customFields}}) {	

@@ -8,7 +8,9 @@ require "config.pl";
 
 use Data::Dumper;
 use Getopt::Long;
+use IPC::Run qw( run );
 use Date::Format;
+use Encode;
 
 my ($skip, $notest, $maxissues, $cookie_file, $debug);
 Getopt::Long::Configure('bundling');
@@ -111,13 +113,23 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		$header .= $creationTime;
 	$header .= "]\n";
 	}
+
+	# Convert Markdown to Jira-specific rich text formatting
+	my $description = $issue->{description};
+	if($convertTextFormatting eq 'true') {
+		my @j2mCommand = ('j2m', '--toJ', '--stdin');
+		run(\@j2mCommand, \$description, \my $j2mConvertedText) 
+			or die "Something wrong with J2M tool, is it installed? ".
+			"Try install it using:\n\n\tnpm install j2m --save\n\n";
+		$description = decode_utf8($j2mConvertedText);
+	}
 	
 	my %import = ( project => { key => $JiraProject },
 	               issuetype => { name => $Type{$issue->{Type}} || $issue->{Type} },
                    assignee => { name => $User{$issue->{Assignee}} || $issue->{Assignee} },
                    reporter => { name => $User{$issue->{reporter}->{login}} || $issue->{reporter}->{login} },
                    summary => $issue->{summary},
-                   description => $header.$issue->{description},
+                   description => $header.$description,
                    priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || 'Medium' }
 	);
 
@@ -130,7 +142,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	}
 	
 	# Add YouTrack original creation date field	
-	if ($exportCreationTime) {
+	if ($exportCreationTime eq 'true') {
 		my %dateTimeFormats = (
 			RFC822 => "%a, %d %b %Y %H:%M:%S %z",
 			RFC3389 => "%Y-%m-%dT%H:%M:%S%z",

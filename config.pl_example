@@ -25,6 +25,11 @@ our $creationTimeCustomFieldName='Original Creation Date';
 # If you having issues with date time parsing use JIRA8601 date time format
 # Possible values here: ISO8601, RFC3389, RFC822, GOST7064, JIRA8601
 our $creationDateTimeFormat='ISO8601';
+# YouTrack is using regular markdown language to create rich text formatting 
+# (__bold text__, _italic_, headers etc). Jira is different - it supports some 
+# specific rich text formatting language. 
+# If you set this to true, then you'll need to install J2M utility. See README.md file for more info.
+our $convertTextFormatting='true';
 
 # Lumper will keep the issue keys identical in YT and Jira if YT has no gaps larger than this value
 our $maximumKeyGap=100;

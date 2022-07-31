@@ -137,7 +137,7 @@ sub exportIssues {
 	my %arg = @_;
 	my $max = $arg{Max} || 10000;
 
-	my $response = $ua->get($self->{url}.'/api/issues?query=project:%20'.$arg{Project}.'%20&$top='.$max.'&fields=created,numberInProject,comments(author(login)),idReadable,id,summary,description,reporter(login),customFields(name,value(name,login))');
+	my $response = $ua->get($self->{url}.'/api/issues?query=project:%20'.$arg{Project}.'%20&$top='.$max.'&fields=created,numberInProject,comments(author(login),text,created),idReadable,id,summary,description,reporter(login),customFields(name,value(name,login))');
 
 	if ($response->is_success) {
 		

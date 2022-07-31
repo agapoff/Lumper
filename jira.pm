@@ -174,6 +174,8 @@ sub changeFields {
 				$data{fields}->{$fieldId}->[0]->{name} = $arg{Fields}->{$customField};
 			} elsif ($fieldType eq 'resolution' || $fieldType eq 'issuetype' || $fieldType eq 'priority' || $fieldType eq 'assignee') {
 				$data{fields}->{$fieldId}->{name} = $arg{Fields}->{$customField};
+			} elsif ($fieldType eq 'datetime') {
+				$data{fields}->{$fieldId} = $arg{CustomFields}->{$customField};
 			}
 		}
 	}

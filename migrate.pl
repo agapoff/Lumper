@@ -63,6 +63,7 @@ unless ($notest) {
 my $export = $yt->exportIssues(Project => $YTProject);
 print "Exported issues: ".scalar @{$export}."\n";
 
+# Find active users from issues, commetns and other YT activity
 my %users;
 foreach my $issue (@{$export}) {
 	$users{$issue->{Assignee}} = 1;
@@ -70,6 +71,11 @@ foreach my $issue (@{$export}) {
 	foreach (@{$issue->{comments}}) {
 		$users{$_->{author}->{login}} = 1;
 	}
+}
+# Join those active with those that are listed in config 
+# in case if config ones are not listed in the %users
+foreach my $configUser (keys %User) {
+	$users{$configUser} = 1;
 }
 print Dumper(%users) if ($debug);
 print "Users found in project\n";
@@ -117,11 +123,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	# Convert Markdown to Jira-specific rich text formatting
 	my $description = $issue->{description};
 	if($convertTextFormatting eq 'true') {
-		my @j2mCommand = ('j2m', '--toJ', '--stdin');
-		run(\@j2mCommand, \$description, \my $j2mConvertedText) 
-			or die "Something wrong with J2M tool, is it installed? ".
-			"Try install it using:\n\n\tnpm install j2m --save\n\n";
-		$description = decode_utf8($j2mConvertedText);
+		$description = convertMarkdownToJira($description);
 	}
 	
 	my %import = ( project => { key => $JiraProject },
@@ -166,6 +168,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	my $key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || die "Error while creating issue";
 	print "Created issue $key\n";
 
+	# Checking issue number in key (eg in FOO-20 the issue number is 20)
 	if ($key =~ /^[A-Z]+-(\d+)$/) {
 		if ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
 			print "We're having a gap and will delete the issue\n";
@@ -199,19 +202,23 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	# Create comments
 	print "\nCreating comments\n";
 	foreach (@{$issue->{comments}}) {
-		my $author = $User{$_->{author}} || $_->{author};
+		my $author = $User{$_->{author}->{login}} || $_->{author}->{login};
 		my $date = scalar localtime ($_->{created}/1000);
+
 		my $text = $_->{text};
+		if($convertTextFormatting eq 'true') {
+			$text = convertMarkdownToJira($text);
+		}
 		# Change the links to users
-		$text =~ s/[^a-z]\@(\S+)/\[\~$1\]/;
-		$text =~ s/^.?\@(\S+)/\[\~$1\]/;
+		$text =~ s/\B\@(\S+)/\[\~$User{$1}\]/g;
+
 		my $header;
 		if ( $JiraPasswords{$author} ) {
 			$header = "[ $date ]\n";
 			$text = $header.$text;
 			my $comment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || die "Error creating comment";
 		} else {
-			$header = "[ ".$_->{author}." $date ]\n";
+			$header = "[ ".$_->{author}->{login}." $date ]\n";
 			$text = $header.$text;
 			my $comment = $jira->createComment(IssueKey => $key, Body => $text) || die "Error creating comment";
 		}
@@ -257,4 +264,15 @@ sub ifProceed {
 	my $input = <>;
 	chomp $input;
 	exit unless (lc($input) eq 'y');
+}
+
+# Converts Markdown text format to Jira format using J2M utility
+sub convertMarkdownToJira {
+	my $textToConvert = shift;
+	
+	my @j2mCommand = ('j2m', '--toJ', '--stdin');
+	run(\@j2mCommand, \$textToConvert, \my $j2mConvertedText) 
+		or die "Something wrong with J2M tool, is it installed? ".
+		"Try install it using:\n\n\tnpm install j2m --save\n\n";
+	return decode_utf8($j2mConvertedText);
 }

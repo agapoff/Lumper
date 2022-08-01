@@ -106,3 +106,4 @@ Here's the list of used components:
   * IPC::Run
   * Encode
   * Date::Format
+  * File::Temp

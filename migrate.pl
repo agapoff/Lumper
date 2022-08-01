@@ -224,11 +224,12 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		}
 	}
 
-	# createAttachments
+	# create attachments
 	if ($exportAttachments eq 'true') {
 		print "Check for attachments\n";
-		my $attachments = $yt->getAttachments(IssueKey => $YTProject.'-'.$issue->{numberInProject});
+		my $attachments = $yt->downloadAttachments(IssueKey => $issue->{id});
 		print Dumper($attachments) if ($debug);
+
 		if (@{$attachments}) {
 			print "Uploading ".scalar @{$attachments}." files\n";
 			unless ($jira->addAttachments(IssueKey => $key, Files => $attachments)) {

@@ -5,6 +5,7 @@ use Data::Dumper;
 require LWP::UserAgent;
 use XML::Parser;
 use JSON qw( decode_json );
+use File::Temp qw ( tempdir );
 use Encode;
 use utf8;
 
@@ -40,26 +41,31 @@ sub new {
 	bless $self, $class;
 }
 
-sub getAttachments {
+# Downloads each attachment in the issue and stores it in tmp folder
+sub downloadAttachments {
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/issue/'.$arg{IssueKey}.'/attachment', Cookie => $self->{cookie});
+
+	my $response = $ua->get($self->{url}.'/api/issues/'.$arg{IssueKey}.'/attachments?fields=url,name');
+
 	if ($response->is_success) {
-		my $parser = XML::Parser->new();
-		undef $data;
-		$parser->setHandlers( Start => \&startAttachmentElement );
-		$parser->parse($response->decoded_content);
-		print Dumper($data) if ($self->{debug});
-		my @downloadedFiles;
-		foreach (@{$data}) {
-			my $r = $ua->get($_->{url}, Cookie => $self->{cookie});
-			open F, ">/tmp/".$_->{name} or die "$! $_->{name}";
-			binmode F;
-			print F $r->content;
-			close F;
-			push @downloadedFiles, '/tmp/'.$_->{name};
+		my $json = JSON->new;
+		my $attachments = $json->decode($response->decoded_content);
+
+		my @downloadedFilesPaths;
+		my $tempdir = tempdir();
+		foreach my $attachment (@{$attachments}) {
+			# Attachment URL includes 'youtrack/' word, remove it
+			$attachment->{url} =~ s/youtrack\///;
+			my $r = $ua->get($self->{url}.$attachment->{url});
+
+			open my $fh, ">", "$tempdir/".$attachment->{name} or die "$! $attachment->{name}";
+			binmode $fh;
+			print $fh $r->content;
+			close $fh;
+			push @downloadedFilesPaths, "$tempdir/".$attachment->{name};
 		}
-		return \@downloadedFiles;
+		return \@downloadedFilesPaths;
 	} else {
 		print "Got error while getting attachments\n";
 		print $response->decoded_content."\n";

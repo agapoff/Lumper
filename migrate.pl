@@ -42,9 +42,6 @@ unless ($jira) {
     die "Could not login to $JiraUrl\n";
 }
 
-#$jira->addAttachments(IssueKey => 'QMT-8', Files => [ '/tmp/image.png', '/tmp/test test.png' ] ); exit;
-#$yt->getAttachments(Key=>'RS-130'); exit;
-
 unless ($notest) {
 	print "Let's check JiraPasswords\n";
 	foreach (sort keys %JiraPasswords) {
@@ -121,7 +118,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	}
 
 	# Convert Markdown to Jira-specific rich text formatting
-	my $description = $issue->{description};
+	my $description = convertMentionsAndAttachmentsLinks($issue->{description});
 	if($convertTextFormatting eq 'true') {
 		$description = convertMarkdownToJira($description);
 	}
@@ -198,7 +195,6 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		}
 	}
 
-
 	# Create comments
 	print "\nCreating comments\n";
 	foreach (@{$issue->{comments}}) {
@@ -209,8 +205,8 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		if($convertTextFormatting eq 'true') {
 			$text = convertMarkdownToJira($text);
 		}
-		# Change the links to users
-		$text =~ s/\B\@(\S+)/\[\~$User{$1}\]/g;
+
+		$text = convertMentionsAndAttachmentsLinks($text);
 
 		my $header;
 		if ( $JiraPasswords{$author} ) {
@@ -276,4 +272,16 @@ sub convertMarkdownToJira {
 		or die "Something wrong with J2M tool, is it installed? ".
 		"Try install it using:\n\n\tnpm install j2m --save\n\n";
 	return decode_utf8($j2mConvertedText);
+}
+
+# Converts user mentions to correct usernames and links to attachments 
+sub convertMentionsAndAttachmentsLinks {
+	my $textToConvert = shift;
+
+	# Convert user mentions ."!image.png|thumbnail!"
+	$textToConvert =~ s/!\[\]\((.+)\)/!$1|thumbnail!/g;
+	# Change the links to users
+	$textToConvert =~ s/\B\@(\S+)/\[\~$User{$1}\]/g;
+
+	return $textToConvert;
 }

@@ -3,7 +3,6 @@ package youtrack;
 use strict;
 use Data::Dumper;
 require LWP::UserAgent;
-use XML::Parser;
 use JSON qw( decode_json );
 use File::Temp qw ( tempdir );
 use Encode;
@@ -124,30 +123,6 @@ sub getIssueLinks {
 	}
 }
 
-sub getIssue {
-	my $self = shift;
-	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/issue/'.$arg{Key}, Cookie => $self->{cookie});
-	if ($response->is_success) {
-		print $response->decoded_content;
-		my $parser = XML::Parser->new();
-		undef $data;
-		$parser->setHandlers( Start => \&startElement,
-				End => \&endElement,
-				Char => \&characterData,
-				);
-		my $decoded_content = $response->decoded_content;
-		$decoded_content =~ s/\n/\{\{newline\}\}/g;
-		$decoded_content =~ s/[^[:print:]]+//g;
-		$decoded_content =~ s/\{\{newline\}\}/\n/g;
-		$parser->parse($decoded_content);
-		print Dumper($data);
-		return $data;
-	} else {
-		print "Got error while getting issue\n";
-	}
-}
-
 sub exportIssues {
 	my $self = shift;
 	my %arg = @_;
@@ -201,56 +176,6 @@ sub exportIssues {
 		print $response->status_line."\n" if ($self->{debug});
 	}
 	return;
-}
-
-sub startAttachmentElement {
-	my( $parseinst, $element, %attrs ) = @_;
-	if ($element eq 'fileUrl') {
-		push @{$data}, \%attrs;
-	}
-}
-
-sub startElement {
-	my( $parseinst, $element, %attrs ) = @_;
-	if ($element eq 'field') {
-		$currentField = $attrs{name};
-	} elsif ($element eq 'comment') {
-		push @{$currentIssue->{comments}}, { created => $attrs{created}, text => $attrs{text}, author => $attrs{author} };
-	} elsif ($element eq 'issueLink') {
-		push @{$data}, { type => { name => $attrs{typeName} }, inwardIssue => { key => $attrs{target} }, outwardIssue => { key => $attrs{source} } };
-	} elsif ($element eq 'value') {
-		# This is a very ugly crutch. It disables the possibility to export the multivalue field. C'est la vie
-		undef $currentIssue->{$currentField} if ($currentField && defined $currentIssue->{$currentField});
-	}
-}
-
-sub endElement {
-	my( $parseinst, $element ) = @_;
-	if ($element eq 'issue') {
-		push @{$data}, $currentIssue;
-		undef $currentIssue;
-	} elsif ($element eq 'field') {
-		undef $currentField;
-	}
-}
-
-sub characterData {
-	my( $parseinst, $cdata ) = @_;
-	my $context = $parseinst->{Context}->[-1];
-	if ($currentField && $context eq 'value') {
-		$currentIssue->{$currentField} .= $cdata;
-	}
-	if ($context eq 'tag') {
-		push @{$currentIssue->{tags}}, $cdata;
-	}
-}
-
-sub characterTagData {
-	my( $parseinst, $cdata ) = @_;
-	my $context = $parseinst->{Context}->[-1];
-	if ($context eq 'tag') {
-		push @{$data}, $cdata;
-	}
 }
 
 1;

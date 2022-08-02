@@ -103,7 +103,6 @@ Here's the list of used components:
   * MIME::Base64
   * Data::Dumper
   * Getopt::Long
-  * XML::Parser
   * IPC::Run
   * Encode
   * Date::Format

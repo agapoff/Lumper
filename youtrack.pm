@@ -46,7 +46,10 @@ sub downloadAttachments {
 	my $self = shift;
 	my %arg = @_;
 
-	my $response = $ua->get($self->{url}.'/api/issues/'.$arg{IssueKey}.'/attachments?fields=url,name');
+	my $response = $ua->get($self->{url}.'/api/issues/'.$arg{IssueKey}.'/attachments?'.
+											'fields='.
+												'url,'.
+												'name');
 
 	if ($response->is_success) {
 		my $json = JSON->new;
@@ -77,7 +80,9 @@ sub getTags {
 	my $self = shift;
 	my %arg = @_;
 
-	my $response = $ua->get($self->{url}.'/api/issues/'.$arg{IssueKey}.'/tags?fields=name');
+	my $response = $ua->get($self->{url}.'/api/issues/'.$arg{IssueKey}.'/tags?'.
+											'fields='.
+												'name');
 
 	if ($response->is_success) {
 		# All languages support
@@ -143,7 +148,19 @@ sub exportIssues {
 	my %arg = @_;
 	my $max = $arg{Max} || 10000;
 
-	my $response = $ua->get($self->{url}.'/api/issues?query=project:%20'.$arg{Project}.'%20&$top='.$max.'&fields=created,numberInProject,comments(author(login),text,created),idReadable,id,summary,description,reporter(login),customFields(name,value(name,login))');
+	my $response = $ua->get($self->{url}.'/api/issues?'.
+										'query=project:%20'.$arg{Project}.'%20&'.
+										'$top='.$max.'&'.
+										'fields='.
+											'id,'.
+											'idReadable,'.
+											'created,'.
+											'numberInProject,'.
+											'comments(author(login),text,created),'.
+											'summary,'.
+											'description,'.
+											'reporter(login),'.
+											'customFields(name,value(name,login))');
 
 	if ($response->is_success) {
 		

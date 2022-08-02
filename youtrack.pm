@@ -162,9 +162,11 @@ sub exportIssues {
 				if($field->{'$type'} eq "SingleUserIssueCustomField") {
 					$issue->{$field->{name}} = $field->{value}->{login};
 				} elsif ($field->{'$type'} eq "MultiUserIssueCustomField") {
+					my @listOfUsersInCustomField;
 					foreach my $user (@{$field->{value}}) {
-						$issue->{$field->{name}} = $user->{login};
+						push @listOfUsersInCustomField, $user->{login};
 				}
+					$issue->{$field->{name}} = \@listOfUsersInCustomField;
 				} else {
 					$issue->{$field->{name}} = $field->{value}->{name};
 				}

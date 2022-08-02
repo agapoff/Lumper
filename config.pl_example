@@ -96,8 +96,7 @@ our %IssueLinks = (
 	"Relates" => "Relates",
 	"Duplicate" => "Duplicate",
 	"Depend" => "Blocks",
-	"Subtask" => "Relates",
-	"blocked" => "Blocks"
+	"Subtask" => "Relates"
 );
 
 # User mapping. By default the username stays the same

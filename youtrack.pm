@@ -106,13 +106,18 @@ sub getTags {
 sub getIssueLinks {
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/issue/'.$arg{IssueKey}.'/link', Cookie => $self->{cookie});
+
+	my $response = $ua->get($self->{url}.'/api/issues/'.$arg{IssueKey}.'/links?'.
+											'fields='.
+												'direction,'.
+												'linkType(name),'.
+												'issues(id)');
+
 	if ($response->is_success) {
-		my $parser = XML::Parser->new();
-		undef $data;
-		$parser->setHandlers( Start => \&startElement );
-		$parser->parse($response->decoded_content);
-		return $data;
+		my $json = JSON->new;
+		my $links = $json->decode($response->decoded_content);
+		
+		return $links;
 	} else {
 		print "Got error while getting links\n";
 		print $response->decoded_content."\n";

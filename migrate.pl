@@ -179,6 +179,9 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		die "Wrong issue key $key";
 	}
 
+	# Save Jira issue key for forther linking
+	$issue->{jiraKey} = $key;
+
 	# Transition
 	if ($Status{$issue->{State}}) {
 		print "\nChanging status to ".$Status{$issue->{State}}."\n";
@@ -233,25 +236,58 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 			}
 		}
 	}
+}
 
-	# create Issue Links
+# Create Issue Links
 	if ($exportLinks eq 'true') {
-		my $links = $yt->getIssueLinks(IssueKey => $YTProject.'-'.$issue->{numberInProject});
+	print "\n------------------ Creating Issue Links ------------------\n";
+	# Turn YT issues to a hash to be able to search for issue ID
+	my %issuesById = map { $_->{id} => $_ } @{$export};
+	# Keep linked issues in hash to avoid duplicates on BOTH type of links
+	my %alreadyEstablishedLinksWith = map { $_ => () } keys %IssueLinks;
+
+	foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export}) {
+		my $links = $yt->getIssueLinks(IssueKey => $issue->{id});
+
 		foreach my $link (@{$links}) {
-		    $link->{inwardIssue}->{key} = $key if $link->{inwardIssue}->{key} eq $YTProject.'-'.$issue->{numberInProject};
-		    $link->{outwardIssue}->{key} = $key if $link->{outwardIssue}->{key} eq $YTProject.'-'.$issue->{numberInProject};
-		    if (defined $IssueLinks{$link->{type}->{name}}) {
-        		$link->{type}->{name} = $IssueLinks{$link->{type}->{name}};
+			my $jiraLink;
+
+			# If this link does not have any issues attached - skip to the next one
+			if (!@{$link->{issues}}){
+				next;
+			}
+
+			# Check if config has this issue link type name
+		    if (defined $IssueLinks{$link->{linkType}->{name}}) {
+        		$jiraLink->{type}->{name} = $IssueLinks{$link->{linkType}->{name}};
     		} else {
         		next;
     		}
-		    print "Creating link between ".$link->{outwardIssue}->{key}." and ".$link->{inwardIssue}->{key}."\n";
-    		print Dumper($link) if ($debug);
-    		if ($jira->createIssueLink( Link => $link )) {
+
+			foreach my $linkedIssue (@{$link->{issues}}) {
+				if (exists $issuesById{$linkedIssue->{id}}) {
+					if ($link->{direction} eq 'INWARD' || $link->{direction} eq 'BOTH') {
+						$jiraLink->{inwardIssue}->{key} = $issue->{jiraKey};
+						$jiraLink->{outwardIssue}->{key} = $issuesById{$linkedIssue->{id}}->{jiraKey};
+					} elsif ($link->{direction} eq 'OUTWARD') {						
+						$jiraLink->{inwardIssue}->{key} = $issuesById{$linkedIssue->{id}}->{jiraKey};
+						$jiraLink->{outwardIssue}->{key} = $issue->{jiraKey};
+					} 
+
+					if (not $alreadyEstablishedLinksWith{$link->{linkType}->{name}}{$linkedIssue->{id}}) {
+						print "Creating link between ".$jiraLink->{outwardIssue}->{key}." and ".$jiraLink->{inwardIssue}->{key}."\n";
+						
+						if ($jira->createIssueLink( Link => $jiraLink )) {
+							# To avoid link duplications (for BOTH direction type of issue link)
+							$alreadyEstablishedLinksWith{$link->{linkType}->{name}}{$linkedIssue->{id}} = 1;
+							$alreadyEstablishedLinksWith{$link->{linkType}->{name}}{$issue->{id}} = 1;
         		print " Done\n";
     		} else {
         		print " Failed. Most likely the second issue is not migrated yet\n";
     		}
+					}
+				}
+			}
 		}		
 	}
 }
@@ -278,9 +314,9 @@ sub convertMarkdownToJira {
 sub convertMentionsAndAttachmentsLinks {
 	my $textToConvert = shift;
 
-	# Convert user mentions ."!image.png|thumbnail!"
+	# Convert attachment ![](image.png) links to Jira links !image.png|thumbnail!
 	$textToConvert =~ s/!\[\]\((.+)\)/!$1|thumbnail!/g;
-	# Change the links to users
+	# Convert user @foo mentions to Jira [~foo] links
 	$textToConvert =~ s/\B\@(\S+)/\[\~$User{$1}\]/g;
 
 	return $textToConvert;

@@ -52,6 +52,7 @@ npm install j2m --save
 1. If you are going to match some YT states to some Jira resolutions then you need to add `Resolution` field to the screens
 1. If you want to save the original creation date you must add `Original Creation Date` custom field in Jira (this field name is a subject to change). This must be the Date and Time type of a field. 
 1. Please make sure that your project workflow allows all needed transitions right from the initial state. Maybe you will need to prepare a simplified workflow to proceed with the migration and get back to your cool workflow afterwards.
+1. Make sure that Issue Linking feature is enabled in you Jira instance if you're planning to export issue links
 
 Here's the list of minimum required issue fields:
 - Issue Type

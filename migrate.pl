@@ -12,6 +12,7 @@ use IPC::Run qw( run );
 use Date::Format;
 use Encode;
 
+print "\n------------------ Initialization ------------------\n";
 my ($skip, $notest, $maxissues, $cookie_file, $debug);
 Getopt::Long::Configure('bundling');
 GetOptions(
@@ -43,7 +44,7 @@ unless ($jira) {
 }
 
 unless ($notest) {
-	print "Let's check JiraPasswords\n";
+	print "\n------------------ Checking Passwords ------------------\n";
 	foreach (sort keys %JiraPasswords) {
 		print $_.' ';
 		my $j = jira->new( Url => $JiraUrl, Login => $_, Password => $JiraPasswords{$_} );
@@ -57,7 +58,8 @@ unless ($notest) {
 	&ifProceed;
 }
 
-my $export = $yt->exportIssues(Project => $YTProject);
+print "\n------------------ Getting YouTrack Issues ------------------\n";
+my $export = $yt->exportIssues(Project => $YTProject, Max => $maxissues);
 print "Exported issues: ".scalar @{$export}."\n";
 
 # Find active users from issues, commetns and other YT activity
@@ -75,7 +77,8 @@ foreach my $configUser (keys %User) {
 	$users{$configUser} = 1;
 }
 print Dumper(%users) if ($debug);
-print "Users found in project\n";
+
+print "\n------------------ User Mapping ------------------\n";
 foreach (sort keys %users) {
 	my $user = $_;
 	print $user;
@@ -94,8 +97,10 @@ foreach (sort keys %users) {
 &ifProceed;
 
 my $issuesCount = 0;
+
+print "\n------------------ Export To Jira ------------------\n";
 foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export}) {
-	print "\n-----------------------------------------\n";
+	print "\n------------------ $YTProject-".$issue->{numberInProject}." ------------------\n";
 	if ($skip && $issue->{numberInProject} <= $skip) {
 		print "Skipping issue $YTProject-".$issue->{numberInProject}."\n";
 		next;
@@ -163,17 +168,17 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	}
 
 	my $key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || die "Error while creating issue";
-	print "Created issue $key\n";
+	print "Jira issue key generated $key\n";
 
 	# Checking issue number in key (eg in FOO-20 the issue number is 20)
 	if ($key =~ /^[A-Z]+-(\d+)$/) {
-		if ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
+		while ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
 			print "We're having a gap and will delete the issue\n";
 			unless ($jira->deleteIssue(Key => $key)) {
 				die "Error while deleting the issue $key";
 			}
-			$issuesCount--;
-			redo;
+			$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || die "Error while creating issue";
+			print "\nNew Jira issue key generated $key\n";
 		}
 	} else {
 		die "Wrong issue key $key";
@@ -200,11 +205,11 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 
 	# Create comments
 	print "\nCreating comments\n";
-	foreach (@{$issue->{comments}}) {
-		my $author = $User{$_->{author}->{login}} || $_->{author}->{login};
-		my $date = scalar localtime ($_->{created}/1000);
+	foreach my $comment (@{$issue->{comments}}) {
+		my $author = $User{$comment->{author}->{login}} || $comment->{author}->{login};
+		my $date = scalar localtime ($comment->{created}/1000);
 
-		my $text = $_->{text};
+		my $text = $comment->{text};
 		if($convertTextFormatting eq 'true') {
 			$text = convertMarkdownToJira($text);
 		}
@@ -215,11 +220,11 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		if ( $JiraPasswords{$author} ) {
 			$header = "[ $date ]\n";
 			$text = $header.$text;
-			my $comment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || die "Error creating comment";
+			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || die "Error creating comment";
 		} else {
-			$header = "[ ".$_->{author}->{login}." $date ]\n";
+			$header = "[ ".$comment->{author}->{login}." $date ]\n";
 			$text = $header.$text;
-			my $comment = $jira->createComment(IssueKey => $key, Body => $text) || die "Error creating comment";
+			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || die "Error creating comment";
 		}
 	}
 

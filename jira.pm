@@ -94,7 +94,7 @@ sub getIssue {
 	my %arg = @_;
 	my $response = $ua->get($self->{url}.'/rest/api/latest/issue/'.$arg{Key}, Authorization => 'Basic '.$self->{basic});
 	if ($response->is_success) {
-		print $response->decoded_content;
+		print $response->decoded_content if ($self->{debug});;
 	} else {
 		print "Got error while getting issue\n";
 		print $response->status_line;
@@ -106,8 +106,9 @@ sub deleteIssue {
 	my %arg = @_;
 	my $response = $ua->delete($self->{url}.'/rest/api/latest/issue/'.$arg{Key}, Authorization => 'Basic '.$self->{basic});
 	if ($response->is_success) {
-		print $response->status_line."\n";
-		print $response->decoded_content."\n";
+		print "Issue ".$arg{Key}." deleted.\n";
+		print $response->status_line."\n" if ($self->{debug});
+		print $response->decoded_content."\n" if ($self->{debug});
 		return 1;
 	} else {
 		print "Got error while deleting issue\n";
@@ -158,7 +159,7 @@ sub createIssue {
 		print $response->status_line."\n" if ($self->{debug});
 		print $response->decoded_content."\n" if ($self->{debug});
 		my $answer = decode_json $response->decoded_content;
-		print $answer->{key}."\n";
+		print $answer->{key}."\n" if ($self->{debug});
 		return $answer->{key};
 	} else {
 		print "Got error while creating issues\n";
@@ -255,11 +256,11 @@ sub createIssues {
 		push @{$data{issueUpdates}}, { fields => $_ };
 	}
 	my $content = encode_json \%data;
-	print $content."\n";
+	print $content."\n" if ($self->{debug});
 	my $response = $ua->post($self->{url}.'/rest/api/latest/issue/bulk', Authorization => 'Basic '.$self->{basic}, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
-		print $response->status_line."\n";
-		print $response->decoded_content;
+		print $response->status_line."\n" if ($self->{debug});
+		print $response->decoded_content if ($self->{debug});
 		my $answer = decode_json $response->decoded_content;
 	} else {
 		print "Got error while creating issue\n";
@@ -275,7 +276,7 @@ sub createComment {
 	my %data;
 	$data{body} = substr ($arg{Body}, 0, 32766); # Jira doesn't allow to post comments longer than 32k
 		my $content = encode_json \%data;
-	print $content."\n";
+	print $content."\n" if ($self->{debug});
 	my $basic = ($arg{Login} && $arg{Password}) ? encode_base64($arg{Login}.":".$arg{Password}) : $self->{basic};
 	my $response = $ua->post($self->{url}.'/rest/api/latest/issue/'.$arg{IssueKey}.'/comment', Authorization => 'Basic '.$basic, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
@@ -313,8 +314,8 @@ sub addAttachments {
 		}
 		my $response = $ua->post($self->{url}.'/rest/api/latest/issue/'.$arg{IssueKey}.'/attachments', Authorization => 'Basic '.$self->{basic}, 'Content_Type' => 'multipart/form-data', Content => [file => [$file]], 'X-Atlassian-Token' => 'no-check');
 		if ($response->is_success) {
-			print $response->status_line."\n";
-			print $response->decoded_content;
+			print $response->status_line."\n" if ($self->{debug});
+			print $response->decoded_content if ($self->{debug});
 		} else {
 			print "Got error while uploading files\n";
 			print $response->status_line."\n";

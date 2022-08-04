@@ -136,11 +136,29 @@ sub exportIssues {
 											'idReadable,'.
 											'created,'.
 											'numberInProject,'.
-											'comments(author(login),text,created),'.
 											'summary,'.
 											'description,'.
-											'reporter(login),'.
-											'customFields(name,value(name,login))');
+											'comments('.
+												'author('.
+													'login'.
+												'),'.
+												'text,'.
+												'created'.
+											'),'.
+											'reporter('.
+												'login'.
+											'),'.
+											'customFields('.
+												'name,'.
+												'value('.
+													'name,'.
+													# TextIssueCustomField
+													'text,'.
+													# PeriodIssueCustomField
+													'presentation,'.
+													'login'.
+												')'.
+											')');
 
 	if ($response->is_success) {
 		
@@ -156,19 +174,10 @@ sub exportIssues {
 				$issue->{$field->{name}} = undef;
 				next if (not($field->{value}));
 
-				if($field->{'$type'} eq "SingleUserIssueCustomField") {
-					$issue->{$field->{name}} = $field->{value}->{login};
-				} elsif ($field->{'$type'} eq "MultiUserIssueCustomField") {
-					my @listOfUsersInCustomField;
-					foreach my $user (@{$field->{value}}) {
-						push @listOfUsersInCustomField, $user->{login};
-				}
-					$issue->{$field->{name}} = \@listOfUsersInCustomField;
-				} else {
-					$issue->{$field->{name}} = $field->{value}->{name};
-				}
+				$issue->{$field->{name}} = collectValuesFromCustomField(\%{$field});
 			}
 		}
+
 		return $issues;
 	} else {
 		print "Got error while exporting issues\n";
@@ -176,6 +185,63 @@ sub exportIssues {
 		print $response->status_line."\n" if ($self->{debug});
 	}
 	return;
+}
+
+my %periodType = (	'PeriodIssueCustomField' => 1);
+my %simpleType = (	'SimpleIssueCustomField' => 1,  'DateIssueCustomField' => 1);
+my %singleType = (	'SingleValueIssueCustomField'=> 1,  'StateIssueCustomField'=> 1,  
+					'SingleBuildIssueCustomField'=> 1,  'SingleUserIssueCustomField'=> 1,  
+					'SingleGroupIssueCustomField'=> 1,  'SingleVersionIssueCustomField'=> 1,  
+					'SingleOwnedIssueCustomField'=> 1,  'SingleEnumIssueCustomField'=> 1,  
+					'StateMachineIssueCustomField'=> 1);
+my %multiType = (	'MultiValueIssueCustomField'=> 1,  'MultiBuildIssueCustomField'=> 1,  
+					'MultiGroupIssueCustomField'=> 1,  'MultiVersionIssueCustomField'=> 1,  
+					'MultiOwnedIssueCustomField'=> 1,  'MultiEnumIssueCustomField'=> 1,  
+					'MultiUserIssueCustomField'=> 1);
+my %textType = (	'TextIssueCustomField'=> 1);
+
+sub collectValuesFromCustomField {
+	my $customField = shift;
+
+	my $fieldType = $customField->{'$type'};
+	if ($periodType{$fieldType}) {
+
+		return $customField->{value}->{presentation};
+
+	} elsif ($textType{$fieldType}) {
+
+		return $customField->{value}->{text};
+
+	} elsif ($simpleType{$fieldType}) {
+
+		return $customField->{value};
+
+	} elsif ($singleType{$fieldType}) {
+
+		if (defined $customField->{value}->{login}) {
+			return $customField->{value}->{login};
+		} else {
+			return $customField->{value}->{name};
+		}
+	}
+	elsif ($multiType{$fieldType}) {
+		
+		my @multiValuesList;
+		foreach my $value (@{$customField->{value}}) {			
+			if (defined $value->{login}) {
+				push @multiValuesList, $value->{login};
+			} else {
+				push @multiValuesList, $value->{name};
+			}
+		}
+		return \@multiValuesList;
+
+	}
+	else {
+		print "\nCannot process ".$fieldType." type of custom field, will be skipped.\n";
+	}
+
+	return undef;
 }
 
 1;

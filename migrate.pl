@@ -104,15 +104,27 @@ foreach (sort keys %users) {
 	print "\n";
 }
 
-	print $user;
-	if ($User{$user}) {
-		$user = $User{$user};
-		print " -> $user";
-	}
-	unless ($jira->getUser(User => $user)) {
-		print " -> $JiraLogin";
-		$User{$_} = $JiraLogin;
-	}
+# Get metadata that containes information about project (ed. Custom Fields, Statuses etc.)
+my $meta = $jira->getMeta();
+
+print "\n------------------ Issue Type Mapping ------------------\n";
+my %ytDefinedIssueTypes = $yt->getPredefinedCustomFieldValues(FieldName => $typeCusomFieldName);
+die "Cannot retrieve issue types. Probably YouTrack issue type field '$typeCusomFieldName' does not exists" 
+	unless %ytDefinedIssueTypes;
+
+foreach my $ytIssueType (sort keys %Type) {
+	die "\nYouTrack issue type '$ytIssueType' is mapped to '".%Type{$ytIssueType}."' but there's no such issue ".
+	"type in Jira. Please check config file and correct Type mapping.\n"
+		unless (defined %{$meta->{fields}}{%Type{$ytIssueType}});		
+	$display->printColumnAligned($ytIssueType);
+	
+	print "\t->\t";
+	
+	die "\nIssue type '".$ytIssueType."' is not present in YouTrack. Please check config file and correct Type mapping.\n"
+		unless (defined %ytDefinedIssueTypes{$ytIssueType});	
+	$display->printColumnAligned(%Type{$ytIssueType});
+
+	$display->printColumnAligned("\tOK");
 	print "\n";
 }
 

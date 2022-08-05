@@ -9,6 +9,7 @@ use JSON;
 use MIME::Base64;
 
 my $ua;
+my $meta;
 
 sub new {
 	my $class = shift;
@@ -45,7 +46,7 @@ sub new {
 		my $response = $ua->get($arg{Url}.'/rest/api/latest/issue/createmeta?projectKeys='.$arg{Project}.'&expand=projects.issuetypes.fields', Authorization => 'Basic '.$basic);
 		if ($response->is_success) {
 			my $rawMeta = decode_json $response->decoded_content;	
-			my $meta;
+
 			foreach my $project (@{$rawMeta->{projects}}) {
 				if ($project->{key} eq $arg{Project}) {
 					foreach my $issuetype (@{$project->{issuetypes}}) {
@@ -65,6 +66,10 @@ sub new {
 	}
 
 	bless $self, $class;
+}
+
+sub getMeta {
+	return $meta;
 }
 
 sub getUser {
@@ -277,7 +282,7 @@ sub createComment {
 	$data{body} = substr ($arg{Body}, 0, 32766); # Jira doesn't allow to post comments longer than 32k
 		my $content = encode_json \%data;
 	print $content."\n" if ($self->{debug});
-	my $basic = ($arg{Login} && $arg{Password}) ? encode_base64($arg{Login}.":".$arg{Password}) : $self->{basic};
+	my $basic = ($arg{Login} && $arg{Password}) ? encode_base64($arg{Login}.":".$arg{Password}) : $self->{basic}; 
 	my $response = $ua->post($self->{url}.'/rest/api/latest/issue/'.$arg{IssueKey}.'/comment', Authorization => 'Basic '.$basic, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
 		return decode_json $response->decoded_content;

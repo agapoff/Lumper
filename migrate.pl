@@ -151,7 +151,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	}
 	
 	my %import = ( project => { key => $JiraProject },
-	               issuetype => { name => $Type{$issue->{Type}} || $issue->{Type} },
+	               issuetype => { name => $Type{$issue->{$typeCusomFieldName}} || $issue->{$typeCusomFieldName} },
                    assignee => { name => $User{$issue->{Assignee}} || $issue->{Assignee} },
                    reporter => { name => $User{$issue->{reporter}->{login}} || $issue->{reporter}->{login} },
                    summary => $issue->{summary},

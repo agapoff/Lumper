@@ -85,7 +85,7 @@ sub getUser {
 sub getAllIssues {
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/api/latest/search?jql=project="'.$arg{Project}.'"', Authorization => 'Basic '.$self->{basic});
+	my $response = $ua->get($self->{url}.'/rest/api/latest/search?maxResults=10000&jql=project="'.$arg{Project}.'"', Authorization => 'Basic '.$self->{basic});
 	if ($response->is_success) {
 		return decode_json $response->decoded_content;
 	} else {

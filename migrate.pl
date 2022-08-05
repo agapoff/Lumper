@@ -2,6 +2,7 @@
 
 use File::Basename qw/dirname/;
 use lib dirname(__FILE__);
+use display;
 use youtrack;
 use jira;
 require "config.pl";
@@ -31,11 +32,11 @@ unless ($yt) {
 	die "Could not login to $YTUrl";
 }
 
-my $jira = jira->new( Url         => $JiraUrl,
+my $jira = jira->new(	Url         => $JiraUrl,
                       Login       => $JiraLogin,
                       Password    => $JiraPassword,
                       Debug       => $debug,
-                      Project     => $JiraProject, # Project is optional - it will be used only for getting custom fields
+                      	Project     => $JiraProject,
 		      cookie_file => $cookie_file,
 );
 
@@ -43,17 +44,21 @@ unless ($jira) {
     die "Could not login to $JiraUrl\n";
 }
 
+# Used to display column-like output
+my $display = display->new(); 
+
 unless ($notest) {
 	print "\n------------------ Checking Passwords ------------------\n";
 	foreach (sort keys %JiraPasswords) {
-		print $_.' ';
+		$display->printColumnAligned($_);
 		my $j = jira->new( Url => $JiraUrl, Login => $_, Password => $JiraPasswords{$_} );
 		if ($j) {
-			print "OK\n";
+			$display->printColumnAligned("\tOK");
 		} else {
-			print "\n";
+			$display->printColumnAligned("\tERROR");
 			undef $JiraPasswords{$_};
 		}
+		print "\n";
 	}
 	&ifProceed;
 }
@@ -81,6 +86,23 @@ print Dumper(%users) if ($debug);
 print "\n------------------ User Mapping ------------------\n";
 foreach (sort keys %users) {
 	my $user = $_;
+	$display->printColumnAligned($user);
+	if ($User{$user}) {
+		$user = $User{$user};
+		print "\t->\t";
+		$display->printColumnAligned($user);
+	}
+	unless ($jira->getUser(User => $user)) {
+		print "\t->\t";
+		$display->printColumnAligned($JiraLogin);
+		$User{$_} = $JiraLogin;
+		$display->printColumnAligned("\tWARNING");
+	} else {
+		$display->printColumnAligned("\tOK");
+	}
+	print "\n";
+}
+
 	print $user;
 	if ($User{$user}) {
 		$user = $User{$user};

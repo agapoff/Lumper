@@ -122,7 +122,7 @@ sub getPredefinedCustomFieldValues {
 								first { $self->{Project} eq $_->{Project}->{ShortName} } @{ $_->{instances} } 
 							} @{ $customFields };
 
-	if (defined $customField && index $customField->{fieldType}->{id}, "enum" != -1) {
+	if (defined $customField && @{ $customField->{instances} } && not !@{ $customField->{instances} }) {
 		my $bundle = first { $self->{Project} eq $_->{Project}->{ShortName} } @{ $customField->{instances} };
 		
 		unless (defined $bundle) {

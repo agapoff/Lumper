@@ -19,7 +19,7 @@ sub new {
 	my $self;
 
 	if ($arg{cookie_file}) {
-		print "Asked to use Cookie_file at $arg{cookie_file}\n";
+		print "Asked to use Cookie_file at $arg{cookie_file}\n" if ($self->{debug});
 		$cookie_jar = HTTP::Cookies::Netscape->new(
 		file     => $arg{cookie_file},
 		);
@@ -32,11 +32,11 @@ sub new {
 	$ua->timeout(30);
 	my $response = $ua->get($arg{Url}.'/rest/auth/latest/session', Authorization => 'Basic '.$basic);
 	if ($response->is_success) {
-		print "Logged to Jira successfully\n";
+		print "Logged to Jira successfully\n" if ($self->{debug});
 		$self = { basic => $basic, url => $arg{Url}, debug => $arg{Debug} };
 	} else {
-		print "Login to Jira was unsuccessfull\n";
-		print $response->status_line;
+		print "Login to Jira was unsuccessfull\n" if ($self->{debug});;
+		print $response->status_line if ($self->{debug});
 		return;
 	}
 
@@ -94,7 +94,7 @@ sub getIssue {
 	my %arg = @_;
 	my $response = $ua->get($self->{url}.'/rest/api/latest/issue/'.$arg{Key}, Authorization => 'Basic '.$self->{basic});
 	if ($response->is_success) {
-		print $response->decoded_content if ($self->{debug});;
+		print $response->decoded_content if ($self->{debug});
 	} else {
 		print "Got error while getting issue\n";
 		print $response->status_line;

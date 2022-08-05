@@ -109,13 +109,14 @@ my $meta = $jira->getMeta();
 
 print "\n------------------ Issue Type Mapping ------------------\n";
 my %ytDefinedIssueTypes = $yt->getPredefinedCustomFieldValues(FieldName => $typeCusomFieldName);
+my %jiraDefinedIssueTypes = %{$meta->{fields}};
 die "Cannot retrieve issue types. Probably YouTrack issue type field '$typeCusomFieldName' does not exists" 
 	unless %ytDefinedIssueTypes;
 
 foreach my $ytIssueType (sort keys %Type) {
 	die "\nYouTrack issue type '$ytIssueType' is mapped to '".%Type{$ytIssueType}."' but there's no such issue ".
 	"type in Jira. Please check config file and correct Type mapping.\n"
-		unless (defined %{$meta->{fields}}{%Type{$ytIssueType}});		
+		unless (defined %jiraDefinedIssueTypes{%Type{$ytIssueType}});		
 	$display->printColumnAligned($ytIssueType);
 	
 	print "\t->\t";

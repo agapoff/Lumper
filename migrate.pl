@@ -26,7 +26,8 @@ GetOptions(
 
 my $yt = youtrack->new( Url      => $YTUrl,
                         Token    => $YTtoken,
-                        Debug    => $debug );
+                        Debug    => $debug,
+						Project  => $YTProject );
 
 unless ($yt) {
 	die "Could not login to $YTUrl";

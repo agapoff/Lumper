@@ -47,7 +47,7 @@ sub downloadAttachments {
 	my %arg = @_;
 
 	my $attachments = $self->sendRequestToYouTrack(
-				Request => 'api/issues/'.$arg{IssueKey}.'/attachments?'.
+				Request => '/api/issues/'.$arg{IssueKey}.'/attachments?'.
 											'fields='.
 												'url,'.
 												'name',
@@ -78,7 +78,7 @@ sub getTags {
 	my %arg = @_;
 
 	my $tagsRaw = $self->sendRequestToYouTrack(
-				Request => 'api/issues/'.$arg{IssueKey}.'/tags?'.
+				Request => '/api/issues/'.$arg{IssueKey}.'/tags?'.
 											'fields='.
 												'name',
 				ErrorMessage => 'Got error while getting attachments\n');
@@ -121,7 +121,7 @@ sub getPredefinedCustomFieldValues {
 	my $customField = first { 	$searchedCustomFieldName eq $_->{name} and 
 								first { $self->{Project} eq $_->{Project}->{ShortName} } @{ $_->{instances} } 
 							} @{ $customFields };
-
+							
 	if (defined $customField && @{ $customField->{instances} } && not !@{ $customField->{instances} }) {
 		my $bundle = first { $self->{Project} eq $_->{Project}->{ShortName} } @{ $customField->{instances} };
 		

@@ -81,7 +81,8 @@ sub getTags {
 				Request => '/api/issues/'.$arg{IssueKey}.'/tags?'.
 											'fields='.
 												'name',
-				ErrorMessage => 'Got error while getting attachments\n');
+				ErrorMessage => 'Got error while getting attachments\n',
+				CharacterSupport => 'true');
 	unless (defined $tagsRaw) {
 		return undef;
 	}
@@ -103,7 +104,8 @@ sub getIssueLinks {
 												'direction,'.
 												'linkType(name),'.
 												'issues(id)',
-				ErrorMessage => "Got error while getting links\n");
+				ErrorMessage => "Got error while getting links\n",
+				CharacterSupport => 'true');
 }
 
 sub getPredefinedCustomFieldValues {
@@ -117,7 +119,8 @@ sub getPredefinedCustomFieldValues {
 								'id,'.
 								'name,'.
 								'fieldType(id),instances(project(shortName),bundle(id,values(name)))',
-			ErrorMessage => "Cannot retrieve custom fields information from YouTrack.");
+			ErrorMessage => "Cannot retrieve custom fields information from YouTrack.",
+			CharacterSupport => 'true');
 	my $customField = first { 	$searchedCustomFieldName eq $_->{name} and 
 								first { $self->{Project} eq $_->{Project}->{ShortName} } @{ $_->{instances} } 
 							} @{ $customFields };
@@ -169,7 +172,8 @@ sub exportIssues {
 													'login'.
 												')'.
 											')',
-				ErrorMessage => "Got error while exporting issues\n");
+				ErrorMessage => "Got error while exporting issues\n",
+				CharacterSupport => 'true');
 
 	foreach my $issue (@{$issues}) {
 		foreach my $field (@{$issue->{customFields}}) {	
@@ -192,10 +196,13 @@ sub sendRequestToYouTrack {
 	
 	if ($response->is_success) {		
 		# All languages support
-		my $utf8DecodedInput = decode_utf8($response->decoded_content);
+		my $content = $response->decoded_content;
+		if ($arg{CharacterSupport} eq "true") {
+			$content = decode_utf8($content);
+		}
 
 		my $json = JSON->new;
-		return $json->decode($utf8DecodedInput);
+		return $json->decode($content);
 	} else {
 		print $arg{ErrorMessage}."\n";
 		print $response->decoded_content."\n" if ($self->{debug});

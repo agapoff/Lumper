@@ -143,6 +143,16 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	}
 	$issuesCount++;
 	last if ($maxissues && $issuesCount>$maxissues);
+	
+	my $attachmentFileNamesMapping;
+	my $attachments;
+
+	# Download attachments
+	if ($exportAttachments eq 'true') {
+		print "Check for attachments\n";
+		($attachments, $attachmentFileNamesMapping) = $yt->downloadAttachments(IssueKey => $issue->{id});
+		print Dumper(@{$attachments}) if ($debug);
+	}
 
 	print "Will import issue $YTProject-".$issue->{numberInProject}."\n";
 
@@ -159,7 +169,8 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	}
 
 	# Convert Markdown to Jira-specific rich text formatting
-	my $description = convertMentionsAndAttachmentsLinks($issue->{description});
+	my $description = convertUserMentions($issue->{description});
+	my $description = convertAttachmentsLinks($description, $attachmentFileNamesMapping);
 	if($convertTextFormatting eq 'true') {
 		$description = convertMarkdownToJira($description);
 	}
@@ -251,7 +262,9 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 			$text = convertMarkdownToJira($text);
 		}
 
-		$text = convertMentionsAndAttachmentsLinks($text);
+		# Convert Markdown to Jira-specific rich text formatting
+		$text = convertUserMentions($text);
+		$text = convertAttachmentsLinks($text, $attachmentFileNamesMapping);
 
 		my $header;
 		if ( $JiraPasswords{$author} ) {
@@ -265,17 +278,11 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		}
 	}
 
-	# create attachments
-	if ($exportAttachments eq 'true') {
-		print "Check for attachments\n";
-		my $attachments = $yt->downloadAttachments(IssueKey => $issue->{id});
-		print Dumper($attachments) if ($debug);
-
+	# Upload attachments to Jira
 		if (@{$attachments}) {
 			print "Uploading ".scalar @{$attachments}." files\n";
 			unless ($jira->addAttachments(IssueKey => $key, Files => $attachments)) {
 				die "Cannot upload attachment to $key";
-			}
 		}
 	}
 }
@@ -352,14 +359,23 @@ sub convertMarkdownToJira {
 	return decode_utf8($j2mConvertedText);
 }
 
-# Converts user mentions to correct usernames and links to attachments 
-sub convertMentionsAndAttachmentsLinks {
+# Converts user mentions to correct usernames 
+sub convertUserMentions {
 	my $textToConvert = shift;
 
-	# Convert attachment ![](image.png) links to Jira links !image.png|thumbnail!
-	$textToConvert =~ s/!\[\]\((.+)\)/!$1|thumbnail!/g;
 	# Convert user @foo mentions to Jira [~foo] links
 	$textToConvert =~ s/\B\@(\S+)/\[\~$User{$1}\]/g;
+
+	return $textToConvert;
+}
+
+# Converts links to attachments 
+sub convertAttachmentsLinks {
+	my $textToConvert = shift;
+	my $attachmentFileNamesMapping = shift;
+
+	# Convert attachment ![](image.png) links to Jira links !image.png|thumbnail!
+	$textToConvert =~ s/!\[\]\((.+?)\)/"!".%{$attachmentFileNamesMapping}{$1}."|thumbnail!"/eg;
 
 	return $textToConvert;
 }

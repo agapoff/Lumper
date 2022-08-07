@@ -6,6 +6,7 @@ require LWP::UserAgent;
 use JSON qw( decode_json );
 use File::Temp qw ( tempdir );
 use List::Util qw'first';
+use File::Basename;
 use Encode;
 use utf8;
 
@@ -57,19 +58,30 @@ sub downloadAttachments {
 	}
 
 	my @downloadedFilesPaths;
+	# Safe old file name to fix attachments links in issues
+	my %oldFileNamesDirectory;
 	my $tempdir = tempdir();
+	my $counter = 1;
 	foreach my $attachment (@{$attachments}) {
 		# Attachment URL includes 'youtrack/' word, remove it
 		$attachment->{url} =~ s/youtrack\///;
-		my $r = $ua->get($self->{url}.$attachment->{url});
+		my $file = $ua->get($self->{url}.$attachment->{url});
 
-		open my $fh, ">", "$tempdir/".$attachment->{name} or die "$! $attachment->{name}";
+		# Extract file extension if any
+  		my ($filename, $dirs, $suffix) = fileparse($attachment->{name}, qr/\.[^.]*$/);
+
+		my $localizedFileName = decode_utf8($attachment->{name});
+		$oldFileNamesDirectory{$localizedFileName} = "attachment$counter$suffix";
+		
+		# Rename the file to avoid problems with exotic file names
+		open my $fh, ">", "$tempdir/".$oldFileNamesDirectory{$localizedFileName};
 		binmode $fh;
-		print $fh $r->content;
+		print $fh $file->content;
 		close $fh;
-		push @downloadedFilesPaths, "$tempdir/".$attachment->{name};
+		push @downloadedFilesPaths, "$tempdir/".$oldFileNamesDirectory{$localizedFileName};
+		$counter++;
 	}
-	return \@downloadedFilesPaths;
+	return (\@downloadedFilesPaths, \%oldFileNamesDirectory);
 }
 
 # Returns the list of tag names for specific issue id

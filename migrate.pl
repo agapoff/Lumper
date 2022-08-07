@@ -215,6 +215,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 			}
 			$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || die "Error while creating issue";
 			print "\nNew Jira issue key generated $key\n";
+			$key =~ /^[A-Z]+-(\d+)$/;
 		}
 	} else {
 		die "Wrong issue key $key";

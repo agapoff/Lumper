@@ -108,18 +108,30 @@ foreach (sort keys %users) {
 my $meta = $jira->getMeta();
 
 print "\n------------------ Issue Type Mapping ------------------\n";
-my %ytDefinedIssueTypes = $yt->getPredefinedCustomFieldValues(FieldName => $typeCusomFieldName);
+my %ytDefinedIssueTypes = $yt->getPredefinedCustomFieldValues(FieldName => $typeCustomFieldName);
 my %jiraDefinedIssueTypes = %{$meta->{fields}};
-die "Cannot retrieve issue types. Probably YouTrack issue type field '$typeCusomFieldName' does not exists" 
+die "Cannot retrieve issue types. Probably YouTrack issue type field '$typeCustomFieldName' does not exists" 
 	unless %ytDefinedIssueTypes;
 
-foreach my $ytIssueType (sort keys %Type) {
-	die "\nYouTrack issue type '$ytIssueType' is mapped to '".%Type{$ytIssueType}."' but there's no such issue ".
-	"type in Jira. Please check config file and correct Type mapping.\n"
-		unless (defined %jiraDefinedIssueTypes{%Type{$ytIssueType}});		
-	$display->printColumnAligned($ytIssueType);
-	
+foreach my $ytIssueType (sort keys %Type) {	
+	die "\nIssue type '".$ytIssueType."' is not present in YouTrack. ".
+	"Please check config file and correct Type mapping.\n"
+		unless (defined %ytDefinedIssueTypes{$ytIssueType});
+}
+foreach my $ytIssueType (sort keys %ytDefinedIssueTypes) {		
+	die "\nYouTrack has an issue type '$ytIssueType' but there's no such ".
+	"mapping in config file. Please check config file and correct Type mapping.\n"
+		unless (defined %Type{$ytIssueType});
+	die "\nYouTrack issue type '$ytIssueType' is mapped to '".%Type{$ytIssueType}."' but ".
+	"there's no such issue type in Jira. Please check config file and correct Type mapping.\n"
+		unless (defined %jiraDefinedIssueTypes{%Type{$ytIssueType}});
+
+	$display->printColumnAligned($ytIssueType);	
 	print "\t->\t";
+	$display->printColumnAligned("".%Type{$ytIssueType});
+	$display->printColumnAligned("\tOK");
+	print "\n";
+}
 	
 	die "\nIssue type '".$ytIssueType."' is not present in YouTrack. Please check config file and correct Type mapping.\n"
 		unless (defined %ytDefinedIssueTypes{$ytIssueType});	
@@ -176,7 +188,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	}
 	
 	my %import = ( project => { key => $JiraProject },
-	               issuetype => { name => $Type{$issue->{$typeCusomFieldName}} || $issue->{$typeCusomFieldName} },
+	               issuetype => { name => $Type{$issue->{$typeCustomFieldName}} || $issue->{$typeCustomFieldName} },
                    assignee => { name => $User{$issue->{Assignee}} || $issue->{Assignee} },
                    reporter => { name => $User{$issue->{reporter}->{login}} || $issue->{reporter}->{login} },
                    summary => $issue->{summary},

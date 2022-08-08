@@ -120,6 +120,18 @@ sub getIssueLinks {
 				CharacterSupport => 'true');
 }
 
+sub getAllLinkTypes {
+	my $self = shift;
+	my %arg = @_;
+
+	return $self->sendRequestToYouTrack(
+				Request => '/api/issueLinkTypes?'.
+											'fields='.
+												'name',
+				ErrorMessage => "Got error while getting link types\n",
+				CharacterSupport => 'true');
+}
+
 sub getPredefinedCustomFieldValues {
 	my $self = shift;
 	my %arg = @_;

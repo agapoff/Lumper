@@ -114,8 +114,8 @@ die "Cannot retrieve issue types. Probably YouTrack issue type field '$typeCusto
 	unless %ytDefinedIssueTypes;
 
 foreach my $ytIssueType (sort keys %Type) {	
-	die "\nIssue type '".$ytIssueType."' is not present in YouTrack. ".
-	"Please check config file and correct Type mapping.\n"
+	die "\nIssue type '".$ytIssueType."' is present in config file but does ".
+	"not exists in YouTrack. Please check config file and correct Type mapping.\n"
 		unless (defined %ytDefinedIssueTypes{$ytIssueType});
 }
 foreach my $ytIssueType (sort keys %ytDefinedIssueTypes) {		
@@ -132,11 +132,27 @@ foreach my $ytIssueType (sort keys %ytDefinedIssueTypes) {
 	$display->printColumnAligned("\tOK");
 	print "\n";
 }
-	
-	die "\nIssue type '".$ytIssueType."' is not present in YouTrack. Please check config file and correct Type mapping.\n"
-		unless (defined %ytDefinedIssueTypes{$ytIssueType});	
-	$display->printColumnAligned(%Type{$ytIssueType});
 
+print "\n------------------ Issue Links Mapping ------------------\n";
+my %ytDefinedIssueLinkTypes = map { $_->{name} => 1 } @{$yt->getAllLinkTypes()};
+my %jiraDefinedIssueLinkTypes = map { $_->{name} => 1 } @{$jira->getAllLinkTypes()};
+
+foreach my $ytIssueLinkType (sort keys %IssueLinks) {	
+	die "\nIssue link '".$ytIssueLinkType."' is present in config file but does ".
+	"not exists in YouTrack. Please check config file and correct Type mapping.\n"
+		unless (defined %ytDefinedIssueLinkTypes{$ytIssueLinkType});
+}
+foreach my $issueLinkType (sort keys %ytDefinedIssueLinkTypes) {	
+	die "\nYouTrack has an issue link '$issueLinkType' but there's no such ".
+	"mapping in config file. Please check config file and correct IssueLinks mapping.\n"
+		unless (defined %IssueLinks{$issueLinkType});
+	die "\nYouTrack issue link '$issueLinkType' is mapped to '".%IssueLinks{$issueLinkType}."' but ".
+	"there's no such issue type in Jira. Please check config file and correct IssueLinks mapping.\n"
+		unless (defined %jiraDefinedIssueLinkTypes{%IssueLinks{$issueLinkType}});
+
+	$display->printColumnAligned($issueLinkType);	
+	print "\t->\t";
+	$display->printColumnAligned("".%IssueLinks{$issueLinkType});
 	$display->printColumnAligned("\tOK");
 	print "\n";
 }

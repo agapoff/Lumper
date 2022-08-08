@@ -18,10 +18,10 @@ my $jira = jira->new( Url         => $JiraUrl,
 
 my $allIssues = $jira->getAllIssues(Project => "WEB");
 while (@{$allIssues->{issues}}) {
-foreach my $issue (@{$allIssues->{issues}}) {
-    my $key = $issue->{key};
-    $key =~ /^[A-Z]+-(\d+)$/;
-    $jira->deleteIssue(Key => $key);
+    foreach my $issue (@{$allIssues->{issues}}) {
+        my $key = $issue->{key};
+        $key =~ /^[A-Z]+-(\d+)$/;
+        $jira->deleteIssue(Key => $key);
     }
     $allIssues = $jira->getAllIssues(Project => "WEB");
 }

@@ -34,11 +34,11 @@ unless ($yt) {
 }
 
 my $jira = jira->new(	Url         => $JiraUrl,
-                      Login       => $JiraLogin,
-                      Password    => $JiraPassword,
-                      Debug       => $debug,
+                    	Login       => $JiraLogin,
+                      	Password    => $JiraPassword,
+                      	Debug       => $debug,
                       	Project     => $JiraProject,
-		      cookie_file => $cookie_file,
+		      		 	cookie_file => $cookie_file,
 );
 
 unless ($jira) {
@@ -225,7 +225,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 			print "Found tags: ".Dumper(@tags) if ($debug);
 		}
 	}
-
+	
 	my $key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || die "Error while creating issue";
 	print "Jira issue key generated $key\n";
 
@@ -291,16 +291,16 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	}
 
 	# Upload attachments to Jira
-		if (@{$attachments}) {
-			print "Uploading ".scalar @{$attachments}." files\n";
-			unless ($jira->addAttachments(IssueKey => $key, Files => $attachments)) {
-				die "Cannot upload attachment to $key";
+	if (@{$attachments}) {
+		print "Uploading ".scalar @{$attachments}." files\n";
+		unless ($jira->addAttachments(IssueKey => $key, Files => $attachments)) {
+			die "Cannot upload attachment to $key";
 		}
 	}
 }
 
 # Create Issue Links
-	if ($exportLinks eq 'true') {
+if ($exportLinks eq 'true') {
 	print "\n------------------ Creating Issue Links ------------------\n";
 	# Turn YT issues to a hash to be able to search for issue ID
 	my %issuesById = map { $_->{id} => $_ } @{$export};
@@ -337,15 +337,15 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 
 					if (not $alreadyEstablishedLinksWith{$link->{linkType}->{name}}{$linkedIssue->{id}}) {
 						print "Creating link between ".$jiraLink->{outwardIssue}->{key}." and ".$jiraLink->{inwardIssue}->{key}."\n";
-						
+
 						if ($jira->createIssueLink( Link => $jiraLink )) {
 							# To avoid link duplications (for BOTH direction type of issue link)
 							$alreadyEstablishedLinksWith{$link->{linkType}->{name}}{$linkedIssue->{id}} = 1;
 							$alreadyEstablishedLinksWith{$link->{linkType}->{name}}{$issue->{id}} = 1;
-        		print " Done\n";
-    		} else {
-        		print " Failed. Most likely the second issue is not migrated yet\n";
-    		}
+							print " Done\n";
+						} else {
+							print " Failed. Most likely the second issue is not migrated yet\n";
+						}
 					}
 				}
 			}

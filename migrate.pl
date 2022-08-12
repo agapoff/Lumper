@@ -142,19 +142,19 @@ my %jiraDefinedIssueLinkTypes = map { $_->{name} => 1 } @{$jira->getAllLinkTypes
 foreach my $ytIssueLinkType (sort keys %IssueLinks) {	
 	die "\nIssue link '".$ytIssueLinkType."' is present in config file but does ".
 	"not exists in YouTrack. Please check config file and correct Type mapping.\n"
-		unless (defined %ytDefinedIssueLinkTypes{$ytIssueLinkType});
+		unless (defined $ytDefinedIssueLinkTypes{$ytIssueLinkType});
 }
 foreach my $issueLinkType (sort keys %ytDefinedIssueLinkTypes) {	
 	die "\nYouTrack has an issue link '$issueLinkType' but there's no such ".
 	"mapping in config file. Please check config file and correct IssueLinks mapping.\n"
-		unless (defined %IssueLinks{$issueLinkType});
-	die "\nYouTrack issue link '$issueLinkType' is mapped to '".%IssueLinks{$issueLinkType}."' but ".
+		unless (defined $IssueLinks{$issueLinkType});
+	die "\nYouTrack issue link '$issueLinkType' is mapped to '".$IssueLinks{$issueLinkType}."' but ".
 	"there's no such issue type in Jira. Please check config file and correct IssueLinks mapping.\n"
-		unless (defined %jiraDefinedIssueLinkTypes{%IssueLinks{$issueLinkType}});
+		unless (defined $jiraDefinedIssueLinkTypes{$IssueLinks{$issueLinkType}});
 
 	$display->printColumnAligned($issueLinkType);	
 	print "\t->\t";
-	$display->printColumnAligned("".%IssueLinks{$issueLinkType});
+	$display->printColumnAligned($IssueLinks{$issueLinkType});
 	$display->printColumnAligned("\tOK");
 	print "\n";
 }

@@ -5,7 +5,7 @@ use Data::Dumper;
 require LWP::UserAgent;
 use JSON qw( decode_json );
 use File::Temp qw ( tempdir );
-use List::Util qw'first';
+use List::Util qw( first );
 use File::Basename;
 use Encode;
 use utf8;
@@ -132,31 +132,43 @@ sub getAllLinkTypes {
 				CharacterSupport => 'true');
 }
 
-sub getPredefinedCustomFieldValues {
+sub getAllCustomFields {
 	my $self = shift;
 	my %arg = @_;
-	my $searchedCustomFieldName = %arg{FieldName};
 	
 	my $customFields = $self->sendRequestToYouTrack(	
-			Request => '/api/admin/customFieldSettings/customFields?'.
+			Request => '/api/admin/projects/'.$self->{project}.'/customFields?'.
 							'fields='.
-								'id,'.
-								'name,'.
-								'fieldType(id),instances(project(shortName),bundle(id,values(name)))',
+								'field('.
+									'instances('.
+										'field('.
+											'name'.
+										'),'.
+										'project('.
+											'shortName'.
+										'),'.
+										'bundle('.
+											'id,'.
+											'values('.
+												'name'.
+											')'.
+										')'.
+									')'.
+								')',
 			ErrorMessage => "Cannot retrieve custom fields information from YouTrack.",
 			CharacterSupport => 'true');
-	my $customField = first { 	$searchedCustomFieldName eq $_->{name} and 
-								first { $self->{Project} eq $_->{Project}->{ShortName} } @{ $_->{instances} } 
-							} @{ $customFields };
-							
-	if (defined $customField && @{ $customField->{instances} } && not !@{ $customField->{instances} }) {
-		my $bundle = first { $self->{Project} eq $_->{Project}->{ShortName} } @{ $customField->{instances} };
-		
-		unless (defined $bundle) {
-			return undef;
+
+	my %fieldsWithValues;
+	foreach my $fieldRef (@{$customFields}) {
+		foreach my $customField (@{$fieldRef->{field}->{instances}}) {
+			if($customField->{project}->{shortName} eq $self->{project}) {
+				my @bundleNames = map ($_->{name}, @{$customField->{bundle}->{values}});
+				$fieldsWithValues{$customField->{field}->{name}} = \@bundleNames;
+			}
 		}
-		return map { $_->{name} => 1 } @{$bundle->{bundle}->{values}};
 	}
+
+	return %fieldsWithValues;
 }
 
 sub exportIssues {

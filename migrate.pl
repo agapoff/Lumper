@@ -106,29 +106,31 @@ foreach (sort keys %users) {
 
 # Get metadata that containes information about project (ed. Custom Fields, Statuses etc.)
 my $meta = $jira->getMeta();
+my %allYtCustomFields = $yt->getAllCustomFields();
 
 print "\n------------------ Issue Type Mapping ------------------\n";
-my %ytDefinedIssueTypes = $yt->getPredefinedCustomFieldValues(FieldName => $typeCustomFieldName);
+my %ytDefinedIssueTypes = map {$_ => 1}  @{$allYtCustomFields{$typeCustomFieldName}};
 my %jiraDefinedIssueTypes = %{$meta->{fields}};
+
 die "Cannot retrieve issue types. Probably YouTrack issue type field '$typeCustomFieldName' does not exists" 
 	unless %ytDefinedIssueTypes;
 
 foreach my $ytIssueType (sort keys %Type) {	
 	die "\nIssue type '".$ytIssueType."' is present in config file but does ".
 	"not exists in YouTrack. Please check config file and correct Type mapping.\n"
-		unless (defined %ytDefinedIssueTypes{$ytIssueType});
+		unless (defined $ytDefinedIssueTypes{$ytIssueType});
 }
 foreach my $ytIssueType (sort keys %ytDefinedIssueTypes) {		
 	die "\nYouTrack has an issue type '$ytIssueType' but there's no such ".
 	"mapping in config file. Please check config file and correct Type mapping.\n"
-		unless (defined %Type{$ytIssueType});
-	die "\nYouTrack issue type '$ytIssueType' is mapped to '".%Type{$ytIssueType}."' but ".
+		unless (defined $Type{$ytIssueType});
+	die "\nYouTrack issue type '$ytIssueType' is mapped to '".$Type{$ytIssueType}."' but ".
 	"there's no such issue type in Jira. Please check config file and correct Type mapping.\n"
-		unless (defined %jiraDefinedIssueTypes{%Type{$ytIssueType}});
+		unless (defined $jiraDefinedIssueTypes{$Type{$ytIssueType}});
 
 	$display->printColumnAligned($ytIssueType);	
 	print "\t->\t";
-	$display->printColumnAligned("".%Type{$ytIssueType});
+	$display->printColumnAligned($Type{$ytIssueType});
 	$display->printColumnAligned("\tOK");
 	print "\n";
 }
@@ -157,6 +159,37 @@ foreach my $issueLinkType (sort keys %ytDefinedIssueLinkTypes) {
 	print "\n";
 }
 
+print "\n------------------ Field Mapping ------------------\n";
+my %ytDefinedFields = %allYtCustomFields;
+my %jiraDefinedFields = %{$meta->{fields}};
+
+# Check mandatory fields first
+foreach my $jiraIssue (keys %jiraDefinedFields) {
+	die "\nThe mandatory field named '$creationTimeCustomFieldName' is absent ".
+	"in Jira issue type '$jiraIssue'. ".
+	"Please ensure that you've created custom field '$creationTimeCustomFieldName' and ".
+	"assigned it to '$jiraIssue' type of a issue." 
+		unless (defined $jiraDefinedFields{$jiraIssue}->{$creationTimeCustomFieldName});
+}
+# Check all other fields
+foreach my $field (sort keys %CustomFields) {	
+	die "\nThe field '".$field."' is present in config file but does ".
+	"not exists in YouTrack. Please check config file and correct CustomFields mapping.\n"
+		unless (defined $ytDefinedFields{$field});
+	foreach my $jiraIssue (keys %jiraDefinedFields) {
+		die "\nYouTrack field named '$field' is mapped to '".$CustomFields{$field}.
+		"' and it is absent in Jira issue type '$jiraIssue'. ".
+		"Please ensure that you've created custom field '".$CustomFields{$field}."' and ".
+		"assigned it to '$jiraIssue' type of a issue." 
+			unless (defined $jiraDefinedFields{$jiraIssue}->{$CustomFields{$field}});
+	}
+
+	$display->printColumnAligned($field);	
+	print "\t->\t";
+	$display->printColumnAligned($CustomFields{$field});
+	$display->printColumnAligned("\tOK");
+	print "\n";
+}
 # Do you wish to proceed?
 &ifProceed;
 

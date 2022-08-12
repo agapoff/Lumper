@@ -19,30 +19,30 @@ sub new {
 	my $cookie_jar;	
 	my $self;
 
-	if ($arg{cookie_file}) {
-		print "Asked to use Cookie_file at $arg{cookie_file}\n" if ($self->{debug});
+	if ($arg{CookieFile}) {
+		print "Asked to use Cookie_file at $arg{CookieFile}\n" if ($self->{verbose});
 		$cookie_jar = HTTP::Cookies::Netscape->new(
-		file     => $arg{cookie_file},
+		file     => $arg{CookieFile},
 		);
 	}
 
 	$ua = LWP::UserAgent->new;
-	if ($arg{cookie_file}) {
+	if ($arg{CookieFile}) {
 		$ua->cookie_jar( $cookie_jar );
 	}	
 	$ua->timeout(30);
 	my $response = $ua->get($arg{Url}.'/rest/auth/latest/session', Authorization => 'Basic '.$basic);
 	if ($response->is_success) {
-		print "Logged to Jira successfully\n" if ($self->{debug});
-		$self = { basic => $basic, url => $arg{Url}, debug => $arg{Debug} };
+		print "Logged to Jira successfully\n" if ($self->{verbose});
+		$self = { basic => $basic, url => $arg{Url}, verbose => $arg{Verbose} };
 	} else {
-		print "Login to Jira was unsuccessfull\n" if ($self->{debug});;
-		print $response->status_line if ($self->{debug});
+		print "Login to Jira was unsuccessfull\n" if ($self->{verbose});;
+		print $response->status_line if ($self->{verbose});
 		return;
 	}
 
 	if ($arg{Project}) {
-		print "Project is defined in constructor. So I am going to get the metadata for project $arg{Project}\n" if $arg{Debug};
+		print "Project is defined in constructor. So I am going to get the metadata for project $arg{Project}\n" if $arg{Verbose};
 		my $response = $ua->get($arg{Url}.'/rest/api/latest/issue/createmeta?projectKeys='.$arg{Project}.'&expand=projects.issuetypes.fields', Authorization => 'Basic '.$basic);
 		if ($response->is_success) {
 			my $rawMeta = decode_json $response->decoded_content;	
@@ -57,7 +57,7 @@ sub new {
 					}
 				}
 			}
-			print Dumper($meta) if $arg{Debug};
+			print Dumper($meta) if $arg{Verbose};
 			$self->{meta} = $meta;
 		} else {
 			print 
@@ -123,7 +123,7 @@ sub getIssue {
 	my %arg = @_;
 	my $response = $ua->get($self->{url}.'/rest/api/latest/issue/'.$arg{Key}, Authorization => 'Basic '.$self->{basic});
 	if ($response->is_success) {
-		print $response->decoded_content if ($self->{debug});
+		print $response->decoded_content if ($self->{verbose});
 	} else {
 		print "Got error while getting issue\n";
 		print $response->status_line;
@@ -136,8 +136,8 @@ sub deleteIssue {
 	my $response = $ua->delete($self->{url}.'/rest/api/latest/issue/'.$arg{Key}, Authorization => 'Basic '.$self->{basic});
 	if ($response->is_success) {
 		print "Issue ".$arg{Key}." deleted.\n";
-		print $response->status_line."\n" if ($self->{debug});
-		print $response->decoded_content."\n" if ($self->{debug});
+		print $response->status_line."\n" if ($self->{verbose});
+		print $response->decoded_content."\n" if ($self->{verbose});
 		return 1;
 	} else {
 		print "Got error while deleting issue\n";
@@ -180,15 +180,15 @@ sub createIssue {
 	}
 
 	my $content = encode_json \%data;
-	print $content."\n" if ($self->{debug});
+	print $content."\n" if ($self->{verbose});
 	my $basic = ($arg{Login} && $arg{Password}) ? encode_base64($arg{Login}.":".$arg{Password}) : $self->{basic};
 
 	my $response = $ua->post($self->{url}.'/rest/api/latest/issue', Authorization => 'Basic '.$basic, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
-		print $response->status_line."\n" if ($self->{debug});
-		print $response->decoded_content."\n" if ($self->{debug});
+		print $response->status_line."\n" if ($self->{verbose});
+		print $response->decoded_content."\n" if ($self->{verbose});
 		my $answer = decode_json $response->decoded_content;
-		print $answer->{key}."\n" if ($self->{debug});
+		print $answer->{key}."\n" if ($self->{verbose});
 		return $answer->{key};
 	} else {
 		print "Got error while creating issues\n";
@@ -224,13 +224,13 @@ sub changeFields {
 	#print Dumper (\%data);
 
 	my $content = encode_json \%data;
-	print $content."\n" if ($self->{debug});
+	print $content."\n" if ($self->{verbose});
 	my $basic = ($arg{Login} && $arg{Password}) ? encode_base64($arg{Login}.":".$arg{Password}) : $self->{basic};
 
 	my $response = $ua->put($self->{url}.'/rest/api/latest/issue/'.$arg{Key}, Authorization => 'Basic '.$basic, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
-		print $response->status_line."\n" if ($self->{debug});
-		print $response->decoded_content."\n" if ($self->{debug});
+		print $response->status_line."\n" if ($self->{verbose});
+		print $response->decoded_content."\n" if ($self->{verbose});
 		return 1;
 	} else {
 		print "Got error while changing fields\n";
@@ -265,10 +265,10 @@ sub doTransition {
 
 	$data{transition} = { "id" => $transitionId };
 	my $content = encode_json \%data;
-	print $content."\n" if ($self->{debug});
+	print $content."\n" if ($self->{verbose});
 	$response = $ua->post($self->{url}.'/rest/api/latest/issue/'.$arg{Key}.'/transitions', Authorization => 'Basic '.$self->{basic}, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
-		print $response->status_line."\n" if ($self->{debug});
+		print $response->status_line."\n" if ($self->{verbose});
 		return 1;
 	} else {
 		print "Got error while doing transition\n";
@@ -285,11 +285,11 @@ sub createIssues {
 		push @{$data{issueUpdates}}, { fields => $_ };
 	}
 	my $content = encode_json \%data;
-	print $content."\n" if ($self->{debug});
+	print $content."\n" if ($self->{verbose});
 	my $response = $ua->post($self->{url}.'/rest/api/latest/issue/bulk', Authorization => 'Basic '.$self->{basic}, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
-		print $response->status_line."\n" if ($self->{debug});
-		print $response->decoded_content if ($self->{debug});
+		print $response->status_line."\n" if ($self->{verbose});
+		print $response->decoded_content if ($self->{verbose});
 		my $answer = decode_json $response->decoded_content;
 	} else {
 		print "Got error while creating issue\n";
@@ -305,7 +305,7 @@ sub createComment {
 	my %data;
 	$data{body} = substr ($arg{Body}, 0, 32766); # Jira doesn't allow to post comments longer than 32k
 		my $content = encode_json \%data;
-	print $content."\n" if ($self->{debug});
+	print $content."\n" if ($self->{verbose});
 	my $basic = ($arg{Login} && $arg{Password}) ? encode_base64($arg{Login}.":".$arg{Password}) : $self->{basic}; 
 	my $response = $ua->post($self->{url}.'/rest/api/latest/issue/'.$arg{IssueKey}.'/comment', Authorization => 'Basic '.$basic, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
@@ -322,13 +322,13 @@ sub createIssueLink {
 	my $self = shift;
 	my %arg = @_;
 	my $content = encode_json $arg{Link};
-	print $content."\n" if ($self->{debug});
+	print $content."\n" if ($self->{verbose});
 	my $response = $ua->post($self->{url}.'/rest/api/latest/issueLink', Authorization => 'Basic '.$self->{basic}, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
-		print $response->decoded_content."\n" if ($self->{debug});
+		print $response->decoded_content."\n" if ($self->{verbose});
 		return 1;
 	}
-	print $response->status_line."\n" if ($self->{debug});
+	print $response->status_line."\n" if ($self->{verbose});
 	return;
 }
 
@@ -343,8 +343,8 @@ sub addAttachments {
 		}
 		my $response = $ua->post($self->{url}.'/rest/api/latest/issue/'.$arg{IssueKey}.'/attachments', Authorization => 'Basic '.$self->{basic}, 'Content_Type' => 'multipart/form-data', Content => [file => [$file]], 'X-Atlassian-Token' => 'no-check');
 		if ($response->is_success) {
-			print $response->status_line."\n" if ($self->{debug});
-			print $response->decoded_content if ($self->{debug});
+			print $response->status_line."\n" if ($self->{verbose});
+			print $response->decoded_content if ($self->{verbose});
 		} else {
 			print "Got error while uploading files\n";
 			print $response->status_line."\n";

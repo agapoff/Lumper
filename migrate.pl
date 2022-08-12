@@ -14,19 +14,19 @@ use Date::Format;
 use Encode;
 
 print "\n------------------ Initialization ------------------\n";
-my ($skip, $notest, $maxissues, $cookie_file, $debug);
+my ($skip, $notest, $maxissues, $cookieFile, $verbose);
 Getopt::Long::Configure('bundling');
 GetOptions(
-    "skip=i"      => \$skip,
-    "notest"      => \$notest,
-    "maxissues=i" => \$maxissues,
-    "cookie_file=s" => \$cookie_file,
-    "debug"       => \$debug
-);
+    "skip|s=i"      => \$skip,
+    "no-test|t"      => \$notest,
+    "max-issues|m=i" => \$maxissues,
+    "cookie-file|c=s" => \$cookieFile,
+    "verbose|v"       => \$verbose
+);print $maxissues; exit;
 
 my $yt = youtrack->new( Url      => $YTUrl,
                         Token    => $YTtoken,
-                        Debug    => $debug,
+                        Verbose  => $verbose,
 						Project  => $YTProject );
 
 unless ($yt) {
@@ -36,9 +36,9 @@ unless ($yt) {
 my $jira = jira->new(	Url         => $JiraUrl,
                     	Login       => $JiraLogin,
                       	Password    => $JiraPassword,
-                      	Debug       => $debug,
+                      	Verbose     => $verbose,
                       	Project     => $JiraProject,
-		      		 	cookie_file => $cookie_file,
+		      		 	CookieFile => $cookieFile,
 );
 
 unless ($jira) {
@@ -82,7 +82,7 @@ foreach my $issue (@{$export}) {
 foreach my $configUser (keys %User) {
 	$users{$configUser} = 1;
 }
-print Dumper(%users) if ($debug);
+print Dumper(%users) if ($verbose);
 
 print "\n------------------ User Mapping ------------------\n";
 foreach (sort keys %users) {
@@ -248,7 +248,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	if ($exportAttachments eq 'true') {
 		print "Check for attachments\n";
 		($attachments, $attachmentFileNamesMapping) = $yt->downloadAttachments(IssueKey => $issue->{id});
-		print Dumper(@{$attachments}) if ($debug);
+		print Dumper(@{$attachments}) if ($verbose);
 	}
 
 	print "Will import issue $YTProject-".$issue->{numberInProject}."\n";
@@ -307,7 +307,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		my @tags = $yt->getTags(IssueKey => $issue->{id});
 		if (@tags) {
 			$import{labels} = [@tags];
-			print "Found tags: ".Dumper(@tags) if ($debug);
+			print "Found tags: ".Dumper(@tags) if ($verbose);
 		}
 	}
 	

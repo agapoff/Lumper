@@ -31,9 +31,9 @@ sub new {
 	my $response = $ua->get($arg{Url}.'/api/users/me');
 
 	if ($response->is_success) {
-		 	print "Logged to YT successfully\n" if ($arg{Debug});
-		 	print Dumper($response) if ($arg{Debug});
-			$self = { url => $arg{Url}, project => $arg{Project}, debug => $arg{Debug} };
+		 	print "Logged to YT successfully\n" if ($arg{Verbose});
+		 	print Dumper($response) if ($arg{Verbose});
+			$self = { url => $arg{Url}, project => $arg{Project}, verbose => $arg{Verbose} };
 	}
 	else {
 		die $response->status_line;
@@ -241,8 +241,8 @@ sub sendRequestToYouTrack {
 		return $json->decode($content);
 	} else {
 		print $arg{ErrorMessage}."\n";
-		print $response->decoded_content."\n" if ($self->{debug});
-		print $response->status_line."\n" if ($self->{debug});
+		print $response->decoded_content."\n" if ($self->{verbose});
+		print $response->status_line."\n" if ($self->{verbose});
 	}
 	return undef;
 }

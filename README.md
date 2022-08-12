@@ -70,15 +70,17 @@ First you will need to rename config.pl_example to config.pl and edit it for you
 
 Then you just run the script:
 ```bash
-./migrate.pl [--notest] [--debug] [--skip=N] [--maxissues=N]
+./migrate.pl [--no-test|-t] [--verbose|-v] [--skip|-s N] [--max-issues|-m N]
 ```
-`--notest` - Skip testing the passwords from JiraPasswords in config. You can save some time but if there is an invalid password then the script will fail while adding the comment from user with this invalid password. By default all the passwords will be checked and invalid ones will be excluded. Their comments will be recreated from the default user with mentioning the original users in the comment body.
+`--no-test` or `-t` - Skip testing the passwords from JiraPasswords in config. You can save some time but if there is an invalid password then the script will fail while adding the comment from user with this invalid password. By default all the passwords will be checked and invalid ones will be excluded. Their comments will be recreated from the default user with mentioning the original users in the comment body.
 
-`--skip=N` - skips the YT issues up to PROJECTKEY-N. This is useful for proceeding the migration from some breakpoint. For example if you have migrated the issues from KEY-1 to KEY-438 then you can proceed with KEY-439 by setting --skip=438.
+`--skip <number>` ot `-s <number>` - skips the YT issues up to PROJECTKEY-N. This is useful for proceeding the migration from some breakpoint. For example if you have migrated the issues from KEY-1 to KEY-438 then you can proceed with KEY-439 by setting --skip=438.
 
-`--maxissues=N` - set the maximum number of issues to migrate. Useful for some testing purposes if you need to test the migration only for one (ony other amount) issue.
+`--max-issues <number>` or `-m <number>` - set the maximum number of issues to migrate. Useful for some testing purposes if you need to test the migration only for one (ony other amount) issue.
 
-`--debug` - overwhelms you with its standard output.
+`--verbose` or `-v` - overwhelms you with its standard output.
+
+`--cookie-file` or `-c` - explicit Jira cookie file location.
 
 Lean back in you chair and prepare for a very long process.
 

@@ -190,6 +190,42 @@ foreach my $field (sort keys %CustomFields) {
 	$display->printColumnAligned("\tOK");
 	print "\n";
 }
+
+print "\n------------------ Priority Mapping ------------------\n";
+my %jiraDefinedPriorities = map { $_->{name} => 1} @{$jira->getAllPriorities()};
+my %ytDefinedPriorities = map { $_ => 1} @{$allYtCustomFields{$priorityCustomFieldName}};
+
+# Priority field must present in both Jira and YouTrack
+die "Cannot retrieve priorities. Probably YouTrack field '$priorityCustomFieldName' does not exists" 
+	unless %ytDefinedPriorities;
+foreach my $jiraIssue (keys %jiraDefinedFields) {
+	die "\nThe mandatory field named '$priorityCustomFieldName' is absent ".
+	"in Jira issue type '$jiraIssue'. ".
+	"Please ensure that you've created custom field '$priorityCustomFieldName' and ".
+	"assigned it to '$jiraIssue' type of a issue." 
+		unless (defined $jiraDefinedFields{$jiraIssue}->{$priorityCustomFieldName});
+}
+# All priorities must be defined in config file 
+foreach my $priority (sort keys %Priority) {	
+	die "\nPriority '".$priority."' is present in config file but does ".
+	"not exists in YouTrack. Please check config file and correct Priority mapping.\n"
+		unless (defined $ytDefinedPriorities{$priority});
+}
+# Now compare priorities with Jira
+foreach my $priority (sort keys %ytDefinedPriorities) {
+	die "\nYouTrack has an priority '$priority' but there's no such ".
+	"mapping in config file. Please check config file and correct Priority mapping.\n"
+		unless (defined $Priority{$priority});
+	die "\nYouTrack priority '$priority' is mapped to '".$Priority{$priority}."' but ".
+	"there's no such priority in Jira. Please check config file and correct Priority mapping.\n"
+		unless (defined $jiraDefinedPriorities{$Priority{$priority}});
+
+	$display->printColumnAligned($priority);	
+	print "\t->\t";
+	$display->printColumnAligned($Priority{$priority});
+	$display->printColumnAligned("\tOK");
+	print "\n";
+}
 # Do you wish to proceed?
 &ifProceed;
 

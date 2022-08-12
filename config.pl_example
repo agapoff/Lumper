@@ -31,9 +31,10 @@ our $creationDateTimeFormat='ISO8601';
 # If you set this to true, then you'll need to install J2M utility. See README.md file for more info.
 our $convertTextFormatting='true';
 
-# In YouTrack the Issue Type stored as custom field with enum type of values
-# called Type by default. If you did change that field name, please type it here
+# In YouTrack the Issue Type and Priority are stored as custom fields with enum type of values
+#  by default. If you did change any of those field names, please type it here
 our $typeCustomFieldName="Type";
+our $priorityCustomFieldName="Priority";
 
 # Lumper will keep the issue keys identical in YT and Jira if YT has no gaps larger than this value
 our $maximumKeyGap=100;

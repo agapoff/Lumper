@@ -118,6 +118,18 @@ sub getAllPriorities {
 	}
 }
 
+sub getAllStatuses {
+	my $self = shift;
+	my %arg = @_;
+	my $response = $ua->get($self->{url}.'/rest/api/2/status', Authorization => 'Basic '.$self->{basic});
+	if ($response->is_success) {
+		return \@{decode_json($response->decoded_content)};
+	} else {
+		print "Got error while getting statuses\n";
+		print $response->status_line;
+	}
+}
+
 sub getIssue {
 	my $self = shift;
 	my %arg = @_;

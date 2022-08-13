@@ -226,6 +226,40 @@ foreach my $priority (sort keys %ytDefinedPriorities) {
 	$display->printColumnAligned("\tOK");
 	print "\n";
 }
+
+print "\n------------------ Status Mapping ------------------\n";
+my %ytDefinedStatuses = map { $_ => 1 } @{$allYtCustomFields{$stateCustomFieldName}};
+my %jiraDefinedStatuses = map { $_->{name} => 1 } @{$jira->getAllStatuses()};
+my %jiraDefinedResolutions = map { $_->{name} => 1 } @{ $jira->getAllResolutions() };
+
+# Status field must present in both Jira and YouTrack
+die "Cannot retrieve statuses. Probably YouTrack field '$stateCustomFieldName' does not exists" 
+	unless %ytDefinedStatuses;
+
+# All statuses must be defined in config file 
+foreach my $state (sort keys %Status) {	
+	die "\nStatus '".$state."' is present in config file but does ".
+	"not exists in YouTrack. Please check config file and correct Status mapping.\n"
+		unless (defined $ytDefinedStatuses{$state});
+}
+
+# Now compare statuses with Jira
+foreach my $state (sort keys %ytDefinedStatuses) {
+	die "\nYouTrack has a status '$state' but there's no such ".
+	"mapping in config file. Please check config file and correct Status or Resolution mapping.\n"
+		unless (defined $Status{$state} or defined $StatusToResolution{$state});
+	die "\nYouTrack status '$state' is mapped to '".($Status{$state} or $StatusToResolution{$state})."' but ".
+	"there's no such state/resolution in Jira. Please check config file and ".
+	"correct Status or Resolution mapping.\n"
+		unless (defined $jiraDefinedStatuses{$Status{$state}} or 
+				defined $jiraDefinedResolutions{$StatusToResolution{$state}});
+
+	$display->printColumnAligned($state);	
+	print "\t->\t";
+	$display->printColumnAligned($Status{$state});
+	$display->printColumnAligned("\tOK");
+	print "\n";
+}
 # Do you wish to proceed?
 &ifProceed;
 

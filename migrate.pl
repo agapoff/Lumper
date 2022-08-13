@@ -22,7 +22,7 @@ GetOptions(
     "max-issues|m=i" => \$maxissues,
     "cookie-file|c=s" => \$cookieFile,
     "verbose|v"       => \$verbose
-);print $maxissues; exit;
+);
 
 my $yt = youtrack->new( Url      => $YTUrl,
                         Token    => $YTtoken,
@@ -195,16 +195,10 @@ print "\n------------------ Priority Mapping ------------------\n";
 my %jiraDefinedPriorities = map { $_->{name} => 1} @{$jira->getAllPriorities()};
 my %ytDefinedPriorities = map { $_ => 1} @{$allYtCustomFields{$priorityCustomFieldName}};
 
-# Priority field must present in both Jira and YouTrack
+# Priority field must present in YouTrack
 die "Cannot retrieve priorities. Probably YouTrack field '$priorityCustomFieldName' does not exists" 
 	unless %ytDefinedPriorities;
-foreach my $jiraIssue (keys %jiraDefinedFields) {
-	die "\nThe mandatory field named '$priorityCustomFieldName' is absent ".
-	"in Jira issue type '$jiraIssue'. ".
-	"Please ensure that you've created custom field '$priorityCustomFieldName' and ".
-	"assigned it to '$jiraIssue' type of a issue." 
-		unless (defined $jiraDefinedFields{$jiraIssue}->{$priorityCustomFieldName});
-}
+
 # All priorities must be defined in config file 
 foreach my $priority (sort keys %Priority) {	
 	die "\nPriority '".$priority."' is present in config file but does ".

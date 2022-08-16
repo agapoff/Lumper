@@ -254,6 +254,30 @@ foreach my $state (sort keys %ytDefinedStatuses) {
 	$display->printColumnAligned("\tOK");
 	print "\n";
 }
+
+print "\n------------------ Status To Resolution Mapping ------------------\n";
+my %ytDefinedResolutions = map { $_ => 1 } grep { $StatusToResolution{$_} } keys %ytDefinedStatuses;
+
+# Check status existance
+foreach my $resolution (sort keys %StatusToResolution) {	
+	die "\nStatus '".$resolution."' is present in config file but does ".
+	"not exists in YouTrack. Please check config file and correct Resolution mapping.\n"
+		unless (defined $ytDefinedResolutions{$resolution});
+}
+
+foreach my $resolution (sort keys %ytDefinedResolutions)  {
+	die "\nYouTrack status '$resolution' is mapped to '".($StatusToResolution{$resolution})."'".
+	" resolution, but there's no such resolution in Jira. Please check config file and ".
+	"correct Resolution mapping.\n"
+		unless (defined $jiraDefinedResolutions{$StatusToResolution{$resolution}});
+
+	$display->printColumnAligned($resolution);	
+	print "\t->\t";
+	$display->printColumnAligned($StatusToResolution{$resolution});
+	$display->printColumnAligned("\tOK");
+	print "\n";
+}
+
 # Do you wish to proceed?
 &ifProceed;
 

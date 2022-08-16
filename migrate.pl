@@ -13,7 +13,11 @@ use IPC::Run qw( run );
 use Date::Format;
 use Encode;
 
-print "\n------------------ Initialization ------------------\n";
+# Used to display column-like output
+my $display = display->new(); 
+
+$display->printTitle("Initialization");
+
 my ($skip, $notest, $maxissues, $cookieFile, $verbose);
 Getopt::Long::Configure('bundling');
 GetOptions(
@@ -45,11 +49,11 @@ unless ($jira) {
     die "Could not login to $JiraUrl\n";
 }
 
-# Used to display column-like output
-my $display = display->new(); 
+print "Success\n";
 
 unless ($notest) {
-	print "\n------------------ Checking Passwords ------------------\n";
+	$display->printTitle("Checking Passwords");
+
 	foreach (sort keys %JiraPasswords) {
 		$display->printColumnAligned($_);
 		my $j = jira->new( Url => $JiraUrl, Login => $_, Password => $JiraPasswords{$_} );
@@ -64,7 +68,8 @@ unless ($notest) {
 	&ifProceed;
 }
 
-print "\n------------------ Getting YouTrack Issues ------------------\n";
+$display->printTitle("Getting YouTrack Issues");
+
 my $export = $yt->exportIssues(Project => $YTProject, Max => $maxissues);
 print "Exported issues: ".scalar @{$export}."\n";
 
@@ -84,22 +89,23 @@ foreach my $configUser (keys %User) {
 }
 print Dumper(%users) if ($verbose);
 
-print "\n------------------ User Mapping ------------------\n";
+$display->printTitle("User Mapping");
+
 foreach (sort keys %users) {
 	my $user = $_;
 	$display->printColumnAligned($user);
 	if ($User{$user}) {
 		$user = $User{$user};
-		print "\t->\t";
+		$display->printColumnAligned("        ->");
 		$display->printColumnAligned($user);
 	}
 	unless ($jira->getUser(User => $user)) {
-		print "\t->\t";
+		$display->printColumnAligned("        ->");
 		$display->printColumnAligned($JiraLogin);
 		$User{$_} = $JiraLogin;
-		$display->printColumnAligned("\tWARNING");
+		$display->printColumnAligned("WARNING");
 	} else {
-		$display->printColumnAligned("\tOK");
+		$display->printColumnAligned("OK");
 	}
 	print "\n";
 }
@@ -108,7 +114,8 @@ foreach (sort keys %users) {
 my $meta = $jira->getMeta();
 my %allYtCustomFields = $yt->getAllCustomFields();
 
-print "\n------------------ Issue Type Mapping ------------------\n";
+$display->printTitle("Issue Type Mapping");
+
 my %ytDefinedIssueTypes = map {$_ => 1}  @{$allYtCustomFields{$typeCustomFieldName}};
 my %jiraDefinedIssueTypes = %{$meta->{fields}};
 
@@ -129,13 +136,14 @@ foreach my $ytIssueType (sort keys %ytDefinedIssueTypes) {
 		unless (defined $jiraDefinedIssueTypes{$Type{$ytIssueType}});
 
 	$display->printColumnAligned($ytIssueType);	
-	print "\t->\t";
+	$display->printColumnAligned("        ->");
 	$display->printColumnAligned($Type{$ytIssueType});
-	$display->printColumnAligned("\tOK");
+	$display->printColumnAligned("OK");
 	print "\n";
 }
 
-print "\n------------------ Issue Links Mapping ------------------\n";
+$display->printTitle("Issue Links Mapping");
+
 my %ytDefinedIssueLinkTypes = map { $_->{name} => 1 } @{$yt->getAllLinkTypes()};
 my %jiraDefinedIssueLinkTypes = map { $_->{name} => 1 } @{$jira->getAllLinkTypes()};
 
@@ -153,13 +161,14 @@ foreach my $issueLinkType (sort keys %ytDefinedIssueLinkTypes) {
 		unless (defined $jiraDefinedIssueLinkTypes{$IssueLinks{$issueLinkType}});
 
 	$display->printColumnAligned($issueLinkType);	
-	print "\t->\t";
+	$display->printColumnAligned("        ->");
 	$display->printColumnAligned($IssueLinks{$issueLinkType});
-	$display->printColumnAligned("\tOK");
+	$display->printColumnAligned("OK");
 	print "\n";
 }
 
-print "\n------------------ Field Mapping ------------------\n";
+$display->printTitle("Field Mapping");
+
 my %ytDefinedFields = %allYtCustomFields;
 my %jiraDefinedFields = %{$meta->{fields}};
 
@@ -184,14 +193,15 @@ foreach my $field (sort keys %CustomFields) {
 			unless (defined $jiraDefinedFields{$jiraIssue}->{$CustomFields{$field}});
 	}
 
-	$display->printColumnAligned($field);	
-	print "\t->\t";
+	$display->printColumnAligned($field);		
+	$display->printColumnAligned("        ->");
 	$display->printColumnAligned($CustomFields{$field});
-	$display->printColumnAligned("\tOK");
+	$display->printColumnAligned("OK");
 	print "\n";
 }
 
-print "\n------------------ Priority Mapping ------------------\n";
+$display->printTitle("Priority Mapping");
+
 my %jiraDefinedPriorities = map { $_->{name} => 1} @{$jira->getAllPriorities()};
 my %ytDefinedPriorities = map { $_ => 1} @{$allYtCustomFields{$priorityCustomFieldName}};
 
@@ -214,14 +224,15 @@ foreach my $priority (sort keys %ytDefinedPriorities) {
 	"there's no such priority in Jira. Please check config file and correct Priority mapping.\n"
 		unless (defined $jiraDefinedPriorities{$Priority{$priority}});
 
-	$display->printColumnAligned($priority);	
-	print "\t->\t";
+	$display->printColumnAligned($priority);		
+	$display->printColumnAligned("        ->");
 	$display->printColumnAligned($Priority{$priority});
-	$display->printColumnAligned("\tOK");
+	$display->printColumnAligned("OK");
 	print "\n";
 }
 
-print "\n------------------ Status Mapping ------------------\n";
+$display->printTitle("Status Mapping");
+
 my %ytDefinedStatuses = map { $_ => 1 } @{$allYtCustomFields{$stateCustomFieldName}};
 my %jiraDefinedStatuses = map { $_->{name} => 1 } @{$jira->getAllStatuses()};
 my %jiraDefinedResolutions = map { $_->{name} => 1 } @{ $jira->getAllResolutions() };
@@ -248,14 +259,15 @@ foreach my $state (sort keys %ytDefinedStatuses) {
 		unless (defined $jiraDefinedStatuses{$Status{$state}} or 
 				defined $jiraDefinedResolutions{$StatusToResolution{$state}});
 
-	$display->printColumnAligned($state);	
-	print "\t->\t";
+	$display->printColumnAligned($state);		
+	$display->printColumnAligned("        ->");
 	$display->printColumnAligned($Status{$state});
-	$display->printColumnAligned("\tOK");
+	$display->printColumnAligned("OK");
 	print "\n";
 }
 
-print "\n------------------ Status To Resolution Mapping ------------------\n";
+$display->printTitle("Status To Resolution Mapping");
+
 my %ytDefinedResolutions = map { $_ => 1 } grep { $StatusToResolution{$_} } keys %ytDefinedStatuses;
 
 # Check status existance
@@ -271,10 +283,10 @@ foreach my $resolution (sort keys %ytDefinedResolutions)  {
 	"correct Resolution mapping.\n"
 		unless (defined $jiraDefinedResolutions{$StatusToResolution{$resolution}});
 
-	$display->printColumnAligned($resolution);	
-	print "\t->\t";
+	$display->printColumnAligned($resolution);		
+	$display->printColumnAligned("        ->");
 	$display->printColumnAligned($StatusToResolution{$resolution});
-	$display->printColumnAligned("\tOK");
+	$display->printColumnAligned("OK");
 	print "\n";
 }
 
@@ -283,9 +295,11 @@ foreach my $resolution (sort keys %ytDefinedResolutions)  {
 
 my $issuesCount = 0;
 
-print "\n------------------ Export To Jira ------------------\n";
+$display->printTitle("Export To Jira");
+
 foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export}) {
-	print "\n------------------ $YTProject-".$issue->{numberInProject}." ------------------\n";
+	$display->printTitle($YTProject."-".$issue->{numberInProject});
+	
 	if ($skip && $issue->{numberInProject} <= $skip) {
 		print "Skipping issue $YTProject-".$issue->{numberInProject}."\n";
 		next;
@@ -437,8 +451,8 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 }
 
 # Create Issue Links
-if ($exportLinks eq 'true') {
-	print "\n------------------ Creating Issue Links ------------------\n";
+if ($exportLinks eq 'true') {	
+	$display->printTitle("Creating Issue Links");
 	# Turn YT issues to a hash to be able to search for issue ID
 	my %issuesById = map { $_->{id} => $_ } @{$export};
 	# Keep linked issues in hash to avoid duplicates on BOTH type of links

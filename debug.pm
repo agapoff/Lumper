@@ -4,6 +4,7 @@ package debug;
 use File::Basename qw/dirname/;
 use lib dirname(__FILE__);
 use jira;
+require "config.pl";
 
 use Data::Dumper;
 use Getopt::Long;
@@ -18,7 +19,6 @@ GetOptions(
 );
 
 if($deleteAll) {
-    require "config.pl";
     my $jira = jira->new( Url         => $JiraUrl,
                         Login       => $JiraLogin,
                         Password    => $JiraPassword
@@ -41,7 +41,7 @@ if($deleteAll) {
     print "\nAll issues deleted from Jira.";
 }
 
-sub logToFile {    
+our sub logToFile {    
     my $content = shift;
 
     open my $fh, ">", "debug.log";

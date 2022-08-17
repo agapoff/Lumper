@@ -4,6 +4,7 @@ use File::Basename qw/dirname/;
 use lib dirname(__FILE__);
 use display;
 use youtrack;
+use check;
 use jira;
 require "config.pl";
 
@@ -51,23 +52,6 @@ unless ($jira) {
 
 print "Success\n";
 
-unless ($notest) {
-	$display->printTitle("Checking Passwords");
-
-	foreach (sort keys %JiraPasswords) {
-		$display->printColumnAligned($_);
-		my $j = jira->new( Url => $JiraUrl, Login => $_, Password => $JiraPasswords{$_} );
-		if ($j) {
-			$display->printColumnAligned("\tOK");
-		} else {
-			$display->printColumnAligned("\tERROR");
-			undef $JiraPasswords{$_};
-		}
-		print "\n";
-	}
-	&ifProceed;
-}
-
 $display->printTitle("Getting YouTrack Issues");
 
 my $export = $yt->exportIssues(Project => $YTProject, Max => $maxissues);
@@ -89,209 +73,39 @@ foreach my $configUser (keys %User) {
 }
 print Dumper(%users) if ($verbose);
 
-$display->printTitle("User Mapping");
+my $check = check->new( 
+	Jira => $jira,
+	YouTrack => $yt,
+	Url => $JiraUrl,
+	JiraLogin => $JiraLogin,
+	Passwords => \%JiraPasswords,
+	RealUsers =>  \%users,
+	Users => \%User,
+	TypeFieldName => $typeCustomFieldName,
+	Types => \%Type,
+	Links => \%IssueLinks,
+	CreationTimeFieldName => $creationTimeCustomFieldName,
+	Fields => \%CustomFields,
+	PriorityFieldName => $priorityCustomFieldName,
+	Priorities => \%Priority,
+	StatusFieldName => $stateCustomFieldName,
+	Statuses => \%Status,
+	StatusToResolutions => \%StatusToResolution
+);
 
-foreach (sort keys %users) {
-	my $user = $_;
-	$display->printColumnAligned($user);
-	if ($User{$user}) {
-		$user = $User{$user};
-		$display->printColumnAligned("        ->");
-		$display->printColumnAligned($user);
-	}
-	unless ($jira->getUser(User => $user)) {
-		$display->printColumnAligned("        ->");
-		$display->printColumnAligned($JiraLogin);
-		$User{$_} = $JiraLogin;
-		$display->printColumnAligned("WARNING");
-	} else {
-		$display->printColumnAligned("OK");
-	}
-	print "\n";
+%User = %{$check->users()};
+
+unless ($notest) {
+	$check->passwords();
+	$check->issueTypes();
+	$check->issueLinks();
+	$check->fields();
+	$check->priorities();
+	$check->statuses();
+	$check->resolutions();
+
+	&ifProceed;
 }
-
-# Get metadata that containes information about project (ed. Custom Fields, Statuses etc.)
-my $meta = $jira->getMeta();
-my %allYtCustomFields = $yt->getAllCustomFields();
-
-$display->printTitle("Issue Type Mapping");
-
-my %ytDefinedIssueTypes = map {$_ => 1}  @{$allYtCustomFields{$typeCustomFieldName}};
-my %jiraDefinedIssueTypes = %{$meta->{fields}};
-
-die "Cannot retrieve issue types. Probably YouTrack issue type field '$typeCustomFieldName' does not exists" 
-	unless %ytDefinedIssueTypes;
-
-foreach my $ytIssueType (sort keys %Type) {	
-	die "\nIssue type '".$ytIssueType."' is present in config file but does ".
-	"not exists in YouTrack. Please check config file and correct Type mapping.\n"
-		unless (defined $ytDefinedIssueTypes{$ytIssueType});
-}
-foreach my $ytIssueType (sort keys %ytDefinedIssueTypes) {		
-	die "\nYouTrack has an issue type '$ytIssueType' but there's no such ".
-	"mapping in config file. Please check config file and correct Type mapping.\n"
-		unless (defined $Type{$ytIssueType});
-	die "\nYouTrack issue type '$ytIssueType' is mapped to '".$Type{$ytIssueType}."' but ".
-	"there's no such issue type in Jira. Please check config file and correct Type mapping.\n"
-		unless (defined $jiraDefinedIssueTypes{$Type{$ytIssueType}});
-
-	$display->printColumnAligned($ytIssueType);	
-	$display->printColumnAligned("        ->");
-	$display->printColumnAligned($Type{$ytIssueType});
-	$display->printColumnAligned("OK");
-	print "\n";
-}
-
-$display->printTitle("Issue Links Mapping");
-
-my %ytDefinedIssueLinkTypes = map { $_->{name} => 1 } @{$yt->getAllLinkTypes()};
-my %jiraDefinedIssueLinkTypes = map { $_->{name} => 1 } @{$jira->getAllLinkTypes()};
-
-foreach my $ytIssueLinkType (sort keys %IssueLinks) {	
-	die "\nIssue link '".$ytIssueLinkType."' is present in config file but does ".
-	"not exists in YouTrack. Please check config file and correct Type mapping.\n"
-		unless (defined $ytDefinedIssueLinkTypes{$ytIssueLinkType});
-}
-foreach my $issueLinkType (sort keys %ytDefinedIssueLinkTypes) {	
-	die "\nYouTrack has an issue link '$issueLinkType' but there's no such ".
-	"mapping in config file. Please check config file and correct IssueLinks mapping.\n"
-		unless (defined $IssueLinks{$issueLinkType});
-	die "\nYouTrack issue link '$issueLinkType' is mapped to '".$IssueLinks{$issueLinkType}."' but ".
-	"there's no such issue type in Jira. Please check config file and correct IssueLinks mapping.\n"
-		unless (defined $jiraDefinedIssueLinkTypes{$IssueLinks{$issueLinkType}});
-
-	$display->printColumnAligned($issueLinkType);	
-	$display->printColumnAligned("        ->");
-	$display->printColumnAligned($IssueLinks{$issueLinkType});
-	$display->printColumnAligned("OK");
-	print "\n";
-}
-
-$display->printTitle("Field Mapping");
-
-my %ytDefinedFields = %allYtCustomFields;
-my %jiraDefinedFields = %{$meta->{fields}};
-
-# Check mandatory fields first
-foreach my $jiraIssue (keys %jiraDefinedFields) {
-	die "\nThe mandatory field named '$creationTimeCustomFieldName' is absent ".
-	"in Jira issue type '$jiraIssue'. ".
-	"Please ensure that you've created custom field '$creationTimeCustomFieldName' and ".
-	"assigned it to '$jiraIssue' type of a issue." 
-		unless (defined $jiraDefinedFields{$jiraIssue}->{$creationTimeCustomFieldName});
-}
-# Check all other fields
-foreach my $field (sort keys %CustomFields) {	
-	die "\nThe field '".$field."' is present in config file but does ".
-	"not exists in YouTrack. Please check config file and correct CustomFields mapping.\n"
-		unless (defined $ytDefinedFields{$field});
-	foreach my $jiraIssue (keys %jiraDefinedFields) {
-		die "\nYouTrack field named '$field' is mapped to '".$CustomFields{$field}.
-		"' and it is absent in Jira issue type '$jiraIssue'. ".
-		"Please ensure that you've created custom field '".$CustomFields{$field}."' and ".
-		"assigned it to '$jiraIssue' type of a issue." 
-			unless (defined $jiraDefinedFields{$jiraIssue}->{$CustomFields{$field}});
-	}
-
-	$display->printColumnAligned($field);		
-	$display->printColumnAligned("        ->");
-	$display->printColumnAligned($CustomFields{$field});
-	$display->printColumnAligned("OK");
-	print "\n";
-}
-
-$display->printTitle("Priority Mapping");
-
-my %jiraDefinedPriorities = map { $_->{name} => 1} @{$jira->getAllPriorities()};
-my %ytDefinedPriorities = map { $_ => 1} @{$allYtCustomFields{$priorityCustomFieldName}};
-
-# Priority field must present in YouTrack
-die "Cannot retrieve priorities. Probably YouTrack field '$priorityCustomFieldName' does not exists" 
-	unless %ytDefinedPriorities;
-
-# All priorities must be defined in config file 
-foreach my $priority (sort keys %Priority) {	
-	die "\nPriority '".$priority."' is present in config file but does ".
-	"not exists in YouTrack. Please check config file and correct Priority mapping.\n"
-		unless (defined $ytDefinedPriorities{$priority});
-}
-# Now compare priorities with Jira
-foreach my $priority (sort keys %ytDefinedPriorities) {
-	die "\nYouTrack has an priority '$priority' but there's no such ".
-	"mapping in config file. Please check config file and correct Priority mapping.\n"
-		unless (defined $Priority{$priority});
-	die "\nYouTrack priority '$priority' is mapped to '".$Priority{$priority}."' but ".
-	"there's no such priority in Jira. Please check config file and correct Priority mapping.\n"
-		unless (defined $jiraDefinedPriorities{$Priority{$priority}});
-
-	$display->printColumnAligned($priority);		
-	$display->printColumnAligned("        ->");
-	$display->printColumnAligned($Priority{$priority});
-	$display->printColumnAligned("OK");
-	print "\n";
-}
-
-$display->printTitle("Status Mapping");
-
-my %ytDefinedStatuses = map { $_ => 1 } @{$allYtCustomFields{$stateCustomFieldName}};
-my %jiraDefinedStatuses = map { $_->{name} => 1 } @{$jira->getAllStatuses()};
-my %jiraDefinedResolutions = map { $_->{name} => 1 } @{ $jira->getAllResolutions() };
-
-# Status field must present in both Jira and YouTrack
-die "Cannot retrieve statuses. Probably YouTrack field '$stateCustomFieldName' does not exists" 
-	unless %ytDefinedStatuses;
-
-# All statuses must be defined in config file 
-foreach my $state (sort keys %Status) {	
-	die "\nStatus '".$state."' is present in config file but does ".
-	"not exists in YouTrack. Please check config file and correct Status mapping.\n"
-		unless (defined $ytDefinedStatuses{$state});
-}
-
-# Now compare statuses with Jira
-foreach my $state (sort keys %ytDefinedStatuses) {
-	die "\nYouTrack has a status '$state' but there's no such ".
-	"mapping in config file. Please check config file and correct Status or Resolution mapping.\n"
-		unless (defined $Status{$state} or defined $StatusToResolution{$state});
-	die "\nYouTrack status '$state' is mapped to '".($Status{$state} or $StatusToResolution{$state})."' but ".
-	"there's no such state/resolution in Jira. Please check config file and ".
-	"correct Status or Resolution mapping.\n"
-		unless (defined $jiraDefinedStatuses{$Status{$state}} or 
-				defined $jiraDefinedResolutions{$StatusToResolution{$state}});
-
-	$display->printColumnAligned($state);		
-	$display->printColumnAligned("        ->");
-	$display->printColumnAligned($Status{$state});
-	$display->printColumnAligned("OK");
-	print "\n";
-}
-
-$display->printTitle("Status To Resolution Mapping");
-
-my %ytDefinedResolutions = map { $_ => 1 } grep { $StatusToResolution{$_} } keys %ytDefinedStatuses;
-
-# Check status existance
-foreach my $resolution (sort keys %StatusToResolution) {	
-	die "\nStatus '".$resolution."' is present in config file but does ".
-	"not exists in YouTrack. Please check config file and correct Resolution mapping.\n"
-		unless (defined $ytDefinedResolutions{$resolution});
-}
-
-foreach my $resolution (sort keys %ytDefinedResolutions)  {
-	die "\nYouTrack status '$resolution' is mapped to '".($StatusToResolution{$resolution})."'".
-	" resolution, but there's no such resolution in Jira. Please check config file and ".
-	"correct Resolution mapping.\n"
-		unless (defined $jiraDefinedResolutions{$StatusToResolution{$resolution}});
-
-	$display->printColumnAligned($resolution);		
-	$display->printColumnAligned("        ->");
-	$display->printColumnAligned($StatusToResolution{$resolution});
-	$display->printColumnAligned("OK");
-	print "\n";
-}
-
-# Do you wish to proceed?
-&ifProceed;
 
 my $issuesCount = 0;
 

@@ -221,6 +221,13 @@ our sub statuses {
     my %jiraDefinedStatuses = map { $_->{name} => 1 } @{$jira->getAllStatuses()};
     my %jiraDefinedResolutions = map { $_->{name} => 1 } @{ $jira->getAllResolutions() };
 
+    unless (%jiraDefinedStatuses) {
+        print "To check statuses you need to have at least one issue in your Jira ".
+                "to be able to check possible statuses. Please make sure all statuses ".
+                "are applicable from any other statuses!\n";
+        return;
+    }
+
     # Status field must present in both Jira and YouTrack
     die "Cannot retrieve statuses. Probably YouTrack field '$stateCustomFieldName' does not exists" 
         unless %ytDefinedStatuses;
@@ -231,7 +238,7 @@ our sub statuses {
         "not exists in YouTrack. Please check config file and correct Status mapping.\n"
             unless (defined $ytDefinedStatuses{$state});
     }
-
+    
     # Now compare statuses with Jira
     foreach my $state (sort keys %ytDefinedStatuses) {
         die "\nYouTrack has a status '$state' but there's no such ".

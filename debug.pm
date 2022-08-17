@@ -28,14 +28,14 @@ if($deleteAll) {
         die "Could not login to $JiraUrl\n";
     }
 
-    my $allIssues = $jira->getAllIssues(Project => "WEB");
+    $allIssues = $jira->getAllIssues(Project => "WEB", Max => 100);
     while (@{$allIssues->{issues}}) {
         foreach my $issue (@{$allIssues->{issues}}) {
             my $key = $issue->{key};
             $key =~ /^[A-Z]+-(\d+)$/;
             $jira->deleteIssue(Key => $key);
         }
-        $allIssues = $jira->getAllIssues(Project => "WEB");
+        $allIssues = $jira->getAllIssues(Project => "WEB", Max => 100);
     }
 
     print "\nAll issues deleted from Jira.";

@@ -59,6 +59,7 @@ sub new {
 			}
 			print Dumper($meta) if $arg{Verbose};
 			$self->{meta} = $meta;
+			$self->{project} = $arg{Project};
 		} else {
 			print 
 				die "Cannot get meta for project ".$arg{Project}." (".$response->status_line.")\n";
@@ -85,7 +86,7 @@ sub getUser {
 sub getAllIssues {
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/api/latest/search?maxResults=100&jql=project="'.$arg{Project}.'"', Authorization => 'Basic '.$self->{basic});
+	my $response = $ua->get($self->{url}.'/rest/api/latest/search?maxResults='.$arg{Max}.'&jql=project="'.$arg{Project}.'"', Authorization => 'Basic '.$self->{basic});
 	if ($response->is_success) {
 		return decode_json $response->decoded_content;
 	} else {
@@ -121,9 +122,16 @@ sub getAllPriorities {
 sub getAllStatuses {
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/api/2/status', Authorization => 'Basic '.$self->{basic});
+
+	my ($issues) = @{getAllIssues($self, Project => $self->{project}, Max => 1)->{issues}};
+	unless (defined $issues->{key}) {
+		return [];
+	}
+	
+	my $response = $ua->get($self->{url}.'/rest/api/latest/issue/'.$issues->{key}.'/transitions?expand=transitions.fields', Authorization => 'Basic '.$self->{basic});
+	
 	if ($response->is_success) {
-		return \@{decode_json($response->decoded_content)};
+		return \@{decode_json($response->decoded_content)->{transitions}};
 	} else {
 		print "Got error while getting statuses\n";
 		print $response->status_line;

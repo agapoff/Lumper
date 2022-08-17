@@ -145,10 +145,14 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	$header .= "]\n";
 	}
 
+
 	# Convert Markdown to Jira-specific rich text formatting
 	my $description = convertUserMentions($issue->{description});
-	my $description = convertAttachmentsLinks($description, $attachmentFileNamesMapping);
-	if($convertTextFormatting eq 'true') {
+	$description = convertAttachmentsLinks($description, $attachmentFileNamesMapping);
+
+	if($convertTextFormatting eq 'true') {	
+		$description = convertCodeSnippets($description);
+		$description = convertQuotations($description);
 		$description = convertMarkdownToJira($description);
 	}
 	
@@ -235,13 +239,16 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		my $date = scalar localtime ($comment->{created}/1000);
 
 		my $text = $comment->{text};
-		if($convertTextFormatting eq 'true') {
-			$text = convertMarkdownToJira($text);
-		}
-
+		
 		# Convert Markdown to Jira-specific rich text formatting
 		$text = convertUserMentions($text);
 		$text = convertAttachmentsLinks($text, $attachmentFileNamesMapping);
+
+		if($convertTextFormatting eq 'true') {
+			$text = convertCodeSnippets($text);
+			$text = convertQuotations($text);
+			$text = convertMarkdownToJira($text);
+		}
 
 		my $header;
 		if ( $JiraPasswords{$author} ) {
@@ -318,6 +325,8 @@ if ($exportLinks eq 'true') {
 	}
 }
 
+$display->printTitle("ENJOY :)");
+
 sub ifProceed {
 	print "\nProceed? (y/N) ";
 	my $input = <>;
@@ -353,6 +362,25 @@ sub convertAttachmentsLinks {
 
 	# Convert attachment ![](image.png) links to Jira links !image.png|thumbnail!
 	$textToConvert =~ s/!\[\]\((.+?)\)/"!".%{$attachmentFileNamesMapping}{$1}."|thumbnail!"/eg;
+
+	return $textToConvert;
+}
+
+sub convertCodeSnippets {
+	my $textToConvert = shift;
+
+	# Convert ``` to {code}
+	$textToConvert =~ s/```(\w*)\n/($1 ? "{code:$1}\n" : "{code}\n")/eg;
+	$textToConvert =~ s/```/\n{code}\n/g;
+
+	return $textToConvert;
+}
+
+sub convertQuotations {
+	my $textToConvert = shift;
+
+	# Convert > to {quote}
+	$textToConvert =~ s/^> *(.*)/{quote}\n$1\n{quote}/gm;
 
 	return $textToConvert;
 }

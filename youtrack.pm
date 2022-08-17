@@ -174,7 +174,7 @@ sub getAllCustomFields {
 sub exportIssues {
 	my $self = shift;
 	my %arg = @_;
-	my $max = $arg{Max} || 10000;
+	my $max = $arg{Max} || 100000;
 
 	my $issues = $self->sendRequestToYouTrack(	
 			Request => '/api/issues?'.

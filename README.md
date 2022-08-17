@@ -8,6 +8,7 @@ The tool for migration from YouTrack to Jira: easy and for free
   1. [Prepare YouTrack](#prepare-yt)
   1. [Prepare Jira](#prepare-jira)
   1. [Do all the job](#do-job)
+  1. [Things To Remember](#things-to-remember)
   1. [Needed Perl modules](#perl-modules)
 
 ## Capabilities
@@ -83,6 +84,20 @@ Then you just run the script:
 `--cookie-file` or `-c` - explicit Jira cookie file location.
 
 Lean back in you chair and prepare for a very long process.
+## Things To Remember
+### Restrictions For Some Fields
+`Summary` - the title of your ticket will be cropped according to Jira restriction (max 255 symbols)  
+
+`Description` - the body of the ticket cannot contain more than 32 767 symbols and it will be trimmed as well. However, long descriptions will be saved as `description.md` attachment.
+
+### Note On Some Specific Issue Types
+`Epic` - this type of an issue requires special field `Epic Name` which is not supported by Lumper. You have to remove this field in order to do mapping to `Epic` type if that is possible, some instructions can be found here, but it requires you some research (here's the [link](https://confluence.atlassian.com/jirakb/epic-name-field-is-required-on-create-issue-screen-for-other-issue-types-779158642.html))
+
+### Attachments
+Attachments will be renamed to `attachment<number>` to avoid problems with exotic filenames. However, attachment links will be exported correctly.
+
+Attachments will be saved on your hard disk during export process (in the temporary folder), please make sure you have enough free space for the whole process. 
+
 
 ## Needed Perl modules
 To install these components you'll need `cpan` utility. 

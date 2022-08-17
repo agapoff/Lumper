@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use File::Basename qw/dirname/;
+use File::Temp qw ( tempdir );
 use lib dirname(__FILE__);
 use display;
 use youtrack;
@@ -142,7 +143,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 			$header .= "by ".$issue->{reporter}->{login}." "; 
 		}
 		$header .= $creationTime;
-	$header .= "]\n";
+		$header .= "]\n";
 	}
 
 
@@ -260,6 +261,17 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 			$text = $header.$text;
 			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || die "Error creating comment";
 		}
+	}
+
+	# If descriptions exceeds Jira limitations - save it as an attachment
+	if (length $header.$description >= 32766) {
+		print "\nDescription exceeds Jira max symbol limitation and will be saved as attachment.\n";
+		my $tempdir = tempdir();
+		open my $fh, ">", "$tempdir/description.md";
+		binmode $fh, "encoding(UTF-8)";
+		print $fh $issue->{description};
+		close $fh;
+		push @{$attachments}, "$tempdir/description.md";
 	}
 
 	# Upload attachments to Jira

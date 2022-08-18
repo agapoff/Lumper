@@ -175,14 +175,14 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	}
 	
 	# Add YouTrack original creation date field	
+	my %dateTimeFormats = (
+		RFC822 => "%a, %d %b %Y %H:%M:%S %z",
+		RFC3389 => "%Y-%m-%dT%H:%M:%S%z",
+		ISO8601 => "%Y-%m-%dT%T%z",
+		GOST7.0.64 => "%Y%m%dT%H%M%S%z",
+		JIRA8601 => "%Y-%m-%dT%T.00%z"
+	);
 	if ($exportCreationTime eq 'true') {
-		my %dateTimeFormats = (
-			RFC822 => "%a, %d %b %Y %H:%M:%S %z",
-			RFC3389 => "%Y-%m-%dT%H:%M:%S%z",
-			ISO8601 => "%Y-%m-%dT%T%z",
-			GOST7.0.64 => "%Y%m%dT%H%M%S%z",
-			JIRA8601 => "%Y-%m-%dT%T.00%z"
-		);
 		my @parsedTime = localtime ($issue->{created}/1000);
 		$custom{$creationTimeCustomFieldName} = strftime($dateTimeFormats{"$creationDateTimeFormat"}, @parsedTime);
 	}
@@ -255,11 +255,41 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		if ( $JiraPasswords{$author} ) {
 			$header = "[ $date ]\n";
 			$text = $header.$text;
-			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || die "Error creating comment";
+			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || warn "Error creating comment";
 		} else {
 			$header = "[ ".$comment->{author}->{login}." $date ]\n";
 			$text = $header.$text;
-			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || die "Error creating comment";
+			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || warn "Error creating comment";
+		}
+	}
+
+	# Export work log
+	if ($exportWorkLog eq 'true') {
+		print "\nExporting work log\n";
+		my $workLogs = $yt->getWorkLog( IssueKey => $issue->{idReadable} );
+		foreach my $workLog (@{$workLogs->{workItems}}) {
+			my @parsedTime = localtime ($issue->{created}/1000);
+			my %jiraWorkLog = (
+				author => { 
+					name => $User{ $workLog->{author}->{login} }
+				},
+				comment => $workLog->{text},
+				started => strftime($dateTimeFormats{"$creationDateTimeFormat"}, @parsedTime),
+				timeSpentSeconds => $workLog->{duration}->{minutes} * 60
+			);
+
+			if ( defined $JiraPasswords{$User{ $workLog->{author}->{login} }} ) {
+				$jira->addWorkLog(Key => $key, 
+								WorkLog => \%jiraWorkLog, 
+								Login => $User{ $workLog->{author}->{login} }, 
+								Password => $JiraPasswords{$User{ $workLog->{author}->{login} }}) 
+					|| warn "\nError creating work log";
+			} else {
+				my $originalAuthor = "[ Original Author: ".$workLog->{author}->{login}." ]\n";
+				$jiraWorkLog{comment} = $originalAuthor."".$jiraWorkLog{comment};
+				$jira->addWorkLog(Key => $key, WorkLog => \%jiraWorkLog) 
+					|| warn "\nError creating work log";
+			}			
 		}
 	}
 

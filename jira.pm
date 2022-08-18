@@ -150,6 +150,20 @@ sub getAllResolutions {
 	}
 }
 
+sub addWorkLog {
+	my $self = shift;
+	my %arg = @_;
+	my %workLog = %{$arg{WorkLog}};
+	my $content = encode_json \%workLog;
+
+	my $basic = ($arg{Login} && $arg{Password}) ? encode_base64($arg{Login}.":".$arg{Password}) : $self->{basic}; 
+	my $response = $ua->post($self->{url}.'/rest/api/latest/issue/'.$arg{Key}.'/worklog', 
+								Authorization => 'Basic '.$basic, 
+								'Content-Type' => 'application/json', 
+								'Content' => $content);
+
+}
+
 sub getIssue {
 	my $self = shift;
 	my %arg = @_;

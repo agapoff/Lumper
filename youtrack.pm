@@ -85,6 +85,27 @@ sub downloadAttachments {
 }
 
 # Returns the list of tag names for specific issue id
+sub getWorkLog {
+	my $self = shift;
+	my %arg = @_;
+	
+	return $self->sendRequestToYouTrack(
+				Request => '/api/issues/'.$arg{IssueKey}.'/timeTracking?'.
+											'fields='.
+												'workItems('.
+													'text,'.
+													'created,'.
+													'duration('.
+														'minutes'.
+													'),'.
+													'author('.
+														'login'.
+													')'.
+												')',
+				ErrorMessage => 'Got error while getting work log');
+}
+
+# Returns the list of tag names for specific issue id
 sub getTags {
 	my $self = shift;
 	my %arg = @_;
@@ -93,7 +114,7 @@ sub getTags {
 				Request => '/api/issues/'.$arg{IssueKey}.'/tags?'.
 											'fields='.
 												'name',
-				ErrorMessage => 'Got error while getting attachments\n',
+				ErrorMessage => 'Got error while getting tags\n',
 				CharacterSupport => 'true');
 	unless (defined $tagsRaw) {
 		return undef;

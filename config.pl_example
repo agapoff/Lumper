@@ -15,6 +15,7 @@ our $exportTags='true';
 # This is quite obvious
 our $exportAttachments='true';
 our $exportLinks='true';
+our $exportWorkLog='true';
 # Creation date and time will be exported in Original Creation Time field
 our $exportCreationTime='true';
 # You can change the name of the creation date field if you want to :)

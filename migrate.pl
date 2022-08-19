@@ -196,7 +196,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		}
 	}
 	
-	my $key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || die "Error while creating issue";
+	my $key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue";
 	print "Jira issue key generated $key\n";
 
 	# Checking issue number in key (eg in FOO-20 the issue number is 20)
@@ -204,9 +204,9 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		while ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
 			print "We're having a gap and will delete the issue\n";
 			unless ($jira->deleteIssue(Key => $key)) {
-				die "Error while deleting the issue $key";
+				warn "Error while deleting the issue $key";
 			}
-			$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || die "Error while creating issue";
+			$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue";
 			print "\nNew Jira issue key generated $key\n";
 			$key =~ /^[A-Z]+-(\d+)$/;
 		}
@@ -221,7 +221,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	if ($Status{$issue->{State}}) {
 		print "\nChanging status to ".$Status{$issue->{State}}."\n";
 		unless ($jira->doTransition(Key => $key, Status => $Status{$issue->{State}})) {
-			die "Failed doing transition";
+			warn "Failed doing transition";
 		}
 	}
 
@@ -229,7 +229,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	if ($StatusToResolution{$issue->{State}}) {
 		print "\nChanging resolution to ".$StatusToResolution{$issue->{State}}."\n";
 		unless ($jira->changeFields(Key => $key, Fields => { 'Resolution' => $StatusToResolution{$issue->{State}} } )) {
-			die "Failed updating fields"
+			warn "Failed updating fields"
 		}
 	}
 
@@ -308,7 +308,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	if (@{$attachments}) {
 		print "Uploading ".scalar @{$attachments}." files\n";
 		unless ($jira->addAttachments(IssueKey => $key, Files => $attachments)) {
-			die "Cannot upload attachment to $key";
+			warn "Cannot upload attachment to $key";
 		}
 	}
 }

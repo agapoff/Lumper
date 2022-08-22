@@ -85,6 +85,7 @@ my $check = check->new(
 	TypeFieldName => $typeCustomFieldName,
 	Types => \%Type,
 	Links => \%IssueLinks,
+	ExportCreationTime => $exportCreationTime,
 	CreationTimeFieldName => $creationTimeCustomFieldName,
 	Fields => \%CustomFields,
 	PriorityFieldName => $priorityCustomFieldName,

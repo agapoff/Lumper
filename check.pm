@@ -143,6 +143,7 @@ our sub fields {
 
     my %CustomFields = %{$self->{Fields}};
     my $creationTimeCustomFieldName = $self->{CreationTimeFieldName};
+    my $exportCreationTime = $self->{ExportCreationTime};
 
     $display->printTitle("Field Mapping");
 
@@ -150,12 +151,14 @@ our sub fields {
     my %jiraDefinedFields = %{$meta->{fields}};
 
     # Check mandatory fields first
-    foreach my $jiraIssue (keys %jiraDefinedFields) {
-        die "\nThe mandatory field named '$creationTimeCustomFieldName' is absent ".
-        "in Jira issue type '$jiraIssue'. ".
-        "Please ensure that you've created custom field '$creationTimeCustomFieldName' and ".
-        "assigned it to '$jiraIssue' type of a issue." 
-            unless (defined $jiraDefinedFields{$jiraIssue}->{$creationTimeCustomFieldName});
+    if ($exportCreationTime eq 'true') {
+        foreach my $jiraIssue (keys %jiraDefinedFields) {
+            die "\nThe mandatory field named '$creationTimeCustomFieldName' is absent ".
+            "in Jira issue type '$jiraIssue'. ".
+            "Please ensure that you've created custom field '$creationTimeCustomFieldName' and ".
+            "assigned it to '$jiraIssue' type of a issue." 
+                unless (defined $jiraDefinedFields{$jiraIssue}->{$creationTimeCustomFieldName});
+        }
     }
     # Check all other fields
     foreach my $field (sort keys %CustomFields) {	

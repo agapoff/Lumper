@@ -3,7 +3,12 @@ package youtrack;
 use strict;
 use Data::Dumper;
 require LWP::UserAgent;
-use XML::Parser;
+use JSON qw( decode_json );
+use File::Temp qw ( tempdir );
+use List::Util qw( first );
+use File::Basename;
+use Encode;
+use utf8;
 
 my $ua;
 our $currentField;
@@ -15,23 +20,20 @@ sub new {
 	my %arg = @_;
 	return unless $arg{Url};
 	my $self;
-
+	
 	$ua = LWP::UserAgent->new;
 	$ua->timeout(10);
+	$ua->default_headers->header(
+			'Content-Type'=>'application/json', 
+			'Accept'=>'application/json', 
+			'Authorization'=>'Bearer '.$arg{Token});
 
-	my $response = $ua->post($arg{Url}.'/rest/user/login', Content => "login=".$arg{Login}."&password=".$arg{Password});
+	my $response = $ua->get($arg{Url}.'/api/users/me');
 
 	if ($response->is_success) {
-		if ($response->decoded_content eq "<login>ok</login>") {
-		 	print "Logged to YT successfully\n" if ($arg{Debug});
-		 	print Dumper($response->{'_headers'}->{'set-cookie'}) if ($arg{Debug});
-			my $cookie = getSessionID($response);
-			$self = { cookie => $cookie, url => $arg{Url}, debug => $arg{Debug} };
-		} else {
-			print "Login to YT was unsuccessfull\n";
-			print $response->decoded_content;
-			exit 2;
-		}
+		 	print "Logged to YT successfully\n" if ($arg{Verbose});
+		 	print Dumper($response) if ($arg{Verbose});
+			$self = { url => $arg{Url}, project => $arg{Project}, verbose => $arg{Verbose} };
 	}
 	else {
 		die $response->status_line;
@@ -40,176 +42,287 @@ sub new {
 	bless $self, $class;
 }
 
-sub getAttachments {
+# Downloads each attachment in the issue and stores it in tmp folder
+sub downloadAttachments {
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/issue/'.$arg{IssueKey}.'/attachment', Cookie => $self->{cookie});
-	if ($response->is_success) {
-		my $parser = XML::Parser->new();
-		undef $data;
-		$parser->setHandlers( Start => \&startAttachmentElement );
-		$parser->parse($response->decoded_content);
-		print Dumper($data) if ($self->{debug});
-		my @downloadedFiles;
-		foreach (@{$data}) {
-			my $r = $ua->get($_->{url}, Cookie => $self->{cookie});
-			open F, ">/tmp/".$_->{name} or die "$! $_->{name}";
-			binmode F;
-			print F $r->content;
-			close F;
-			push @downloadedFiles, '/tmp/'.$_->{name};
-		}
-		return \@downloadedFiles;
-	} else {
-		print "Got error while getting attachments\n";
-		print $response->decoded_content."\n";
+
+	my $attachments = $self->sendRequestToYouTrack(
+				Request => '/api/issues/'.$arg{IssueKey}.'/attachments?'.
+											'fields='.
+												'url,'.
+												'name',
+				ErrorMessage => "Got error while getting attachments\n");
+	unless (defined $attachments) {
+		return undef;
 	}
+
+	my @downloadedFilesPaths;
+	# Safe old file name to fix attachments links in issues
+	my %oldFileNamesDirectory;
+	my $tempdir = tempdir();
+	my $counter = 1;
+	foreach my $attachment (@{$attachments}) {
+		# Attachment URL includes 'youtrack/' word, remove it
+		$attachment->{url} =~ s/youtrack\///;
+		my $file = $ua->get($self->{url}.$attachment->{url});
+
+		# Extract file extension if any
+  		my ($filename, $dirs, $suffix) = fileparse($attachment->{name}, qr/\.[^.]*$/);
+
+		my $localizedFileName = decode_utf8($attachment->{name});
+		$oldFileNamesDirectory{$localizedFileName} = "attachment$counter$suffix";
+		
+		# Rename the file to avoid problems with exotic file names
+		open my $fh, ">", "$tempdir/".$oldFileNamesDirectory{$localizedFileName};
+		binmode $fh;
+		print $fh $file->content;
+		close $fh;
+		push @downloadedFilesPaths, "$tempdir/".$oldFileNamesDirectory{$localizedFileName};
+		$counter++;
+	}
+	return (\@downloadedFilesPaths, \%oldFileNamesDirectory);
 }
 
+# Returns the list of tag names for specific issue id
+sub getWorkLog {
+	my $self = shift;
+	my %arg = @_;
+	
+	return $self->sendRequestToYouTrack(
+				Request => '/api/issues/'.$arg{IssueKey}.'/timeTracking?'.
+											'fields='.
+												'workItems('.
+													'text,'.
+													'created,'.
+													'duration('.
+														'minutes'.
+													'),'.
+													'author('.
+														'login'.
+													')'.
+												')',
+				ErrorMessage => 'Got error while getting work log');
+}
+
+# Returns the list of tag names for specific issue id
 sub getTags {
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/issue/'.$arg{IssueKey}.'/tags', Cookie => $self->{cookie});
-	if ($response->is_success) {
-		my $parser = XML::Parser->new();
-		undef $data;
-		$parser->setHandlers( Char => \&characterTagData );
-		$parser->parse($response->decoded_content);
-		print Dumper($data) if ($self->{debug});
-		return $data;
-	} else {
-		print "Got error while getting attachments\n";
-		print $response->decoded_content."\n";
+
+	my $tagsRaw = $self->sendRequestToYouTrack(
+				Request => '/api/issues/'.$arg{IssueKey}.'/tags?'.
+											'fields='.
+												'name',
+				ErrorMessage => 'Got error while getting tags\n',
+				CharacterSupport => 'true');
+	unless (defined $tagsRaw) {
+		return undef;
 	}
+
+	my @tags;
+	foreach (@{$tagsRaw}) {
+		push(@tags, $_->{name});
+	}
+	return @tags;
 }
 
 sub getIssueLinks {
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/issue/'.$arg{IssueKey}.'/link', Cookie => $self->{cookie});
-	if ($response->is_success) {
-		my $parser = XML::Parser->new();
-		undef $data;
-		$parser->setHandlers( Start => \&startElement );
-		$parser->parse($response->decoded_content);
-		return $data;
-	} else {
-		print "Got error while getting links\n";
-		print $response->decoded_content."\n";
-	}
+
+	return $self->sendRequestToYouTrack(
+				Request => '/api/issues/'.$arg{IssueKey}.'/links?'.
+											'fields='.
+												'direction,'.
+												'linkType(name),'.
+												'issues(id)',
+				ErrorMessage => "Got error while getting links\n",
+				CharacterSupport => 'true');
 }
 
-sub getIssue {
+sub getAllLinkTypes {
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/issue/'.$arg{Key}, Cookie => $self->{cookie});
-	if ($response->is_success) {
-		print $response->decoded_content;
-		my $parser = XML::Parser->new();
-		undef $data;
-		$parser->setHandlers( Start => \&startElement,
-				End => \&endElement,
-				Char => \&characterData,
-				);
-		my $decoded_content = $response->decoded_content;
-		$decoded_content =~ s/\n/\{\{newline\}\}/g;
-		$decoded_content =~ s/[^[:print:]]+//g;
-		$decoded_content =~ s/\{\{newline\}\}/\n/g;
-		$parser->parse($decoded_content);
-		print Dumper($data);
-		return $data;
-	} else {
-		print "Got error while getting issue\n";
+
+	return $self->sendRequestToYouTrack(
+				Request => '/api/issueLinkTypes?'.
+											'fields='.
+												'name',
+				ErrorMessage => "Got error while getting link types\n",
+				CharacterSupport => 'true');
+}
+
+sub getAllCustomFields {
+	my $self = shift;
+	my %arg = @_;
+	
+	my $customFields = $self->sendRequestToYouTrack(	
+			Request => '/api/admin/projects/'.$self->{project}.'/customFields?'.
+							'fields='.
+								'field('.
+									'instances('.
+										'field('.
+											'name'.
+										'),'.
+										'project('.
+											'shortName'.
+										'),'.
+										'bundle('.
+											'id,'.
+											'values('.
+												'name'.
+											')'.
+										')'.
+									')'.
+								')',
+			ErrorMessage => "Cannot retrieve custom fields information from YouTrack.",
+			CharacterSupport => 'true');
+
+	my %fieldsWithValues;
+	foreach my $fieldRef (@{$customFields}) {
+		foreach my $customField (@{$fieldRef->{field}->{instances}}) {
+			if($customField->{project}->{shortName} eq $self->{project}) {
+				my @bundleNames = map ($_->{name}, @{$customField->{bundle}->{values}});
+				$fieldsWithValues{$customField->{field}->{name}} = \@bundleNames;
+			}
+		}
 	}
+
+	return %fieldsWithValues;
 }
 
 sub exportIssues {
 	my $self = shift;
 	my %arg = @_;
-	my $max = $arg{Max} || 10000;
-	print $self->{url}.'/rest/export/'.$arg{Project}.'/issues?max='.$max."\n";
-	my $response = $ua->get($self->{url}.'/rest/export/'.$arg{Project}.'/issues?max='.$max, Cookie => $self->{cookie});
-	if ($response->is_success) {
-		my $parser = XML::Parser->new();
-		undef $data;
-		$parser->setHandlers( Start => \&startElement,
-				End => \&endElement,
-				Char => \&characterData,
-				);
-		my $decoded_content = $response->decoded_content;
-		$decoded_content =~ s/\n/\{\{newline\}\}/g;
-		$decoded_content =~ s/[^[:print:]]+//g;
-		$decoded_content =~ s/\{\{newline\}\}/\n/g;
-		$parser->parse($decoded_content);
-		return $data;
-	} else {
-		print "Got error while exporting issues\n";
-		print $response->decoded_content."\n" if ($self->{debug});
-		print $response->status_line."\n" if ($self->{debug});
-	}
-	return;
-}
+	my $max = $arg{Max} || 100000;
 
-sub getSessionID {
-	my $response = shift;
+	my $issues = $self->sendRequestToYouTrack(	
+			Request => '/api/issues?'.
+										'query=project:%20'.$arg{Project}.'%20&'.
+										'$top='.$max.'&'.
+										'fields='.
+											'id,'.
+											'idReadable,'.
+											'created,'.
+											'numberInProject,'.
+											'summary,'.
+											'description,'.
+											'comments('.
+												'author('.
+													'login'.
+												'),'.
+												'text,'.
+												'created'.
+											'),'.
+											'reporter('.
+												'login'.
+											'),'.
+											'customFields('.
+												'name,'.
+												'value('.
+													'name,'.
+													# TextIssueCustomField
+													'text,'.
+													# PeriodIssueCustomField
+													'presentation,'.
+													'login'.
+												')'.
+											')',
+				ErrorMessage => "Got error while exporting issues\n",
+				CharacterSupport => 'true');
 
-	foreach my $cookie (@{$response->{'_headers'}->{'set-cookie'}}) {
-		if ($cookie =~ /SESSIONID/) {
-			$cookie =~ s/;.*$/;/;
-			return $cookie;
+	foreach my $issue (@{$issues}) {
+		foreach my $field (@{$issue->{customFields}}) {	
+
+			$issue->{$field->{name}} = undef;
+			next if (not($field->{value}));
+
+			$issue->{$field->{name}} = collectValuesFromCustomField(\%{$field});
 		}
 	}
-	return;
+
+	return $issues;
 }
 
-sub startAttachmentElement {
-	my( $parseinst, $element, %attrs ) = @_;
-	if ($element eq 'fileUrl') {
-		push @{$data}, \%attrs;
+sub sendRequestToYouTrack {
+	my $self = shift;
+	my %arg = @_;
+	
+	my $response = $ua->get($self->{url}."".$arg{Request});
+	
+	if ($response->is_success) {		
+		# All languages support
+		my $content = $response->decoded_content;
+		if ($arg{CharacterSupport} eq "true") {
+			$content = decode_utf8($content);
+		}
+
+		my $json = JSON->new;
+		return $json->decode($content);
+	} else {
+		print $arg{ErrorMessage}."\n";
+		print $response->decoded_content."\n" if ($self->{verbose});
+		print $response->status_line."\n" if ($self->{verbose});
 	}
+	return undef;
 }
 
-sub startElement {
-	my( $parseinst, $element, %attrs ) = @_;
-	if ($element eq 'field') {
-		$currentField = $attrs{name};
-	} elsif ($element eq 'comment') {
-		push @{$currentIssue->{comments}}, { created => $attrs{created}, text => $attrs{text}, author => $attrs{author} };
-	} elsif ($element eq 'issueLink') {
-		push @{$data}, { type => { name => $attrs{typeName} }, inwardIssue => { key => $attrs{target} }, outwardIssue => { key => $attrs{source} } };
-	} elsif ($element eq 'value') {
-		# This is a very ugly crutch. It disables the possibility to export the multivalue field. C'est la vie
-		undef $currentIssue->{$currentField} if ($currentField && defined $currentIssue->{$currentField});
-	}
-}
+my %periodType = (	'PeriodIssueCustomField' => 1);
+my %simpleType = (	'SimpleIssueCustomField' => 1,  'DateIssueCustomField' => 1);
+my %singleType = (	'SingleValueIssueCustomField'=> 1,  'StateIssueCustomField'=> 1,  
+					'SingleBuildIssueCustomField'=> 1,  'SingleUserIssueCustomField'=> 1,  
+					'SingleGroupIssueCustomField'=> 1,  'SingleVersionIssueCustomField'=> 1,  
+					'SingleOwnedIssueCustomField'=> 1,  'SingleEnumIssueCustomField'=> 1,  
+					'StateMachineIssueCustomField'=> 1);
+my %multiType = (	'MultiValueIssueCustomField'=> 1,  'MultiBuildIssueCustomField'=> 1,  
+					'MultiGroupIssueCustomField'=> 1,  'MultiVersionIssueCustomField'=> 1,  
+					'MultiOwnedIssueCustomField'=> 1,  'MultiEnumIssueCustomField'=> 1,  
+					'MultiUserIssueCustomField'=> 1);
+my %textType = (	'TextIssueCustomField'=> 1);
 
-sub endElement {
-	my( $parseinst, $element ) = @_;
-	if ($element eq 'issue') {
-		push @{$data}, $currentIssue;
-		undef $currentIssue;
-	} elsif ($element eq 'field') {
-		undef $currentField;
-	}
-}
+sub collectValuesFromCustomField {
+	my $customField = shift;
 
-sub characterData {
-	my( $parseinst, $cdata ) = @_;
-	my $context = $parseinst->{Context}->[-1];
-	if ($currentField && $context eq 'value') {
-		$currentIssue->{$currentField} .= $cdata;
-	}
-	if ($context eq 'tag') {
-		push @{$currentIssue->{tags}}, $cdata;
-	}
-}
+	my $fieldType = $customField->{'$type'};
+	if ($periodType{$fieldType}) {
 
-sub characterTagData {
-	my( $parseinst, $cdata ) = @_;
-	my $context = $parseinst->{Context}->[-1];
-	if ($context eq 'tag') {
-		push @{$data}, $cdata;
+		return $customField->{value}->{presentation};
+
+	} elsif ($textType{$fieldType}) {
+
+		return $customField->{value}->{text};
+
+	} elsif ($simpleType{$fieldType}) {
+
+		return $customField->{value};
+
+	} elsif ($singleType{$fieldType}) {
+
+		if (defined $customField->{value}->{login}) {
+			return $customField->{value}->{login};
+		} else {
+			return $customField->{value}->{name};
+		}
 	}
+	elsif ($multiType{$fieldType}) {
+		
+		my @multiValuesList;
+		foreach my $value (@{$customField->{value}}) {			
+			if (defined $value->{login}) {
+				push @multiValuesList, $value->{login};
+			} else {
+				push @multiValuesList, $value->{name};
+			}
+		}
+		return \@multiValuesList;
+
+	}
+	else {
+		print "\nCannot process ".$fieldType." type of custom field, will be skipped.\n";
+	}
+
+	return undef;
 }
 
 1;

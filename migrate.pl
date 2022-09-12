@@ -174,6 +174,11 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 			$custom{$CustomFields{$field}} = $issue->{$field};
 		}
 	}
+
+	# Epic Name special field is required for Jira Epic issues type
+	if ($import{issuetype}->{name} == 'Epic') {
+		$custom{"Epic Name"} = $issue->{summary};
+	}
 	
 	# Add YouTrack original creation date field	
 	my %dateTimeFormats = (

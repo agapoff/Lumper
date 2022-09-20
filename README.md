@@ -12,6 +12,10 @@ The tool for migration from YouTrack to Jira: easy and for free
   1. [Needed Perl modules](#perl-modules)
 
 ## Capabilities
+Supported Versions (tested with):
+* YouTrack - 2022.2 / API latest
+* Jira - 8.16.0 / API 2.0 (latest)
+
 Lumper can:
 
   * Copy all issues
@@ -90,7 +94,7 @@ Lean back in you chair and prepare for a very long process.
 `Description` - the body of the ticket cannot contain more than 32 767 symbols and it will be trimmed as well. However, long descriptions will be saved as `description.md` attachment.
 
 ### Note On Some Specific Issue Types
-`Epic` - this type of an issue requires special field `Epic Name` which is not supported by Lumper. You have to remove this field in order to do mapping to `Epic` type if that is possible, some instructions can be found here, but it requires you some research (here's the [link](https://confluence.atlassian.com/jirakb/epic-name-field-is-required-on-create-issue-screen-for-other-issue-types-779158642.html))
+`Epic` - this type of an issue requires special field `Epic Name`, this field is mandatory, so Lumper will fill it with `Summary` text.
 
 ### Attachments
 Attachments will be renamed to `attachment<number>` to avoid problems with exotic filenames. However, attachment links will be exported correctly.
@@ -99,6 +103,7 @@ Attachments will be saved on your hard disk during export process (in the tempor
 
 
 ## Needed Perl modules
+Make sure all of them present in your perl environment.  
 To install these components you'll need `cpan` utility. 
 
 In cmd/bash type 
@@ -123,3 +128,6 @@ Here's the list of used components:
   * Encode
   * Date::Format
   * File::Temp
+  * File::Basename
+  * List::Util
+  * HTTP::Cookies::Netscape

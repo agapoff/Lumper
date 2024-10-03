@@ -4,7 +4,8 @@ our $YTtoken='permToken';
 # Url and credentials to access Jira
 our $JiraUrl='https://mycompany.atlassian.net';
 our $JiraLogin='mylogin';
-our $JiraPassword='mypass';
+# Use an API token instead of a password.
+our $JiraPassword='MY_API_TOKEN_HERE';
 # The project ID to migrate from (eg FOO, BAR)
 our $YTProject='KEY';
 # The project ID to migrate to (eg FOO, BAR)

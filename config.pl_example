@@ -114,6 +114,13 @@ our %User = (
 	'foo' => 'bar'
 );
 
+# This hash is used to comply with Jira's improved user privacy API.
+our %JiraUserIds = (
+    'jdoe' => "12345:some-uuid",
+    'bar' => "12345:another-uuid",
+    'onemoreuser' => "12345:one-more-uuid"
+);
+
 # This hash is optional and needed to restore the comments from appropriate users. If the user is absent then his
 # comments will be restored from $JiraUser and the original user will be mentioned in the comment body
 our %JiraPasswords = (

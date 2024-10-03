@@ -160,8 +160,8 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	
 	my %import = ( project => { key => $JiraProject },
 	               issuetype => { name => $Type{$issue->{$typeCustomFieldName}} || $issue->{$typeCustomFieldName} },
-                   assignee => { name => $User{$issue->{Assignee}} || $issue->{Assignee} },
-                   reporter => { name => $User{$issue->{reporter}->{login}} || $issue->{reporter}->{login} },
+                   assignee => { id => $JiraUserIds{$User{$issue->{Assignee}} || $issue->{Assignee}} },
+                   reporter => { id => $JiraUserIds{$User{$issue->{reporter}->{login}} || $issue->{reporter}->{login}} },
                    summary => $issue->{summary},
                    description => $header.$description,
                    priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || 'Medium' }
@@ -277,7 +277,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 			my @parsedTime = localtime ($issue->{created}/1000);
 			my %jiraWorkLog = (
 				author => { 
-					name => $User{ $workLog->{author}->{login} }
+					id => $JiraUserIds{$User{ $workLog->{author}->{login} }}
 				},
 				comment => $workLog->{text},
 				started => strftime($dateTimeFormats{"$creationDateTimeFormat"}, @parsedTime),

@@ -76,7 +76,7 @@ sub getMeta {
 sub getUser {
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/api/latest/user?username='.$arg{User}, Authorization => 'Basic '.$self->{basic});
+	my $response = $ua->get($self->{url}.'/rest/api/latest/user?accountId='.$arg{Id}, Authorization => 'Basic '.$self->{basic});
 	if ($response->is_success) {
 		return decode_json $response->decoded_content;
 	}

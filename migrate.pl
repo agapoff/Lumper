@@ -80,6 +80,7 @@ my $check = check->new(
 	Url => $JiraUrl,
 	JiraLogin => $JiraLogin,
 	Passwords => \%JiraPasswords,
+	JiraUserIds => \%JiraUserIds,
 	RealUsers =>  \%users,
 	Users => \%User,
 	TypeFieldName => $typeCustomFieldName,

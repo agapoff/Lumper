@@ -264,7 +264,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 			$text = $header.$text;
 			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || warn "Error creating comment";
 		} else {
-			$header = "[ ".$comment->{author}->{login}." $date ]\n";
+			$header = convertUserMentions("[ \@".$comment->{author}->{login}." $date ]\n");
 			$text = $header.$text;
 			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || warn "Error creating comment";
 		}

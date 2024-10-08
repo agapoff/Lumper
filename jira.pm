@@ -221,6 +221,8 @@ sub createIssue {
 				$data{fields}->{$fieldId}->{name} = $arg{CustomFields}->{$customField};
 			} elsif ($fieldType eq 'datetime') {
 				$data{fields}->{$fieldId} = $arg{CustomFields}->{$customField};
+			} elsif ($fieldType eq 'user') {
+				$data{fields}->{$fieldId} = {id => $arg{CustomFields}->{$customField} };
 			}
 		}
 	}

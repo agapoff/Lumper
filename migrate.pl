@@ -172,7 +172,12 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	my %custom;
 	foreach my $field (keys %CustomFields) {
 		if (defined $issue->{$field}) {
-			$custom{$CustomFields{$field}} = $issue->{$field};
+			if (defined $User{$issue->{$field}}) {
+				# If the value of the field happens to be a username, assume this is a user field.
+				$custom{$CustomFields{$field}} = $JiraUserIds{$User{$issue->{$field}}};
+			} else {
+				$custom{$CustomFields{$field}} = $issue->{$field};
+			}
 		}
 	}
 

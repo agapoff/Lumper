@@ -280,7 +280,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		print "\nExporting work log\n";
 		my $workLogs = $yt->getWorkLog( IssueKey => $issue->{idReadable} );
 		foreach my $workLog (@{$workLogs->{workItems}}) {
-			my @parsedTime = localtime ($issue->{created}/1000);
+			my @parsedTime = localtime ($workLog->{created}/1000);
 			my %jiraWorkLog = (
 				comment => $workLog->{text},
 				started => strftime($dateTimeFormats{"$creationDateTimeFormat"}, @parsedTime),

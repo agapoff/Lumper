@@ -39,7 +39,7 @@ our sub passwords {
 
 	foreach (sort keys %JiraPasswords) {
 		$display->printColumnAligned($_);
-        $display->printColumnAligned("");
+		$display->printColumnAligned("");
 		my $j = jira->new( Url => $JiraUrl, Login => $_, Password => $JiraPasswords{$_} );
 		if ($j) {
 			$display->printColumnAligned("Logged In");
@@ -62,21 +62,31 @@ our sub users {
     $display->printTitle("User Mapping");
 
     foreach (sort keys %users) {
-        my $user = $_;
-        my $jiraUser = $_;
-        my $status = "OK";
-        
-        if ($User{$user}) {
-            $jiraUser = $User{$user};
-        }
-        my $jiraId = $JiraUserIds{$jiraUser};
-        unless ($jira->getUser(Id => $jiraId)) {
-            $jiraUser = $JiraLogin;
-            $User{$user} = $JiraLogin;
-            $status = "WARNING";
-        }
+		my $user = $_;
+		my $jiraUser = $_;
+		my $status = "OK";
 
-        printRelation($user, $jiraUser, $status);
+		if ($User{$user}) {
+		    $jiraUser = $User{$user};
+		}
+		my $jiraId = $JiraUserIds{$jiraUser};
+		unless ($jiraId) {
+			$status = "Missing Jira ID";
+			delete $User{$user};
+			$jiraUser = $JiraLogin;
+		} else {
+			my $gottenUser = $jira->getUser(Id => $jiraId);
+			unless ($gottenUser) {
+				$status = "User not found";
+				delete $User{$user};
+				$jiraUser = $JiraLogin;
+			} else {
+				unless ($gottenUser->{emailAddress} eq $jiraUser) {
+					$status = "mismatching email";
+				}
+			}
+		}
+		printRel2($user, $jiraUser, $JiraUserIds{$jiraUser}, $status);
     }
 
     return \%User;
@@ -293,10 +303,23 @@ sub printRelation {
     my $related = shift;
     my $status = shift;
 
-    $display->printColumnAligned($relative);	
-    $display->printColumnAligned("        ->");
-    $display->printColumnAligned($related);
-    $display->printColumnAligned($status or "OK");
+    $display->printColumnWidth($relative, 4);
+    $display->printColumnWidth("  ->", 1);
+    $display->printColumnWidth($related, 5);
+    $display->printColumnWidth(($status or "OK"), 2);
+    print "\n";
+}
+sub printRel2 {
+    my $relative = shift;
+    my $related = shift;
+    my $related2 = shift;
+    my $status = shift;
+
+    $display->printColumnWidth($relative, 3);
+    $display->printColumnWidth("  ->", 1);
+    $display->printColumnWidth($related, 3);
+    $display->printColumnWidth($related2, 2);
+    $display->printColumnWidth(($status or "OK"), 2);
     print "\n";
 }
 

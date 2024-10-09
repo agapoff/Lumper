@@ -72,13 +72,13 @@ our sub users {
 		my $jiraId = $JiraUserIds{$jiraUser};
 		unless ($jiraId) {
 			$status = "Missing Jira ID";
-			delete $User{$user};
+			$User{$user} = $JiraLogin;
 			$jiraUser = $JiraLogin;
 		} else {
 			my $gottenUser = $jira->getUser(Id => $jiraId);
 			unless ($gottenUser) {
 				$status = "User not found";
-				delete $User{$user};
+				$User{$user} = $JiraLogin;
 				$jiraUser = $JiraLogin;
 			} else {
 				unless ($gottenUser->{emailAddress} eq $jiraUser) {

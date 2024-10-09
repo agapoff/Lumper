@@ -282,9 +282,6 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		foreach my $workLog (@{$workLogs->{workItems}}) {
 			my @parsedTime = localtime ($issue->{created}/1000);
 			my %jiraWorkLog = (
-				author => { 
-					id => $JiraUserIds{$User{ $workLog->{author}->{login} }}
-				},
 				comment => $workLog->{text},
 				started => strftime($dateTimeFormats{"$creationDateTimeFormat"}, @parsedTime),
 				timeSpentSeconds => $workLog->{duration}->{minutes} * 60

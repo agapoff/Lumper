@@ -294,7 +294,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 								Password => $JiraPasswords{$User{ $workLog->{author}->{login} }}) 
 					|| warn "\nError creating work log";
 			} else {
-				my $originalAuthor = "[ Original Author: ".$workLog->{author}->{login}." ]\n";
+				my $originalAuthor = convertUserMentions("[ Original Author: \@".$workLog->{author}->{login}." ]\n");
 				$jiraWorkLog{comment} = $originalAuthor."".$jiraWorkLog{comment};
 				$jira->addWorkLog(Key => $key, WorkLog => \%jiraWorkLog) 
 					|| warn "\nError creating work log";

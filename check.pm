@@ -58,6 +58,7 @@ our sub users {
     my %User = %{$self->{Users}};
     my %JiraUserIds = %{$self->{JiraUserIds}};
     my $JiraLogin = $self->{JiraLogin};
+    my %JiraPasswords = %{$self->{Passwords}};
 
     $display->printTitle("User Mapping");
 
@@ -85,6 +86,9 @@ our sub users {
 					$status = "mismatching email";
 				}
 			}
+		}
+		unless ($JiraPasswords{$jiraUser}) {
+			$status = $status . '(no PW)';
 		}
 		printRel2($user, $jiraUser, $JiraUserIds{$jiraUser}, $status);
     }

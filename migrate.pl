@@ -264,7 +264,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		}
 
 		my $header;
-		if ( $JiraPasswords{$author} ) {
+		if ( $JiraPasswords{$author} && not $JiraPasswords{$author} eq $JiraPassword ) {
 			$header = "[ $date ]\n";
 			$text = $header.$text;
 			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || warn "Error creating comment";
@@ -287,7 +287,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 				timeSpentSeconds => $workLog->{duration}->{minutes} * 60
 			);
 
-			if ( defined $JiraPasswords{$User{ $workLog->{author}->{login} }} ) {
+			if ( $JiraPasswords{$User{ $workLog->{author}->{login} }} and not $JiraPasswords{$User{ $workLog->{author}->{login} }} eq $JiraPassword ) {
 				$jira->addWorkLog(Key => $key, 
 								WorkLog => \%jiraWorkLog, 
 								Login => $User{ $workLog->{author}->{login} }, 

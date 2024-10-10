@@ -46,9 +46,9 @@ our sub printColumnWidth {
 	my $w = shift;
 	my $len = length($text) || 0;
 	if ($len < ($w * 8)) {
-		print ($text || "").("\t" x ($w - int($len / 8)));
+		print(($text || "").("\t" x ($w - int($len / 8))));
 	} else {
-		print substr($text, 0, ($w * 8)-4)."...\t";
+		print(substr($text, 0, ($w * 8)-4)."...\t");
 	}
 }
 

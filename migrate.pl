@@ -400,8 +400,8 @@ sub convertMarkdownToJira {
 sub convertUserMentions {
 	my $textToConvert = shift;
 
-	# Convert user @foo mentions to Jira [~foo] links
-	# $textToConvert =~ s/\B\@(\S+)/\[\~$User{$1}\]/g;
+	# Convert user @foo mentions to Jira [~accountid:$personId] links (doesn't seem to work)
+	# $textToConvert =~ s/\B\@(\S+)/\@$1 \[\~acccountid:$JiraUserIds{$User{$1}}\])/g;
 	# Convert user @foo mentions to Jira [@foo|/jira/people/$personId] links
 	$textToConvert =~ s/\B\@([^\s,]+)/\[\@$1\|\/jira\/people\/$JiraUserIds{$User{$1}}\]/g;
 

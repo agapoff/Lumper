@@ -76,7 +76,7 @@ sub getMeta {
 sub getUser {
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/api/latest/user?username='.$arg{User}, Authorization => 'Basic '.$self->{basic});
+	my $response = $ua->get($self->{url}.'/rest/api/latest/user?accountId='.$arg{Id}, Authorization => 'Basic '.$self->{basic});
 	if ($response->is_success) {
 		return decode_json $response->decoded_content;
 	}
@@ -221,6 +221,8 @@ sub createIssue {
 				$data{fields}->{$fieldId}->{name} = $arg{CustomFields}->{$customField};
 			} elsif ($fieldType eq 'datetime') {
 				$data{fields}->{$fieldId} = $arg{CustomFields}->{$customField};
+			} elsif ($fieldType eq 'user') {
+				$data{fields}->{$fieldId} = {id => $arg{CustomFields}->{$customField} };
 			}
 		}
 	}

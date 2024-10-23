@@ -80,6 +80,7 @@ my $check = check->new(
 	Url => $JiraUrl,
 	JiraLogin => $JiraLogin,
 	Passwords => \%JiraPasswords,
+	JiraUserIds => \%JiraUserIds,
 	RealUsers =>  \%users,
 	Users => \%User,
 	TypeFieldName => $typeCustomFieldName,
@@ -160,8 +161,8 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	
 	my %import = ( project => { key => $JiraProject },
 	               issuetype => { name => $Type{$issue->{$typeCustomFieldName}} || $issue->{$typeCustomFieldName} },
-                   assignee => { name => $User{$issue->{Assignee}} || $issue->{Assignee} },
-                   reporter => { name => $User{$issue->{reporter}->{login}} || $issue->{reporter}->{login} },
+                   assignee => { id => $JiraUserIds{$User{$issue->{Assignee}} || $issue->{Assignee}} },
+                   reporter => { id => $JiraUserIds{$User{$issue->{reporter}->{login}} || $issue->{reporter}->{login}} },
                    summary => $issue->{summary},
                    description => $header.$description,
                    priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || 'Medium' }
@@ -171,7 +172,12 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	my %custom;
 	foreach my $field (keys %CustomFields) {
 		if (defined $issue->{$field}) {
-			$custom{$CustomFields{$field}} = $issue->{$field};
+			if (defined $User{$issue->{$field}}) {
+				# If the value of the field happens to be a username, assume this is a user field.
+				$custom{$CustomFields{$field}} = $JiraUserIds{$User{$issue->{$field}}};
+			} else {
+				$custom{$CustomFields{$field}} = $issue->{$field};
+			}
 		}
 	}
 
@@ -258,12 +264,12 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		}
 
 		my $header;
-		if ( $JiraPasswords{$author} ) {
+		if ( $JiraPasswords{$author} && not $JiraPasswords{$author} eq $JiraPassword ) {
 			$header = "[ $date ]\n";
 			$text = $header.$text;
 			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || warn "Error creating comment";
 		} else {
-			$header = "[ ".$comment->{author}->{login}." $date ]\n";
+			$header = convertUserMentions("[ \@".$comment->{author}->{login}." $date ]\n");
 			$text = $header.$text;
 			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || warn "Error creating comment";
 		}
@@ -274,24 +280,21 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		print "\nExporting work log\n";
 		my $workLogs = $yt->getWorkLog( IssueKey => $issue->{idReadable} );
 		foreach my $workLog (@{$workLogs->{workItems}}) {
-			my @parsedTime = localtime ($issue->{created}/1000);
+			my @parsedTime = localtime ($workLog->{created}/1000);
 			my %jiraWorkLog = (
-				author => { 
-					name => $User{ $workLog->{author}->{login} }
-				},
 				comment => $workLog->{text},
 				started => strftime($dateTimeFormats{"$creationDateTimeFormat"}, @parsedTime),
 				timeSpentSeconds => $workLog->{duration}->{minutes} * 60
 			);
 
-			if ( defined $JiraPasswords{$User{ $workLog->{author}->{login} }} ) {
+			if ( $JiraPasswords{$User{ $workLog->{author}->{login} }} and not $JiraPasswords{$User{ $workLog->{author}->{login} }} eq $JiraPassword ) {
 				$jira->addWorkLog(Key => $key, 
 								WorkLog => \%jiraWorkLog, 
 								Login => $User{ $workLog->{author}->{login} }, 
 								Password => $JiraPasswords{$User{ $workLog->{author}->{login} }}) 
 					|| warn "\nError creating work log";
 			} else {
-				my $originalAuthor = "[ Original Author: ".$workLog->{author}->{login}." ]\n";
+				my $originalAuthor = convertUserMentions("[ Original Author: \@".$workLog->{author}->{login}." ]\n");
 				$jiraWorkLog{comment} = $originalAuthor."".$jiraWorkLog{comment};
 				$jira->addWorkLog(Key => $key, WorkLog => \%jiraWorkLog) 
 					|| warn "\nError creating work log";
@@ -397,8 +400,10 @@ sub convertMarkdownToJira {
 sub convertUserMentions {
 	my $textToConvert = shift;
 
-	# Convert user @foo mentions to Jira [~foo] links
-	$textToConvert =~ s/\B\@(\S+)/\[\~$User{$1}\]/g;
+	# Convert user @foo mentions to Jira [~accountid:$personId] links (doesn't seem to work)
+	# $textToConvert =~ s/\B\@(\S+)/\@$1 \[\~acccountid:$JiraUserIds{$User{$1}}\])/g;
+	# Convert user @foo mentions to Jira [@foo|/jira/people/$personId] links
+	$textToConvert =~ s/\B\@([^\s,]+)/\[\@$1\|\/jira\/people\/$JiraUserIds{$User{$1}}\]/g;
 
 	return $textToConvert;
 }

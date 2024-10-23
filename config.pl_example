@@ -4,7 +4,8 @@ our $YTtoken='permToken';
 # Url and credentials to access Jira
 our $JiraUrl='https://mycompany.atlassian.net';
 our $JiraLogin='mylogin';
-our $JiraPassword='mypass';
+# Use an API token instead of a password.
+our $JiraPassword='MY_API_TOKEN_HERE';
 # The project ID to migrate from (eg FOO, BAR)
 our $YTProject='KEY';
 # The project ID to migrate to (eg FOO, BAR)
@@ -111,6 +112,13 @@ our %IssueLinks = (
 our %User = (
 	'john.doe' => 'jdoe',
 	'foo' => 'bar'
+);
+
+# This hash is used to comply with Jira's improved user privacy API.
+our %JiraUserIds = (
+    'jdoe' => "12345:some-uuid",
+    'bar' => "12345:another-uuid",
+    'onemoreuser' => "12345:one-more-uuid"
 );
 
 # This hash is optional and needed to restore the comments from appropriate users. If the user is absent then his

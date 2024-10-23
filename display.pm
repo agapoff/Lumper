@@ -40,18 +40,32 @@ sub generateDelimiterPart {
                         int(($textLength + 2) / 2);
 }
 
+our sub printColumnWidth {
+	my $self = shift;
+	my $text = shift;
+	my $w = shift;
+	my $len = length($text) || 0;
+	if ($len < ($w * 8)) {
+		print(($text || "").("\t" x ($w - int($len / 8))));
+	} else {
+		print(substr($text, 0, ($w * 8)-4)."...\t");
+	}
+}
+
 our sub printColumnAligned {
     my $self = shift;
     my $text = shift;
     
     if (length($text) < 8) {
-        print $text."\t\t\t";
+        print $text."\t\t\t\t";
     } elsif (length($text) < 16) {
-        print $text."\t\t";
+        print $text."\t\t\t";
     } elsif (length($text) < 24) {
+        print $text."\t\t";
+    } elsif (length($text) < 32) {
         print $text."\t";
     } else {
-        print substr ($text, 0, 21)."...\t";
+        print substr ($text, 0, 32-4)."...\t";
     }
 }
 

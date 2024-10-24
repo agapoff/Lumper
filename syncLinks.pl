@@ -111,11 +111,13 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	my $ok = "???";
 	if ($jiraIssue) {
 		$ok = ($issue->{summary} eq $jiraIssue->{fields}->{summary}) ? "OK" : "BAD";
+		$issue->{jiraKey} = $jiraIssue->{key};
+	} else {
+		$issue->{jiraKey} = ($JiraProject."-".$issue->{numberInProject});
 	}
-	$issue->{jiraKey} = $jiraIssue->{key} or $JiraProject."-".$issue->{numberInProject};
 	check::printRelation(
 		$YTProject."-".$issue->{numberInProject}." ".$issue->{summary},
-		$jiraIssue->{key}." ".$jiraIssue->{fields}->{summary},
+		$issue->{jiraKey}." ".$jiraIssue->{fields}->{summary},
 		$ok
 	);
 }

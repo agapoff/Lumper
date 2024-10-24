@@ -108,7 +108,10 @@ $display->printTitle("Checking issue names");
 foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export}) {
 	#$display->printTitle($YTProject."-".$issue->{numberInProject});
 	my $jiraIssue = $jiraIssues->{$JiraProject."-".$issue->{numberInProject}};
-	my $ok = ($issue->{summary} eq $jiraIssue->{fields}->{summary}) ? "OK" : "NOT ok";
+	my $ok = "???";
+	if ($jiraIssue) {
+		$ok = ($issue->{summary} eq $jiraIssue->{fields}->{summary}) ? "OK" : "BAD";
+	}
 	$issue->{jiraKey} = $jiraIssue->{key} or $JiraProject."-".$issue->{numberInProject};
 	check::printRelation(
 		$YTProject."-".$issue->{numberInProject}." ".$issue->{summary},
@@ -116,7 +119,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		$ok
 	);
 }
-
+print "If all issue numbers match, it's safe to continue";
 &ifProceed;
 
 # Create Issue Links
@@ -142,6 +145,7 @@ if ($exportLinks eq 'true') {
 			if (defined $IssueLinks{$link->{linkType}->{name}}) {
 				$jiraLink->{type}->{name} = $IssueLinks{$link->{linkType}->{name}};
 			} else {
+			    print $link->{linkType}->{name} . " is not defined in map\n";
 				next;
 			}
 
@@ -156,7 +160,7 @@ if ($exportLinks eq 'true') {
 					} 
 
 					if (not $alreadyEstablishedLinksWith{$link->{linkType}->{name}}{$linkedIssue->{id}}) {
-						print "Creating link between ".$jiraLink->{outwardIssue}->{key}." and ".$jiraLink->{inwardIssue}->{key}."\n";
+						print $issue->{jiraKey} . ": creating link between ".$jiraLink->{outwardIssue}->{key}." and ".$jiraLink->{inwardIssue}->{key}."\n";
 
 						if ($jira->createIssueLink( Link => $jiraLink )) {
 							# To avoid link duplications (for BOTH direction type of issue link)
@@ -164,9 +168,16 @@ if ($exportLinks eq 'true') {
 							$alreadyEstablishedLinksWith{$link->{linkType}->{name}}{$issue->{id}} = 1;
 							print " Done\n";
 						} else {
-							print " Failed. Most likely the second issue is not migrated yet\n";
+							print " Failed. ";
+							if (($issue->{id} =~ m/.*-/g) eq ($linkedIssue->{id} =~ m/.*-/g )) {
+							    print "Most likely the second issue is not migrated yet\n";
+							} else {
+							    print "Cross-project link not migrated\n";
+			                }
 						}
 					}
+				} else {
+					print $issue->{jiraKey} .": " .$linkedIssue->{id} . " does not exist in map (cross-project link?)\n"
 				}
 			}
 		}		

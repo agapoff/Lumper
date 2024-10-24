@@ -161,13 +161,12 @@ if ($exportLinks eq 'true') {
 						$jiraLink->{outwardIssue}->{key} = $issue->{jiraKey};
 					} 
 
-					if (not $alreadyEstablishedLinksWith{$link->{linkType}->{name}}{$linkedIssue->{id}}) {
+					if (not $alreadyEstablishedLinksWith{$link->{linkType}->{name}}{join(" ", sort($linkedIssue->{id}, $issue->{id}))}) {
 						print $issue->{jiraKey} . ": creating link between ".$jiraLink->{outwardIssue}->{key}." and ".$jiraLink->{inwardIssue}->{key}."\n";
 
 						if ($jira->createIssueLink( Link => $jiraLink )) {
 							# To avoid link duplications (for BOTH direction type of issue link)
-							$alreadyEstablishedLinksWith{$link->{linkType}->{name}}{$linkedIssue->{id}} = 1;
-							$alreadyEstablishedLinksWith{$link->{linkType}->{name}}{$issue->{id}} = 1;
+							$alreadyEstablishedLinksWith{$link->{linkType}->{name}}{join(" ", sort($linkedIssue->{id}, $issue->{id}))} = 1;
 							print " Done\n";
 						} else {
 							print " Failed. ";
@@ -177,6 +176,8 @@ if ($exportLinks eq 'true') {
 							    print "Cross-project link not migrated\n";
 			                }
 						}
+					} else {
+						print $issue->{idReadable}.": already linked ". ($issuesById{$linkedIssue->{id}}->{jiraKey})  ."\n";
 					}
 				} else {
 					print $issue->{jiraKey} .": " .$linkedIssue->{id} . " does not exist in map (cross-project link?)\n"

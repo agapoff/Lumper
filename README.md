@@ -88,6 +88,13 @@ Then you just run the script:
 `--cookie-file` or `-c` - explicit Jira cookie file location.
 
 Lean back in you chair and prepare for a very long process.
+
+## After the job
+
+Issue links are the last things copied over. If anything failed during the process and you had to start back again using `--skip`, then the links for the skipped issues may have been missed.
+
+The `./syncLinks.pl` script can be used to sync the issue links which may have been skipped. This should only be run if all of the issues migrated came over with the same number.
+
 ## Things To Remember
 ### Restrictions For Some Fields
 `Summary` - the title of your ticket will be cropped according to Jira restriction (max 255 symbols)  

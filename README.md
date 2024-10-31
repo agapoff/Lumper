@@ -32,6 +32,7 @@ Lumper can:
 
 Lumper can not:
   * Save creation times for comments
+  * Copy cross-project issue links
 
 >Note that creation time for the YouTrack issues can be applied to the real creation time in Jira by modifying the database directly. Follow these [instructions](https://confluence.atlassian.com/jirakb/how-to-change-the-issue-creation-date-using-a-database-update-334430256.html) to transfer values from custom field `Original Creation Date` to the `Creation Time` in Jira. You can safely delete the custom field after that.
 ## Environment Setup

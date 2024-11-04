@@ -32,6 +32,7 @@ Lumper can:
 
 Lumper can not:
   * Save creation times for comments
+  * Copy cross-project issue links
 
 >Note that creation time for the YouTrack issues can be applied to the real creation time in Jira by modifying the database directly. Follow these [instructions](https://confluence.atlassian.com/jirakb/how-to-change-the-issue-creation-date-using-a-database-update-334430256.html) to transfer values from custom field `Original Creation Date` to the `Creation Time` in Jira. You can safely delete the custom field after that.
 ## Environment Setup
@@ -87,6 +88,13 @@ Then you just run the script:
 `--cookie-file` or `-c` - explicit Jira cookie file location.
 
 Lean back in you chair and prepare for a very long process.
+
+## After the job
+
+Issue links are the last things copied over. If anything failed during the process and you had to start back again using `--skip`, then the links for the skipped issues may have been missed.
+
+The `./syncLinks.pl` script can be used to sync the issue links which may have been skipped. This should only be run if all of the issues migrated came over with the same number.
+
 ## Things To Remember
 ### Restrictions For Some Fields
 `Summary` - the title of your ticket will be cropped according to Jira restriction (max 255 symbols)  

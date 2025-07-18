@@ -1,0 +1,119 @@
+# YouTrack Url and permanent token from Profile -> Account Security -> Tokens
+our $YTUrl='https://got-youtrack.agi.appgate.com';
+# Url and credentials to access Jira
+our $JiraUrl='https://mycompany.atlassian.net';
+
+# The project ID to migrate from (eg FOO, BAR)
+our $YTProject='ZTP';
+# The project ID to migrate to (eg FOO, BAR)
+our $JiraProject='ZT0';
+
+# Export tags from YT and import them as labels in Jira
+our $exportTags='true';
+# This is quite obvious
+our $exportAttachments='true';
+our $exportLinks='true';
+our $exportWorkLog='true';
+# Creation date and time will be exported in Original Creation Time field
+our $exportCreationTime='true';
+# You can change the name of the creation date field if you want to :)
+our $creationTimeCustomFieldName='Original Creation Date';
+# Jira can be configured to use diffrerent time formats. Recommended is ISO8601.
+# Currently there's a bug https://jira.atlassian.com/browse/JRACLOUD-61378
+# Jira is not able to parse exact ISO8601 format (see the link for details)
+# If you having issues with date time parsing use JIRA8601 date time format
+# Possible values here: ISO8601, RFC3389, RFC822, GOST7064, JIRA8601
+our $creationDateTimeFormat='ISO8601';
+# YouTrack is using regular markdown language to create rich text formatting 
+# (__bold text__, _italic_, headers etc). Jira is different - it supports some 
+# specific rich text formatting language. 
+# If you set this to true, then you'll need to install J2M utility. See README.md file for more info.
+our $convertTextFormatting='true';
+
+# In YouTrack the Issue Type, Priority and State are stored as custom fields 
+# with enum type of values by default. If you did change any of those field names, 
+# please type it here
+our $typeCustomFieldName="Type";
+our $priorityCustomFieldName="Priority";
+our $stateCustomFieldName="State";
+
+# Lumper will keep the issue keys identical in YT and Jira if YT has no gaps larger than this value
+our $maximumKeyGap=100;
+
+# Issue type mapping
+our %Type = (
+	'Bug' => 'Bug',
+	'Task' => 'Task',
+	'Exception' => 'Bug',
+	'Feature' => 'New Feature',
+	'Usability Problem' => 'Bug',
+	'Epic' => 'Task',
+	'Performance Problem' => 'Bug'
+);
+
+# Issue priority mapping
+our %Priority = (
+	'Minor' => 'Lowest',
+	'Normal' => 'Low',
+	'Major' => 'Medium',
+	'Critical' => 'High',
+	'Show-stopper' => 'Highest'
+);
+
+# Issue status mapping
+# By default the Status will remain Opened
+# From Jira side there should be Transitions (not Statuses) and all Transitions should be available from the initial state
+our %Status = (
+	"In Progress" => "In Progress",
+	"Can't Reproduce" => "Rejected",
+	"Duplicate" => "Rejected",
+	"Fixed" => "Done",
+	"Won't fix" => "Rejected",
+	"Incomplete" => "Rejected",
+	"Obsolete" => "Rejected",
+	"Verified" => "Verified",
+	"On Hold" => "On Hold",
+	"To Plan" => "To Plan",
+	"Done" => "Done",
+	"Approved to go live" => "Approved to go live"
+);
+
+# Some statuses in YT can be mapped to Resolutions in Jira
+# In order to use this feature a field Resolution should be added to screens (and removed after the migration if not needed)
+our %StatusToResolution = (
+	"Can't Reproduce" => "Cannot Reproduce",
+	"Duplicate" => "Duplicate",
+	"Obsolete" => "Obsolete",
+	"Incomplete" => "Won't Do",
+	"Won't fix" => "Won't Do"
+);
+
+# Custom fields mapping
+our %CustomFields = (
+	"Found in Version" => "Affects Version/s",
+	"Found in build" => "Found in build",
+	"Target version" => "Fix Version/s",
+	"Fixed in build" => "Fixed in build",
+	"Source" => "Source"
+);
+
+# Issue link types mapping
+our %IssueLinks = (
+	"Relates" => "Relates",
+	"Duplicate" => "Duplicate",
+	"Depend" => "Blocks",
+	"Subtask" => "Relates"
+);
+
+# User mapping. By default the username stays the same
+our %User = (
+	'john.doe' => 'jdoe',
+	'foo' => 'bar'
+);
+
+# This hash is used to comply with Jira's improved user privacy API.
+our %JiraUserIds = (
+    'jdoe' => "12345:some-uuid",
+    'bar' => "12345:another-uuid",
+    'onemoreuser' => "12345:one-more-uuid"
+);

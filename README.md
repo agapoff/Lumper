@@ -3,13 +3,21 @@ The tool for migration from YouTrack to Jira: easy and for free
 
 ## Table of Contents
 
-  1. [Capabilities](#capabilities)
-  1. [Environment Setup](#environment-setup)
-  1. [Prepare YouTrack](#prepare-yt)
-  1. [Prepare Jira](#prepare-jira)
-  1. [Do all the job](#do-job)
-  1. [Things To Remember](#things-to-remember)
-  1. [Needed Perl modules](#perl-modules)
+- [Lumper](#lumper)
+  - [Table of Contents](#table-of-contents)
+  - [Capabilities](#capabilities)
+  - [Environment Setup](#environment-setup)
+    - [Perl](#perl)
+    - [J2M Tool](#j2m-tool)
+  - [Prepare YouTrack](#prepare-youtrack)
+  - [Prepare Jira](#prepare-jira)
+  - [Do all the job](#do-all-the-job)
+  - [After the job](#after-the-job)
+  - [Things To Remember](#things-to-remember)
+    - [Restrictions For Some Fields](#restrictions-for-some-fields)
+    - [Note On Some Specific Issue Types](#note-on-some-specific-issue-types)
+    - [Attachments](#attachments)
+  - [Needed Perl modules](#needed-perl-modules)
 
 ## Capabilities
 Supported Versions (tested with):
@@ -139,3 +147,10 @@ Here's the list of used components:
   * File::Basename
   * List::Util
   * HTTP::Cookies::Netscape
+  * I found many more than need installing, including:
+  ** LWP::Protocol::https
+  ** HTTP::Request (be sure to run network test) 
+
+  cpan -T LWP:Protocol:https
+    the -T skips tests. I tried answering both n, N, y and Y to tests and it never worked
+  

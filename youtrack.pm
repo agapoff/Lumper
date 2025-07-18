@@ -2,7 +2,8 @@ package youtrack;
 
 use strict;
 use Data::Dumper;
-require LWP::UserAgent;
+use LWP::UserAgent;
+#use LWP::Protocol::https; # Required for https support
 use JSON qw( decode_json );
 use File::Temp qw ( tempdir );
 use List::Util qw( first );

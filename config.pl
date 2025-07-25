@@ -1,12 +1,12 @@
 # YouTrack Url and permanent token from Profile -> Account Security -> Tokens
 our $YTUrl='https://got-youtrack.agi.appgate.com';
 # Url and credentials to access Jira
-our $JiraUrl='https://mycompany.atlassian.net';
+our $JiraUrl='https://appgateinc.atlassian.net';
 
 # The project ID to migrate from (eg FOO, BAR)
-our $YTProject='ZTP';
+our $YTProject='SA';
 # The project ID to migrate to (eg FOO, BAR)
-our $JiraProject='ZT0';
+our $JiraProject='Z121';
 
 # Export tags from YT and import them as labels in Jira
 our $exportTags='true';
@@ -42,78 +42,82 @@ our $maximumKeyGap=100;
 
 # Issue type mapping
 our %Type = (
-	'Bug' => 'Bug',
 	'Task' => 'Task',
-	'Exception' => 'Bug',
-	'Feature' => 'New Feature',
-	'Usability Problem' => 'Bug',
-	'Epic' => 'Task',
-	'Performance Problem' => 'Bug'
+	'Bug' => 'Bug',
+	'Sanitation' => 'Sanitation',
+	'Support Case' => 'Support Case',
+	'Story' => 'Story',
+	'Epic' => 'Epic',
+	'Security' => 'Security',
+	'Documentation' => 'Documentation',
+	'Feature Request' => 'Feature Request'
 );
 
 # Issue priority mapping
 our %Priority = (
-	'Minor' => 'Lowest',
-	'Normal' => 'Low',
-	'Major' => 'Medium',
-	'Critical' => 'High',
-	'Show-stopper' => 'Highest'
+	'100' => '100',
+	'200' => '200',
+	'300' => '300',
+	'400' => '400',
+	'500' => '500'
 );
 
 # Issue status mapping
 # By default the Status will remain Opened
 # From Jira side there should be Transitions (not Statuses) and all Transitions should be available from the initial state
 our %Status = (
+	"Backlog" => "Backlog",
+	"4 Weeks" => "4 Weeks",
+	"2 Weeks" => "2 Weeks",
+	"Open" => "To Do",
 	"In Progress" => "In Progress",
-	"Can't Reproduce" => "Rejected",
-	"Duplicate" => "Rejected",
-	"Fixed" => "Done",
-	"Won't fix" => "Rejected",
-	"Incomplete" => "Rejected",
-	"Obsolete" => "Rejected",
+	"Open Pull Request" => "Open Pull Request",
+	"Merged & Testing" => "Merged & Testing",
+	"Verifying" => "Verifying",
 	"Verified" => "Verified",
-	"On Hold" => "On Hold",
-	"To Plan" => "To Plan",
-	"Done" => "Done",
-	"Approved to go live" => "Approved to go live"
+	"Obsolete" => "Obsolete",
+	"Duplicate" => "Duplicate",
+	"Won't Fix" => "Won't Fix",
+	"More Info required" => "More Info required"
 );
+#OPEN, DONE
+
 
 # Some statuses in YT can be mapped to Resolutions in Jira
 # In order to use this feature a field Resolution should be added to screens (and removed after the migration if not needed)
 our %StatusToResolution = (
-	"Can't Reproduce" => "Cannot Reproduce",
+	"Verified" => "Fixed",
+	"Won't Fix" => "Won't Fix",
 	"Duplicate" => "Duplicate",
-	"Obsolete" => "Obsolete",
-	"Incomplete" => "Won't Do",
-	"Won't fix" => "Won't Do"
+	"Obsolete" => "Invalid"
 );
 
 # Custom fields mapping
 our %CustomFields = (
-	"Found in Version" => "Affects Version/s",
-	"Found in build" => "Found in build",
-	"Target version" => "Fix Version/s",
-	"Fixed in build" => "Fixed in build",
-	"Source" => "Source"
+	"Team" => "ZTNA Team",
+	"Subsystem" => "Components",
+	"Fix for" => "Fix For",
+	"Impact" => "ZTNA Impact",
+	"Release note" => "Release note"
 );
 
 # Issue link types mapping
 our %IssueLinks = (
 	"Relates" => "Relates",
+	#"Is required for" => "blocks",
+	"Depend" => "Dependency",
+	#"Is duplicated by" => "Relates",
 	"Duplicate" => "Duplicate",
-	"Depend" => "Blocks",
-	"Subtask" => "Relates"
+	#"Parent for" => "",
+	#"Subtask" => ""
 );
 
 # User mapping. By default the username stays the same
 our %User = (
-	'john.doe' => 'jdoe',
-	'foo' => 'bar'
+	'peter.dalbenzio' => 'peter.dalbenzio@appgate.com'
 );
 
 # This hash is used to comply with Jira's improved user privacy API.
 our %JiraUserIds = (
-    'jdoe' => "12345:some-uuid",
-    'bar' => "12345:another-uuid",
-    'onemoreuser' => "12345:one-more-uuid"
+    'peter.dalbenzio@appgate.com' => "712020:88025364-2a3c-4c70-8940-138ad451181c",
 );

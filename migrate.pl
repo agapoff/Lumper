@@ -8,6 +8,7 @@ use youtrack;
 use check;
 use jira;
 require "config.pl";
+require "credentials.pl";
 
 use Data::Dumper;
 use Getopt::Long;
@@ -58,7 +59,7 @@ $display->printTitle("Getting YouTrack Issues");
 my $export = $yt->exportIssues(Project => $YTProject, Max => $maxissues);
 print "Exported issues: ".scalar @{$export}."\n";
 
-# Find active users from issues, commetns and other YT activity
+# Find active users from issues, comments and other YT activity
 my %users;
 foreach my $issue (@{$export}) {
 	$users{$issue->{Assignee}} = 1;

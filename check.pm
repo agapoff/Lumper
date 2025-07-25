@@ -107,19 +107,19 @@ our sub issueTypes {
     my %ytDefinedIssueTypes = map {$_ => 1}  @{$allYtCustomFields{$typeCustomFieldName}};
     my %jiraDefinedIssueTypes = %{$meta->{fields}};
 
-    die "Cannot retrieve issue types. Probably YouTrack issue type field '$typeCustomFieldName' does not exists" 
+    print "Cannot retrieve issue types. Probably YouTrack issue type field '$typeCustomFieldName' does not exists" 
         unless %ytDefinedIssueTypes;
 
     foreach my $ytIssueType (sort keys %Type) {	
-        die "\nIssue type '".$ytIssueType."' is present in config file but does ".
+        print "\nIssue type '".$ytIssueType."' is present in config file but does ".
         "not exists in YouTrack. Please check config file and correct Type mapping.\n"
             unless (defined $ytDefinedIssueTypes{$ytIssueType});
     }
     foreach my $ytIssueType (sort keys %ytDefinedIssueTypes) {		
-        die "\nYouTrack has an issue type '$ytIssueType' but there's no such ".
+        print "\nYouTrack has an issue type '$ytIssueType' but there's no such ".
         "mapping in config file. Please check config file and correct Type mapping.\n"
             unless (defined $Type{$ytIssueType});
-        die "\nYouTrack issue type '$ytIssueType' is mapped to '".$Type{$ytIssueType}."' but ".
+        print "\nYouTrack issue type '$ytIssueType' is mapped to '".$Type{$ytIssueType}."' but ".
         "there's no such issue type in Jira. Please check config file and correct Type mapping.\n"
             unless (defined $jiraDefinedIssueTypes{$Type{$ytIssueType}});
 
@@ -135,19 +135,20 @@ our sub issueLinks {
     $display->printTitle("Issue Links Mapping");
 
     my %ytDefinedIssueLinkTypes = map { $_->{name} => 1 } @{$yt->getAllLinkTypes()};
+    delete $ytDefinedIssueLinkTypes{Subtask};
     my %jiraDefinedIssueLinkTypes = map { $_->{name} => 1 } @{$jira->getAllLinkTypes()};
 
     foreach my $ytIssueLinkType (sort keys %IssueLinks) {	
-        die "\nIssue link '".$ytIssueLinkType."' is present in config file but does ".
+        print "\nIssue link '".$ytIssueLinkType."' is present in config file but does ".
         "not exists in YouTrack. Please check config file and correct Type mapping.\n"
             unless (defined $ytDefinedIssueLinkTypes{$ytIssueLinkType});
     }
     foreach my $issueLinkType (sort keys %ytDefinedIssueLinkTypes) {	
-        die "\nYouTrack has an issue link '$issueLinkType' but there's no such ".
+        print "\nYouTrack has an issue link '$issueLinkType' but there's no such ".
         "mapping in config file. Please check config file and correct IssueLinks mapping.\n"
             unless (defined $IssueLinks{$issueLinkType});
-        die "\nYouTrack issue link '$issueLinkType' is mapped to '".$IssueLinks{$issueLinkType}."' but ".
-        "there's no such issue type in Jira. Please check config file and correct IssueLinks mapping.\n"
+        print "\nYouTrack issue link '$issueLinkType' is mapped to '".$IssueLinks{$issueLinkType}."' but ".
+        "there's no such issue link in Jira. Please check config file and correct IssueLinks mapping.\n"
             unless (defined $jiraDefinedIssueLinkTypes{$IssueLinks{$issueLinkType}});
 
         printRelation($issueLinkType, $IssueLinks{$issueLinkType});
@@ -169,7 +170,7 @@ our sub fields {
     # Check mandatory fields first
     if ($exportCreationTime eq 'true') {
         foreach my $jiraIssue (keys %jiraDefinedFields) {
-            die "\nThe mandatory field named '$creationTimeCustomFieldName' is absent ".
+            print "\nThe mandatory field named '$creationTimeCustomFieldName' is absent ".
             "in Jira issue type '$jiraIssue'. ".
             "Please ensure that you've created custom field '$creationTimeCustomFieldName' and ".
             "assigned it to '$jiraIssue' type of a issue." 
@@ -178,11 +179,11 @@ our sub fields {
     }
     # Check all other fields
     foreach my $field (sort keys %CustomFields) {	
-        die "\nThe field '".$field."' is present in config file but does ".
+        print "\nThe field '".$field."' is present in config file but does ".
         "not exists in YouTrack. Please check config file and correct CustomFields mapping.\n"
             unless (defined $ytDefinedFields{$field});
         foreach my $jiraIssue (keys %jiraDefinedFields) {
-            die "\nYouTrack field named '$field' is mapped to '".$CustomFields{$field}.
+            print "\nYouTrack field named '$field' is mapped to '".$CustomFields{$field}.
             "' and it is absent in Jira issue type '$jiraIssue'. ".
             "Please ensure that you've created custom field '".$CustomFields{$field}."' and ".
             "assigned it to '$jiraIssue' type of a issue." 
@@ -205,21 +206,21 @@ our sub priorities {
     my %ytDefinedPriorities = map { $_ => 1} @{$allYtCustomFields{$priorityCustomFieldName}};
 
     # Priority field must present in YouTrack
-    die "Cannot retrieve priorities. Probably YouTrack field '$priorityCustomFieldName' does not exists" 
+    print "Cannot retrieve priorities. Probably YouTrack field '$priorityCustomFieldName' does not exists" 
         unless %ytDefinedPriorities;
 
     # All priorities must be defined in config file 
     foreach my $priority (sort keys %Priority) {	
-        die "\nPriority '".$priority."' is present in config file but does ".
+        print "\nPriority '".$priority."' is present in config file but does ".
         "not exists in YouTrack. Please check config file and correct Priority mapping.\n"
             unless (defined $ytDefinedPriorities{$priority});
     }
     # Now compare priorities with Jira
     foreach my $priority (sort keys %ytDefinedPriorities) {
-        die "\nYouTrack has an priority '$priority' but there's no such ".
+        print "\nYouTrack has an priority '$priority' but there's no such ".
         "mapping in config file. Please check config file and correct Priority mapping.\n"
             unless (defined $Priority{$priority});
-        die "\nYouTrack priority '$priority' is mapped to '".$Priority{$priority}."' but ".
+        print "\nYouTrack priority '$priority' is mapped to '".$Priority{$priority}."' but ".
         "there's no such priority in Jira. Please check config file and correct Priority mapping.\n"
             unless (defined $jiraDefinedPriorities{$Priority{$priority}});
 
@@ -248,22 +249,22 @@ our sub statuses {
     }
 
     # Status field must present in both Jira and YouTrack
-    die "Cannot retrieve statuses. Probably YouTrack field '$stateCustomFieldName' does not exists" 
+    print "Cannot retrieve statuses. Probably YouTrack field '$stateCustomFieldName' does not exists" 
         unless %ytDefinedStatuses;
         
     # All statuses must be defined in config file 
     foreach my $state (sort keys %Status) {	
-        die "\nStatus '".$state."' is present in config file but does ".
+        print "\nStatus '".$state."' is present in config file but does ".
         "not exists in YouTrack. Please check config file and correct Status mapping.\n"
             unless (defined $ytDefinedStatuses{$state});
     }
     
     # Now compare statuses with Jira
     foreach my $state (sort keys %ytDefinedStatuses) {
-        die "\nYouTrack has a status '$state' but there's no such ".
+        print "\nYouTrack has a status '$state' but there's no such ".
         "mapping in config file. Please check config file and correct Status or Resolution mapping.\n"
             unless (defined $Status{$state} or defined $StatusToResolution{$state});
-        die "\nYouTrack status '$state' is mapped to '".($Status{$state} or $StatusToResolution{$state})."' but ".
+        print "\nYouTrack status '$state' is mapped to '".($Status{$state} or $StatusToResolution{$state})."' but ".
         "there's no such state/resolution in Jira. Please check config file and ".
         "correct Status or Resolution mapping.\n"
             unless (defined $jiraDefinedStatuses{$Status{$state}} or 
@@ -287,13 +288,13 @@ our sub resolutions {
 
     # Check status existance
     foreach my $resolution (sort keys %StatusToResolution) {	
-        die "\nStatus '".$resolution."' is present in config file but does ".
+        print "\nStatus '".$resolution."' is present in config file but does ".
         "not exists in YouTrack. Please check config file and correct Resolution mapping.\n"
             unless (defined $ytDefinedResolutions{$resolution});
     }
 
     foreach my $resolution (sort keys %ytDefinedResolutions)  {
-        die "\nYouTrack status '$resolution' is mapped to '".($StatusToResolution{$resolution})."'".
+        print "\nYouTrack status '$resolution' is mapped to '".($StatusToResolution{$resolution})."'".
         " resolution, but there's no such resolution in Jira. Please check config file and ".
         "correct Resolution mapping.\n"
             unless (defined $jiraDefinedResolutions{$StatusToResolution{$resolution}});

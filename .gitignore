@@ -1,1 +1,3 @@
 credentials.pl
+virtualenv
+virtualenv/**

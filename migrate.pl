@@ -40,13 +40,13 @@ unless ($yt) {
 	die "Could not login to $YTUrl";
 }
 
-my $jira = jira->new(	Url         => $JiraUrl,
-                    	Login       => $JiraLogin,
-                      	Password    => $JiraPassword,
-                      	Verbose     => $verbose,
-                      	Project     => $JiraProject,
-		      		 	CookieFile => $cookieFile,
-);
+my $jira = jira->new(Url        => $JiraUrl,
+                    Login       => $JiraLogin,
+                    Password    => $JiraPassword,
+                    Verbose     => $verbose,
+                    Project     => $JiraProject,
+		      		CookieFile  => $cookieFile,
+					ZtnaBoard   => $ztnaBoardName);
 
 unless ($jira) {
     die "Could not login to $JiraUrl\n";
@@ -149,7 +149,6 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		$header .= "]\n";
 	}
 
-
 	# Convert Markdown to Jira-specific rich text formatting
 	my $description = convertUserMentions($issue->{description});
 	$description = convertAttachmentsLinks($description, $attachmentFileNamesMapping);
@@ -166,7 +165,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
                    reporter => { id => $JiraUserIds{$User{$issue->{reporter}->{login}} || $issue->{reporter}->{login}} },
                    summary => $issue->{summary},
                    description => $header.$description,
-                   priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || 'Medium' }
+                   priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || '200' } #TODO: change this to empty string
 	);
 
 	# Let's check through custom fields
@@ -177,6 +176,13 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 				# If the value of the field happens to be a username, assume this is a user field.
 				$custom{$CustomFields{$field}} = $JiraUserIds{$User{$issue->{$field}}};
 			} else {
+				if ($field eq "Fix for") {
+					#regex to remove the blank space and anything after. example "0.8 (P8)" -> "0.8"
+					$issue->{$field} =~ s/ .*$// if defined $issue->{$field};
+				} elsif ($field eq "Impact") {
+					# if Impact in YouTrack is empty, then set it to "Not reviewed" in JIRA
+					$issue->{$field}->[0] = "Not reviewed" if defined $issue->{$field} and $issue->{$field}->[0] eq '';
+				}
 				$custom{$CustomFields{$field}} = $issue->{$field};
 			}
 		}

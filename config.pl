@@ -59,7 +59,7 @@ our %Priority = (
 	'200' => '200',
 	'300' => '300',
 	'400' => '400',
-	'500' => '500'
+	'500' => '500',
 );
 
 # Issue status mapping
@@ -69,7 +69,7 @@ our %Status = (
 	"Backlog" => "Backlog",
 	"4 Weeks" => "4 Weeks",
 	"2 Weeks" => "2 Weeks",
-	"Open" => "To Do",
+	"Open" => "Open",
 	"In Progress" => "In Progress",
 	"Open Pull Request" => "Open Pull Request",
 	"Merged & Testing" => "Merged & Testing",
@@ -80,8 +80,6 @@ our %Status = (
 	"Won't Fix" => "Won't Fix",
 	"More Info required" => "More Info required"
 );
-#OPEN, DONE
-
 
 # Some statuses in YT can be mapped to Resolutions in Jira
 # In order to use this feature a field Resolution should be added to screens (and removed after the migration if not needed)
@@ -95,10 +93,13 @@ our %StatusToResolution = (
 # Custom fields mapping
 our %CustomFields = (
 	"Team" => "ZTNA Team",
-	"Subsystem" => "Components",
-	"Fix for" => "Fix For",
+	"Subsystem" => "ZTNA Subsystem",
 	"Impact" => "ZTNA Impact",
-	"Release note" => "Release note"
+	"Fix for" => "Fix versions",
+	"Release note" => "Release note",
+	"Estimate" => "Story points",
+	"Original Estimate" => "Original estimate",
+	"Sprint" => "Sprint"
 );
 
 # Issue link types mapping
@@ -121,3 +122,5 @@ our %User = (
 our %JiraUserIds = (
     'peter.dalbenzio@appgate.com' => "712020:88025364-2a3c-4c70-8940-138ad451181c",
 );
+
+our $ztnaBoardName = "ZTNA Board";

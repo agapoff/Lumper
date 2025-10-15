@@ -52,6 +52,7 @@ YouTrack is using regular markdown language to create rich text formatting (__bo
 1. Run this command in cmd/bash:
 ```bash
 npm install j2m --save
+npm install -g j2m
 ```
 
 ## Prepare YouTrack

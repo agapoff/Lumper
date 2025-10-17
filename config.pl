@@ -40,6 +40,14 @@ our $stateCustomFieldName="State";
 # Lumper will keep the issue keys identical in YT and Jira if YT has no gaps larger than this value
 our $maximumKeyGap=100;
 
+
+opswat
+observability & monitoring for ztp platform; building and maintaining. following devops aproach to push code 
+own all ztp
+get more controllers to get on ztp
+
+
+
 # Issue type mapping
 our %Type = (
 	'Task' => 'Task',
@@ -99,7 +107,8 @@ our %CustomFields = (
 	"Release note" => "Release note",
 	"Estimate" => "Story points",
 	"Original Estimate" => "Original estimate",
-	"Sprint" => "Sprint"
+	"Sprint" => "Sprint",
+	"Craft link" => "Craft link"
 );
 
 # Issue link types mapping
@@ -108,19 +117,31 @@ our %IssueLinks = (
 	#"Is required for" => "blocks",
 	"Depend" => "Dependency",
 	#"Is duplicated by" => "Relates",
-	"Duplicate" => "Duplicate",
+	"Duplicate" => "Duplicate"
 	#"Parent for" => "",
 	#"Subtask" => ""
 );
 
 # User mapping. By default the username stays the same
 our %User = (
-	'peter.dalbenzio' => 'peter.dalbenzio@appgate.com'
+	'peter.dalbenzio' => 'peter.dalbenzio@appgate.com',
+	'rafael.soto' => 'rafael.soto@appgate.com',
+	'edwin.ramirez' => 'edwin.ramirez@appgate.com',
+	'masaya.ando' => 'masaya.ando@appgate.com',
+	'gokhan.berberoglu' => 'gokhan.berberoglu@appgate.com',
+	'per.leino' => 'per.leino@appgate.com',
+	'daniel.bailey' => 'daniel.bailey@appgate.com'
 );
 
 # This hash is used to comply with Jira's improved user privacy API.
 our %JiraUserIds = (
-    'peter.dalbenzio@appgate.com' => "712020:88025364-2a3c-4c70-8940-138ad451181c",
+    'peter.dalbenzio@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c',
+	'rafael.soto@appgate.com' => '712020:888c0b13-914d-4cb1-afee-a7c186c26581',
+	'edwin.ramirez@appgate.com' => '',
+	'masaya.ando@appgate.com' => '712020:99d5c0bd-0e59-4b7d-a567-3be3274c30f8',
+	'gokhan.berberoglu@appgate.com' => '',
+	'per.leino@appgate.com' => '712020:c886d073-6cac-40be-af7d-bdf7025fbe56',
+	'daniel.bailey@appgate.com' => '712020:9049c7d8-d374-4431-828f-becb505af54f'
 );
 
 our $ztnaBoardName = "ZTNA Board";

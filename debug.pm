@@ -32,7 +32,7 @@ if($deleteAll) {
     while (@{$allIssues->{issues}}) {
         foreach my $issue (@{$allIssues->{issues}}) {
             my $key = $issue->{key};
-            $key =~ /^[A-Z]+-(\d+)$/;
+            $key =~ /^[A-Z0-9]+-(\d+)$/;
             $jira->deleteIssue(Key => $key);
         }
         $allIssues = $jira->getAllIssues(Project => "WEB", Max => 100);

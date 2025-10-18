@@ -111,6 +111,9 @@ unless ($notest) {
 	&ifProceed;
 }
 
+exit;
+die "Error";
+
 my $issuesCount = 0;
 
 $display->printTitle("Export To Jira");

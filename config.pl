@@ -40,14 +40,6 @@ our $stateCustomFieldName="State";
 # Lumper will keep the issue keys identical in YT and Jira if YT has no gaps larger than this value
 our $maximumKeyGap=100;
 
-
-opswat
-observability & monitoring for ztp platform; building and maintaining. following devops aproach to push code 
-own all ztp
-get more controllers to get on ztp
-
-
-
 # Issue type mapping
 our %Type = (
 	'Task' => 'Task',

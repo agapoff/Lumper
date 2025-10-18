@@ -154,6 +154,10 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 
 	# Convert Markdown to Jira-specific rich text formatting
 	my $description = convertUserMentions($issue->{description});
+	my $remove = '<div class="wiki text prewrapped">';	
+	$description =~ s/\Q$remove\E//; 
+	$remove = '</div>';
+	$description =~ s/\Q$remove\E//; 
 	$description = convertAttachmentsLinks($description, $attachmentFileNamesMapping);
 
 	if($convertTextFormatting eq 'true') {	

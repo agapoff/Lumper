@@ -226,7 +226,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	print "Jira issue key generated $key\n";
 
 	# Checking issue number in key (eg in FOO-20 the issue number is 20)
-	if ($key =~ /^[A-Z]+-(\d+)$/) {
+	if ($key =~ /^[A-Z0-9]+-(\d+)$/) {
 		while ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
 			print "We're having a gap and will delete the issue\n";
 			unless ($jira->deleteIssue(Key => $key)) {
@@ -234,7 +234,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 			}
 			$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue";
 			print "\nNew Jira issue key generated $key\n";
-			$key =~ /^[A-Z]+-(\d+)$/;
+			$key =~ /^[A-Z0-9]+-(\d+)$/;
 		}
 	} else {
 		die "Wrong issue key $key";

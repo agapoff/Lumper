@@ -120,9 +120,10 @@ sub getMeta {
 }
 
 sub getUser {
+	# This API fails; our API tokens don't have global permission. But this subroutine is only used by check.pm
 	my $self = shift;
 	my %arg = @_;
-	my $response = $ua->get($self->{url}.'/rest/api/latest/user?accountId='.$arg{Id}, Authorization => 'Basic '.$self->{basic});
+	my $response = $ua->get($self->{url}.'/rest/api/3/user?accountId='.$arg{Id}, Authorization => 'Basic '.$self->{basic});
 	if ($response->is_success) {
 		return decode_json $response->decoded_content;
 	}

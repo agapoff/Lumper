@@ -54,46 +54,54 @@ our sub passwords {
 our sub users {
     my $self = shift;
 
-    my %users = %{$self->{RealUsers}};
-    my %User = %{$self->{Users}};
+    my %usersFromYouTrackTickets = %{$self->{RealUsers}};
+    my %ytUserToEmailMapping = %{$self->{Users}};
     my %JiraUserIds = %{$self->{JiraUserIds}};
     my $JiraLogin = $self->{JiraLogin};
     my %JiraPasswords = %{$self->{Passwords}};
 
     $display->printTitle("User Mapping");
 
-    foreach (sort keys %users) {
-		my $user = $_;
-		my $jiraUser = $_;
+    my $index = 0;
+    foreach (sort keys %usersFromYouTrackTickets) {
+        my $userFromYouTrackTickets = $_;
+		my $jiraUser = '';
 		my $status = "OK";
 
-		if ($User{$user}) {
-		    $jiraUser = $User{$user};
+		if ($ytUserToEmailMapping{$userFromYouTrackTickets}) {
+		    $jiraUser = $ytUserToEmailMapping{$userFromYouTrackTickets};
 		}
+        else{
+            $jiraUser = $_;
+        }
 		my $jiraId = $JiraUserIds{$jiraUser};
 		unless ($jiraId) {
 			$status = "Missing Jira ID";
-			$User{$user} = $JiraLogin;
+			$ytUserToEmailMapping{$userFromYouTrackTickets} = $JiraLogin;
 			$jiraUser = $JiraLogin;
 		} else {
 			my $gottenUser = $jira->getUser(Id => $jiraId);
-			unless ($gottenUser) {
-				$status = "User not found";
-				$User{$user} = $JiraLogin;
-				$jiraUser = $JiraLogin;
-			} else {
-				unless ($gottenUser->{emailAddress} eq $jiraUser) {
-					$status = "mismatching email";
-				}
-			}
+			
+            #commenting out the below code because the getUser() API calls always fails (lack of permission). Since it always fails,
+            #the script is then using the Jira User Id of the person running the script. We don't want to do that, so we skip this check entirely.
+            #unless ($gottenUser) {
+			#	$status = "User not found";
+			#	$ytUserToEmailMapping{$userFromYouTrackTickets} = $JiraLogin;
+			#	$jiraUser = $JiraLogin;
+			#} else {
+			#	unless ($gottenUser->{emailAddress} eq $jiraUser) {
+			#		$status = "mismatching email";
+			#	}
+			#}
 		}
 		unless ($JiraPasswords{$jiraUser}) {
 			$status = $status . '(no PW)';
 		}
-		printRel2($user, $jiraUser, $JiraUserIds{$jiraUser}, $status);
+		printRel2($userFromYouTrackTickets, $jiraUser, $JiraUserIds{$jiraUser}, $status);
+        $index++;
     }
 
-    return \%User;
+    return \%ytUserToEmailMapping;
 }
 
 our sub issueTypes {

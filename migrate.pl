@@ -70,7 +70,7 @@ foreach my $issue (@{$export}) {
 }
 # Join those active with those that are listed in config 
 # in case if config ones are not listed in the %users
-foreach my $configUser (keys %User) {
+foreach my $configUser (keys %Users) {
 	$users{$configUser} = 1;
 }
 print Dumper(%users) if ($verbose);
@@ -83,7 +83,7 @@ my $check = check->new(
 	Passwords => \%JiraPasswords,
 	JiraUserIds => \%JiraUserIds,
 	RealUsers =>  \%users,
-	Users => \%User,
+	Users => \%Users,
 	TypeFieldName => $typeCustomFieldName,
 	Types => \%Type,
 	Links => \%IssueLinks,
@@ -97,7 +97,7 @@ my $check = check->new(
 	StatusToResolutions => \%StatusToResolution
 );
 
-%User = %{$check->users()};
+%Users = %{$check->users()};
 
 unless ($notest) {
 	$check->passwords();
@@ -145,7 +145,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	my $header = "";
 	if (not($exportCreationTime)) {
 		$header .= "[Created ";
-		if ($User{$issue->{reporter}->{login}} eq $JiraLogin) { 
+		if ($Users{$issue->{reporter}->{login}} eq $JiraLogin) { 
 			$header .= "by ".$issue->{reporter}->{login}." "; 
 		}
 		$header .= $creationTime;
@@ -164,8 +164,8 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	
 	my %import = ( project => { key => $JiraProject },
 	               issuetype => { name => $Type{$issue->{$typeCustomFieldName}} || $issue->{$typeCustomFieldName} },
-                   assignee => { id => $JiraUserIds{$User{$issue->{Assignee}} || $issue->{Assignee}} },
-                   reporter => { id => $JiraUserIds{$User{$issue->{reporter}->{login}} || $issue->{reporter}->{login}} },
+                   assignee => { id => $JiraUserIds{$Users{$issue->{Assignee}} || $issue->{Assignee}} },
+                   reporter => { id => $JiraUserIds{$Users{$issue->{reporter}->{login}} || $issue->{reporter}->{login}} },
                    summary => $issue->{summary},
                    description => $header.$description,
                    priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || '200' } #TODO: change this to empty string
@@ -175,7 +175,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	my %custom;
 	foreach my $field (keys %CustomFields) {
 		if (defined $issue->{$field}) {
-			if (defined $User{$issue->{$field}}) {
+			if (defined $Users{$issue->{$field}}) {
 				# If the value of the field happens to be a username, assume this is a user field.
 				$custom{$CustomFields{$field}} = $JiraUserIds{$User{$issue->{$field}}};
 			} else {
@@ -258,7 +258,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	# Create comments
 	print "\nCreating comments\n";
 	foreach my $comment (@{$issue->{comments}}) {
-		my $author = $User{$comment->{author}->{login}} || $comment->{author}->{login};
+		my $author = $Users{$comment->{author}->{login}} || $comment->{author}->{login};
 		my $date = scalar localtime ($comment->{created}/1000);
 
 		my $text = $comment->{text};
@@ -297,11 +297,11 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 				timeSpentSeconds => $workLog->{duration}->{minutes} * 60
 			);
 
-			if ( $JiraPasswords{$User{ $workLog->{author}->{login} }} and not $JiraPasswords{$User{ $workLog->{author}->{login} }} eq $JiraPassword ) {
+			if ( $JiraPasswords{$Users{ $workLog->{author}->{login} }} and not $JiraPasswords{$Users{ $workLog->{author}->{login} }} eq $JiraPassword ) {
 				$jira->addWorkLog(Key => $key, 
 								WorkLog => \%jiraWorkLog, 
-								Login => $User{ $workLog->{author}->{login} }, 
-								Password => $JiraPasswords{$User{ $workLog->{author}->{login} }}) 
+								Login => $Users{ $workLog->{author}->{login} }, 
+								Password => $JiraPasswords{$Users{ $workLog->{author}->{login} }}) 
 					|| warn "\nError creating work log";
 			} else {
 				my $originalAuthor = convertUserMentions("[ Original Author: \@".$workLog->{author}->{login}." ]\n");
@@ -412,7 +412,7 @@ sub convertUserMentions {
 	# Convert user @foo mentions to Jira [~accountid:$personId] links (doesn't seem to work)
 	# $textToConvert =~ s/\B\@(\S+)/\@$1 \[\~acccountid:$JiraUserIds{$User{$1}}\])/g;
 	# Convert user @foo mentions to Jira [@foo|/jira/people/$personId] links
-	$textToConvert =~ s/\B\@([^\s,]+)/\[\@$1\|\/jira\/people\/$JiraUserIds{$User{$1}}\]/g;
+	$textToConvert =~ s/\B\@([^\s,]+)/\[\@$1\|\/jira\/people\/$JiraUserIds{$Users{$1}}\]/g;
 
 	return $textToConvert;
 }

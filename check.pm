@@ -80,10 +80,9 @@ our sub users {
 			$ytUserToEmailMapping{$userFromYouTrackTickets} = $JiraLogin;
 			$jiraUser = $JiraLogin;
 		} else {
-			my $gottenUser = $jira->getUser(Id => $jiraId);
-			
-            #commenting out the below code because the getUser() API calls always fails (lack of permission). Since it always fails,
+			#commenting out the below code because the getUser() API calls always fails (lack of permission). Since it always fails,
             #the script is then using the Jira User Id of the person running the script. We don't want to do that, so we skip this check entirely.
+            #my $gottenUser = $jira->getUser(Id => $jiraId);			
             #unless ($gottenUser) {
 			#	$status = "User not found";
 			#	$ytUserToEmailMapping{$userFromYouTrackTickets} = $JiraLogin;

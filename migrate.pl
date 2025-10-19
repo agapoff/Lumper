@@ -24,6 +24,7 @@ $display->printTitle("Initialization");
 my ($skip, $notest, $maxissues, $cookieFile, $verbose);
 Getopt::Long::Configure('bundling');
 GetOptions(
+	"first|f=i"       => \$first,
     "skip|s=i"      => \$skip,
     "no-test|t"      => \$notest,
     "max-issues|m=i" => \$maxissues,
@@ -111,14 +112,41 @@ unless ($notest) {
 	&ifProceed;
 }
 
-exit;
-die "Error";
-
 my $issuesCount = 0;
 
 $display->printTitle("Export To Jira");
 
-foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export}) {
+my @sortedIssues = sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export};
+
+my $length = scalar @{$export};
+if ($verbose){
+	print "count items export: $length\n";
+	%length = scalar keys @sortedIssues;
+	print "count items sortedIssues: $length\n";
+}
+
+$first = $length if (not defined $first);
+print "Will process first $first issues\n";
+
+my @firstNIssues = (values @sortedIssues)[0..($first-1)];
+if ($verbose){
+	foreach my $issue (@firstNIssues) {
+		print "Issue ID: " . $issue->{idReadable} . "\tNumber in Project: " . $issue->{numberInProject} . "\n";
+	}
+	#Issue ID: SA-2		Number in Project: 2
+	#Issue ID: SA-3		Number in Project: 3
+	#Issue ID: SA-4		Number in Project: 4
+	#Issue ID: SA-5		Number in Project: 5
+	#Issue ID: SA-6		Number in Project: 6
+	#Issue ID: SA-7		Number in Project: 7
+	#Issue ID: SA-8		Number in Project: 8
+	#Issue ID: SA-9		Number in Project: 9
+	#Issue ID: SA-11	Number in Project: 11
+	#Issue ID: SA-12	Number in Project: 12
+	&ifProceed;
+}
+
+foreach my $issue (@firstNIssues) {
 	$display->printTitle($YTProject."-".$issue->{numberInProject});
 	
 	if ($skip && $issue->{numberInProject} <= $skip) {

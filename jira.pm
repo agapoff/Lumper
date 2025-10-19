@@ -51,6 +51,9 @@ sub new {
 				die "Cannot get meta for project ".$arg{Project}." (".$response->status_line.")\n";
 		}
 		my $rawMeta = decode_json $response->decoded_content;
+		print "Print this raw meta data to help with troubleshooting\n";
+		print Dumper($rawMeta) if $arg{Verbose};
+		print "\n=======\n" if $arg{Verbose};
 		foreach my $project (@{$rawMeta->{projects}}) {
 			if ($project->{key} eq $arg{Project}) {
 				$meta->{projectId} = $project->{id};
@@ -105,8 +108,9 @@ sub new {
 		$meta->{versions} = {};
 		foreach my $version (@{$versions}) {
 			$meta->{versions}->{$version->{name}} = $version->{id};
-		}		
+		}
 
+		print "Print this extracted meta to help with troubleshooting\n";
 		print Dumper($meta) if $arg{Verbose};
 		$self->{meta} = $meta;
 		$self->{project} = $arg{Project};
@@ -362,6 +366,7 @@ sub createIssue {
 		# update the cache in $meta
 		$meta->{sprints}->{$sprintName} = $sprintId;
 	}
+	my $isSetSprintId = 0;
 	if (defined $data{fields}->{customfield_10020}) {
 		# if $data{fields}->{customfield_10020} has 1 or more sprints, take the first one 
 		if (ref $data{fields}->{customfield_10020} eq 'ARRAY') {
@@ -374,16 +379,18 @@ sub createIssue {
 					my $sprintName = $sprintNameArray->[0];
 					my $sprintId = $meta->{sprints}->{$sprintName};
 					$data{fields}->{customfield_10020} = $sprintId;
+					$isSetSprintId = 1;
 				}
 			}
 		}
 	}
-
-	$data{fields}->{customfield_10721} = 6.4;
+	if (!$isSetSprintId) {
+		delete $data{fields}->{customfield_10020};
+	}
 
 	# and lastly, actually create the issue
 	my $content = encode_json \%data;
-	print $content."\n" if ($self->{verbose});
+	print "Issue Content: " . $content . "\n";
 	my $response = $ua->post($self->{url}.'/rest/api/latest/issue', Authorization => 'Basic '.$self->{basic}, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
 		print $response->status_line."\n" if ($self->{verbose});
@@ -422,7 +429,6 @@ sub changeFields {
 			}
 		}
 	}
-	#print Dumper (\%data);
 
 	my $content = encode_json \%data;
 	print $content."\n" if ($self->{verbose});

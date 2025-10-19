@@ -129,6 +129,7 @@ $first = $length if (not defined $first);
 print "Will process first $first issues\n";
 
 my @firstNIssues = (values @sortedIssues)[0..($first-1)];
+print "Print this list of issues to help with troubleshooting";
 if ($verbose){
 	foreach my $issue (@firstNIssues) {
 		print "Issue ID: " . $issue->{idReadable} . "\tNumber in Project: " . $issue->{numberInProject} . "\n";
@@ -203,6 +204,9 @@ foreach my $issue (@firstNIssues) {
                    priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || '200' } #TODO: change this to empty string
 	);
 
+
+	
+
 	# Let's check through custom fields
 	my %custom;
 	foreach my $field (keys %CustomFields) {
@@ -249,8 +253,8 @@ foreach my $issue (@firstNIssues) {
 			print "Found tags: ".Dumper(@tags) if ($verbose);
 		}
 	}
-	
-	my $key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue";
+
+	my $key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue\n";
 	print "Jira issue key generated $key\n";
 
 	# Checking issue number in key (eg in FOO-20 the issue number is 20)
@@ -258,37 +262,37 @@ foreach my $issue (@firstNIssues) {
 		while ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
 			print "We're having a gap and will delete the issue\n";
 			unless ($jira->deleteIssue(Key => $key)) {
-				warn "Error while deleting the issue $key";
+				warn "Error while deleting the issue $key\n";
 			}
-			$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue";
-			print "\nNew Jira issue key generated $key\n";
+			$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue\n";
+			print "New Jira issue key generated $key\n";
 			$key =~ /^[A-Z0-9]+-(\d+)$/;
 		}
 	} else {
-		die "Wrong issue key $key";
+		die "Wrong issue key $key\n";
 	}
 
-	# Save Jira issue key for forther linking
+	# Save Jira issue key for further linking
 	$issue->{jiraKey} = $key;
 
 	# Transition
 	if ($Status{$issue->{State}}) {
-		print "\nChanging status to ".$Status{$issue->{State}}."\n";
+		print "Changing status to ".$Status{$issue->{State}}."\n";
 		unless ($jira->doTransition(Key => $key, Status => $Status{$issue->{State}})) {
-			warn "Failed doing transition";
+			warn "Failed doing transition\n";
 		}
 	}
 
 	# Resolution
 	if ($StatusToResolution{$issue->{State}}) {
-		print "\nChanging resolution to ".$StatusToResolution{$issue->{State}}."\n";
+		print "Changing resolution to ".$StatusToResolution{$issue->{State}}."\n";
 		unless ($jira->changeFields(Key => $key, Fields => { 'Resolution' => $StatusToResolution{$issue->{State}} } )) {
-			warn "Failed updating fields"
+			warn "Failed updating fields\n"
 		}
 	}
 
 	# Create comments
-	print "\nCreating comments\n";
+	print "Creating comments\n";
 	foreach my $comment (@{$issue->{comments}}) {
 		my $author = $Users{$comment->{author}->{login}} || $comment->{author}->{login};
 		my $date = scalar localtime ($comment->{created}/1000);
@@ -309,17 +313,17 @@ foreach my $issue (@firstNIssues) {
 		if ( $JiraPasswords{$author} && not $JiraPasswords{$author} eq $JiraPassword ) {
 			$header = "[ $date ]\n";
 			$text = $header.$text;
-			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || warn "Error creating comment";
+			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || warn "Error creating comment\n";
 		} else {
 			$header = convertUserMentions("[ \@".$comment->{author}->{login}." $date ]\n");
 			$text = $header.$text;
-			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || warn "Error creating comment";
+			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || warn "Error creating comment\n";
 		}
 	}
 
 	# Export work log
 	if ($exportWorkLog eq 'true') {
-		print "\nExporting work log\n";
+		print "Exporting work log\n";
 		my $workLogs = $yt->getWorkLog( IssueKey => $issue->{idReadable} );
 		foreach my $workLog (@{$workLogs->{workItems}}) {
 			my @parsedTime = localtime ($workLog->{created}/1000);
@@ -334,19 +338,19 @@ foreach my $issue (@firstNIssues) {
 								WorkLog => \%jiraWorkLog, 
 								Login => $Users{ $workLog->{author}->{login} }, 
 								Password => $JiraPasswords{$Users{ $workLog->{author}->{login} }}) 
-					|| warn "\nError creating work log";
+					|| warn "Error creating work log\n";
 			} else {
 				my $originalAuthor = convertUserMentions("[ Original Author: \@".$workLog->{author}->{login}." ]\n");
 				$jiraWorkLog{comment} = $originalAuthor."".$jiraWorkLog{comment};
 				$jira->addWorkLog(Key => $key, WorkLog => \%jiraWorkLog) 
-					|| warn "\nError creating work log";
+					|| warn "Error creating work log\n";
 			}			
 		}
 	}
 
 	# If descriptions exceeds Jira limitations - save it as an attachment
 	if (length $header.$description >= 32766) {
-		print "\nDescription exceeds Jira max symbol limitation and will be saved as attachment.\n";
+		print "Description exceeds Jira max symbol limitation and will be saved as attachment.\n";
 		my $tempdir = tempdir();
 		open my $fh, ">", "$tempdir/description.md";
 		binmode $fh, "encoding(UTF-8)";
@@ -359,7 +363,7 @@ foreach my $issue (@firstNIssues) {
 	if (@{$attachments}) {
 		print "Uploading ".scalar @{$attachments}." files\n";
 		unless ($jira->addAttachments(IssueKey => $key, Files => $attachments)) {
-			warn "Cannot upload attachment to $key";
+			warn "Cannot upload attachment to $key\n";
 		}
 	}
 }

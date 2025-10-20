@@ -248,11 +248,17 @@ foreach my $issue (@firstNIssues) {
 
 	# Let's check for labels/tags
 	if ($exportTags eq 'true') {
+		$msg = "Checking for tags";
 		my @tags = $yt->getTags(IssueKey => $issue->{id});
 		if (@tags) {
+			$msg .= " - setting tags and their values";
 			$import{labels} = [@tags];
 			print "Found tags: ".Dumper(@tags) if ($verbose);
 		}
+		else {
+			$msg .= " - no tags found";
+		}
+		print $msg."\n";
 	}
 	
 	my $key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue\n";

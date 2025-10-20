@@ -207,7 +207,6 @@ foreach my $issue (@firstNIssues) {
 	if(!defined $issue->{Assignee} || $issue->{Assignee} eq '') {
 		delete $import{assignee};
 	}
-	print Dumper(%import);
 
 	# Let's check through custom fields
 	my %custom;

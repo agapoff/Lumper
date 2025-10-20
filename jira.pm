@@ -83,7 +83,7 @@ sub new {
 			}
 		}
 		if (!$found) {
-			print "Board with name 'ZTNA Board' not found in project $arg{Project}. Please create it.\n";
+			print "Board with name $meta->{ztnaBoard} not found in project $arg{Project}. Please create it.\n";
 		}
 		$response = $ua->get($arg{Url}.'/rest/agile/1.0/board/'.$meta->{boards}->{$meta->{ztnaBoard}}.'/sprint', Authorization => 'Basic '.$basic, 'Accept' => 'application/json');
 		if (!$response->is_success) {
@@ -373,7 +373,7 @@ sub createIssue {
 		print "Sprint '$sprintName' does NOT exist in Jira sprints. It will be created.\n";
 
 		# create the sprint and grab the id
-		my $boardId = $meta->{boards}->{'ZTNA Board'};
+		my $boardId = $meta->{boards}->{$meta->{ztnaBoard}};
 		my %createSprintData = (
 			name => $sprintName,
 			originBoardId => $boardId

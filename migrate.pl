@@ -203,9 +203,11 @@ foreach my $issue (@firstNIssues) {
                    description => $header.$description,
                    priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || '200' } #TODO: change this to empty string
 	);
-
-
-	
+	# if there is no assignee in YouTrack, then remove the assignee field from the import hash so it's unassigned in Jira
+	if(!defined $issue->{Assignee} || $issue->{Assignee} eq '') {
+		delete $import{assignee};
+	}
+	print Dumper(%import);
 
 	# Let's check through custom fields
 	my %custom;
@@ -245,7 +247,7 @@ foreach my $issue (@firstNIssues) {
 		$custom{$creationTimeCustomFieldName} = strftime($dateTimeFormats{"$creationDateTimeFormat"}, @parsedTime);
 	}
 
-	# Let's check for labels
+	# Let's check for labels/tags
 	if ($exportTags eq 'true') {
 		my @tags = $yt->getTags(IssueKey => $issue->{id});
 		if (@tags) {
@@ -253,7 +255,7 @@ foreach my $issue (@firstNIssues) {
 			print "Found tags: ".Dumper(@tags) if ($verbose);
 		}
 	}
-
+	
 	my $key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue\n";
 	print "Jira issue key generated $key\n";
 

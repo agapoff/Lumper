@@ -156,6 +156,7 @@ foreach my $issue (@firstNIssues) {
 	}
 	$issuesCount++;
 	last if ($maxissues && $issuesCount>$maxissues);
+	print "Processing issue number $issuesCount\n";
 	
 	my $attachmentFileNamesMapping;
 	my $attachments;

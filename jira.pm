@@ -274,7 +274,28 @@ sub createIssue {
 					$data{fields}->{$fieldId}->{value} = $fieldValue;
 				}
 			} elsif ($fieldType eq 'array') {
-				$data{fields}->{$fieldId}->[0]->{name} = $arg{CustomFields}->{$customField};
+				if ($fieldId eq 'customfield_10818') {
+					my %impactMapper = (
+						'No Impact'                   => '11345',
+						'Docs Needs Update'           => '11346',
+						'Release Notes Needs Update'  => '11347',
+						'VPAT Needs Update'           => '11348',
+						'Not reviewed'                => '11349',
+					);
+					my $ids = [];
+					foreach my $impact (@{$arg{CustomFields}->{$customField}}) {
+						if (exists $impactMapper{$impact}) {
+							push @{$ids}, { id => $impactMapper{$impact} };
+						}
+					}
+					if (scalar(@{$ids}) == 0) {
+						push @{$ids}, { id => '11349' };
+					}
+					$data{fields}->{$fieldId} = $ids;
+				}
+				else {
+					$data{fields}->{$fieldId}->[0]->{name} = $arg{CustomFields}->{$customField};
+				}
 			} elsif ($fieldType eq 'resolution') {
 				$data{fields}->{$fieldId}->{name} = $arg{CustomFields}->{$customField};
 			} elsif ($fieldType eq 'datetime') {

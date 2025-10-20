@@ -266,7 +266,13 @@ sub createIssue {
 			if ($fieldType eq 'string') {
 				$data{fields}->{$fieldId} = $arg{CustomFields}->{$customField};
 			} elsif ($fieldType eq 'option') {
-				$data{fields}->{$fieldId}->{value} = $arg{CustomFields}->{$customField};
+				my $fieldValue = $arg{CustomFields}->{$customField};
+				if ($fieldId eq 'customfield_10851' and ($fieldValue eq 'Test' || $fieldValue eq 'Controller')) {
+					warn "Skipping setting 'Test' or 'Controller' value for field 'ZTNA Subsystem'\n";
+				}
+				else {
+					$data{fields}->{$fieldId}->{value} = $fieldValue;
+				}
 			} elsif ($fieldType eq 'array') {
 				$data{fields}->{$fieldId}->[0]->{name} = $arg{CustomFields}->{$customField};
 			} elsif ($fieldType eq 'resolution') {

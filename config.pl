@@ -298,7 +298,7 @@ our %JiraUserIds = (
 	'per.leino@appgate.com' => '712020:c886d073-6cac-40be-af7d-bdf7025fbe56',
 	
 	'hadrien.luttiau@appgate.com' => '712020:1f85456f-e98f-4c00-b217-89de18f4a6a4',
-	'mikael.harsjo@appgate.com' => '712020:8da0101b-4d47-4efe-ae0a-ff252b45318b',
+	'mikael.harsjo@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:8da0101b-4d47-4efe-ae0a-ff252b45318b',
 	'viola.sorgato@appgate.com' => '712020:feb76057-dead-496c-83f1-7bbde6c5fa61',
 	'ian.izaguirre@appgate.com' => '712020:c456a5e5-820e-4f2e-bc54-86d5676560ac',
 	'aaron.case@appgate.com' => '712020:f59b582a-29ab-4a2c-8a69-4a16c2418406',
@@ -310,8 +310,8 @@ our %JiraUserIds = (
 	'christopher.cox@appgate.com' => '712020:a16f333b-d83c-409d-b176-a577d29f15c3',
 	'natan.abolafya@appgate.com' => '712020:529105ef-6ba3-4a74-a555-7a8c1e2621e8',
 
-	'kosmas.valianos@appgate.com' => '712020:486c7104-250e-485f-8def-4c9d5ede56fb',
-	'per.allansson@appgate.com' => '712020:f4b3a9cd-3baa-4be6-911c-24007eb31356',
+	'kosmas.valianos@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:486c7104-250e-485f-8def-4c9d5ede56fb',
+	'per.allansson@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:f4b3a9cd-3baa-4be6-911c-24007eb31356',
 	'anton.lundgren@appgate.com' => '712020:1b2ffe51-1b24-414d-9212-35965a46989b',
 	'david.butler@appgate.com' => '712020:c4ae331c-88e8-4918-b1e4-e6990932d082',
 	'joel.dollarhide@appgate.com' => '712020:9a2d4ce2-71c5-4352-a541-0dbfb8351b45',

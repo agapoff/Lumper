@@ -374,6 +374,8 @@ foreach my $issue (@firstNIssues) {
 	}
 }
 
+&ifProceed;
+
 # Create Issue Links
 if ($exportLinks eq 'true') {	
 	$display->printTitle("Creating Issue Links");

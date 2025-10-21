@@ -181,10 +181,6 @@ foreach my $issue (@firstNIssues) {
 
 	# Convert Markdown to Jira-specific rich text formatting
 	my $description = convertUserMentions($issue->{description});
-	my $remove = '<div class="wiki text prewrapped">';	
-	$description =~ s/\Q$remove\E//; 
-	$remove = '</div>';
-	$description =~ s/\Q$remove\E//; 
 	$description = convertAttachmentsLinks($description, $attachmentFileNamesMapping);
 
 	if($convertTextFormatting eq 'true') {	
@@ -192,6 +188,8 @@ foreach my $issue (@firstNIssues) {
 		$description = convertQuotations($description);
 		$description = convertMarkdownToJira($description);
 	}
+
+	$description = removeHtmlTags($description);
 	
 	my %import = ( project => { key => $JiraProject },
 	               issuetype => { name => $Type{$issue->{$typeCustomFieldName}} || $issue->{$typeCustomFieldName} },
@@ -314,7 +312,7 @@ foreach my $issue (@firstNIssues) {
 			$text = convertQuotations($text);
 			$text = convertMarkdownToJira($text);
 		}
-
+		$text = removeHtmlTags($text);
 		my $header;
 		if ( $JiraPasswords{$author} && not $JiraPasswords{$author} eq $JiraPassword ) {
 			$header = "[ $date ]\n";
@@ -489,4 +487,26 @@ sub convertQuotations {
 	$textToConvert =~ s/^> *(.*)/{quote}\n$1\n{quote}/gm;
 
 	return $textToConvert;
+}
+
+sub removeHtmlTags {
+   my $textToConvert = shift;
+
+   my $div_begin = '[div class="wiki text prewrapped"]';	
+   my $div_end = '[/div]';  
+
+   $textToConvert =~ s/\Q$div_begin\E//;
+   $textToConvert =~ s/\Q$div_end\E//;
+
+   my $begin_pos = index($textToConvert, '[a');
+   my $a = '';
+
+   while($begin_pos != -1) {
+      my $end_pos = index($textToConvert, '[/a]');
+      $a = substr($textToConvert, $begin_pos, $end_pos-$begin_pos + length('[/a]'));
+      $textToConvert =~ s/\Q$a\E//;
+      $begin_pos = index($textToConvert, '[a');
+   }
+   
+   return $textToConvert;
 }

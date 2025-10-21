@@ -297,7 +297,7 @@ sub createIssue {
 					}
 					$data{fields}->{$fieldId} = $ids;
 				}
-				else {
+				elsif ($fieldId != 'customfield_10020') {
 					$data{fields}->{$fieldId}->[0]->{name} = $arg{CustomFields}->{$customField};
 				}
 			} elsif ($fieldType eq 'resolution') {

@@ -21,13 +21,12 @@ my $display = display->new();
 
 $display->printTitle("Initialization");
 
-my ($skip, $notest, $maxissues, $cookieFile, $verbose);
+my ($skip, $notest, $first, $cookieFile, $verbose);
 Getopt::Long::Configure('bundling');
 GetOptions(
 	"first|f=i"       => \$first,
     "skip|s=i"      => \$skip,
     "no-test|t"      => \$notest,
-    "max-issues|m=i" => \$maxissues,
     "cookie-file|c=s" => \$cookieFile,
     "verbose|v"       => \$verbose
 );
@@ -56,8 +55,7 @@ unless ($jira) {
 print "Success\n";
 
 $display->printTitle("Getting YouTrack Issues");
-
-my $export = $yt->exportIssues(Project => $YTProject, Max => $maxissues);
+my $export = $yt->exportIssues(Project => $YTProject, Max => 0);
 print "Exported issues: ".scalar @{$export}."\n";
 
 # Find active users from issues, comments and other YT activity
@@ -128,7 +126,7 @@ if ($verbose){
 $first = $length if (not defined $first);
 print "Will process first $first issues\n";
 
-my @firstNIssues = (values @sortedIssues)[0..($first-1)];
+my @firstNIssues = grep { $_->{numberInProject} <= $first } @sortedIssues;
 print "Print this list of issues to help with troubleshooting";
 if ($verbose){
 	foreach my $issue (@firstNIssues) {
@@ -148,14 +146,15 @@ if ($verbose){
 }
 
 foreach my $issue (@firstNIssues) {
-	$display->printTitle($YTProject."-".$issue->{numberInProject});
+	$display->printTitle($issue->{idReadable});
 	
 	if ($skip && $issue->{numberInProject} <= $skip) {
-		print "Skipping issue $YTProject-".$issue->{numberInProject}."\n";
+		print "Skipping issue ".$issue->{idReadable}."\n";
 		next;
 	}
 	$issuesCount++;
-	last if ($maxissues && $issuesCount>$maxissues);
+	last if ($first && $issuesCount > $first);
+	print "Will import issue ".$issue->{idReadable}."\n";
 	print "Processing issue number $issuesCount\n";
 	
 	my $attachmentFileNamesMapping;
@@ -167,8 +166,6 @@ foreach my $issue (@firstNIssues) {
 		($attachments, $attachmentFileNamesMapping) = $yt->downloadAttachments(IssueKey => $issue->{id});
 		print Dumper(@{$attachments}) if ($verbose);
 	}
-
-	print "Will import issue $YTProject-".$issue->{numberInProject}."\n";
 
 	# Prepare creation time message if exportCreationTime setting is not set
 	my $creationTime = scalar localtime ($issue->{created}/1000);

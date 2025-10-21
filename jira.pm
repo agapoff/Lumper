@@ -372,8 +372,7 @@ sub createIssue {
 	foreach my $sprintName (keys %{$sprintsToAdd}) {
 		print "Sprint '$sprintName' does NOT exist in Jira sprints. It will be created.\n";
 
-		# create the sprint and grab the id
-		my $boardId = $meta->{boards}->{$meta->{ztnaBoard}};
+		my $boardId = $meta->{boards}->{'ZTNA Board'};
 		my %createSprintData = (
 			name => $sprintName,
 			originBoardId => $boardId
@@ -400,9 +399,11 @@ sub createIssue {
 			# if the sprint is an array, we need to convert it to an id		
 			my $length = scalar @{$data{fields}->{customfield_10020}};
 			if ($length > 0) {
-				my $sprintNameArray = $data{fields}->{customfield_10020}->[0]->{name};
+				my $sprintNameArray = $data{fields}->{customfield_10020}->[0]->{name}; 
 				$length = scalar @{$sprintNameArray};
 				if ($length > 0) {
+					#if there's 1 or more sprints, sort in desc and take the first one
+					@$sprintNameArray = sort { $b cmp $a } @$sprintNameArray;
 					my $sprintName = $sprintNameArray->[0];
 					my $sprintId = $meta->{sprints}->{$sprintName};
 					$data{fields}->{customfield_10020} = $sprintId;

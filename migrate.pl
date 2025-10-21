@@ -245,6 +245,7 @@ foreach my $issue (@firstNIssues) {
 	if ($exportCreationTime eq 'true') {
 		my @parsedTime = localtime ($issue->{created}/1000);
 		$custom{$creationTimeCustomFieldName} = strftime($dateTimeFormats{"$creationDateTimeFormat"}, @parsedTime);
+		print "Setting original creation time to ".$custom{$creationTimeCustomFieldName}."\n";
 	}
 
 	# Let's check for labels/tags

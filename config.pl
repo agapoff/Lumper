@@ -17,13 +17,14 @@ our $exportWorkLog='true';
 # Creation date and time will be exported in Original Creation Time field
 our $exportCreationTime='true';
 # You can change the name of the creation date field if you want to :)
-our $creationTimeCustomFieldName='Original Creation Date';
+#our $creationTimeCustomFieldName='Original Creation Date';
+our $creationTimeCustomFieldName='customfield_10752';
 # Jira can be configured to use diffrerent time formats. Recommended is ISO8601.
 # Currently there's a bug https://jira.atlassian.com/browse/JRACLOUD-61378
 # Jira is not able to parse exact ISO8601 format (see the link for details)
 # If you having issues with date time parsing use JIRA8601 date time format
 # Possible values here: ISO8601, RFC3389, RFC822, GOST7064, JIRA8601
-our $creationDateTimeFormat='ISO8601';
+our $creationDateTimeFormat='JIRA8601';
 # YouTrack is using regular markdown language to create rich text formatting 
 # (__bold text__, _italic_, headers etc). Jira is different - it supports some 
 # specific rich text formatting language. 

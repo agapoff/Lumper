@@ -262,7 +262,11 @@ sub createIssue {
 		my $fieldId = $self->{meta}->{fields}->{$arg{Issue}->{issuetype}->{name}}->{$customField};
 		my $fieldType = $self->{meta}->{fieldtypes}->{$customField};
 		
-		if (defined $fieldId && defined $fieldType) {
+		if ($customField eq 'customfield_10752') {
+			# this is Original Creation Date field; for some reason it doesn't have $fieldId or $fieldType set. So shortcut time!
+			$data{fields}->{customfield_10752} = $arg{CustomFields}->{$customField};
+		}
+		elsif (defined $fieldId && defined $fieldType) {
 			if ($fieldType eq 'string') {
 				$data{fields}->{$fieldId} = $arg{CustomFields}->{$customField};
 			} elsif ($fieldType eq 'option') {
@@ -298,7 +302,7 @@ sub createIssue {
 				}
 			} elsif ($fieldType eq 'resolution') {
 				$data{fields}->{$fieldId}->{name} = $arg{CustomFields}->{$customField};
-			} elsif ($fieldType eq 'datetime') {
+			} elsif ($fieldType eq 'datetime' || $fieldType eq 'date') {
 				$data{fields}->{$fieldId} = $arg{CustomFields}->{$customField};
 			} elsif ($fieldType eq 'user') {
 				$data{fields}->{$fieldId} = {id => $arg{CustomFields}->{$customField} };

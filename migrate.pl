@@ -8,6 +8,7 @@ use youtrack;
 use check;
 use jira;
 require "config.pl";
+require "credentials.pl";
 
 use Data::Dumper;
 use Getopt::Long;
@@ -23,6 +24,7 @@ $display->printTitle("Initialization");
 my ($skip, $notest, $maxissues, $cookieFile, $verbose);
 Getopt::Long::Configure('bundling');
 GetOptions(
+	"first|f=i"       => \$first,
     "skip|s=i"      => \$skip,
     "no-test|t"      => \$notest,
     "max-issues|m=i" => \$maxissues,
@@ -39,13 +41,13 @@ unless ($yt) {
 	die "Could not login to $YTUrl";
 }
 
-my $jira = jira->new(	Url         => $JiraUrl,
-                    	Login       => $JiraLogin,
-                      	Password    => $JiraPassword,
-                      	Verbose     => $verbose,
-                      	Project     => $JiraProject,
-		      		 	CookieFile => $cookieFile,
-);
+my $jira = jira->new(Url        => $JiraUrl,
+                    Login       => $JiraLogin,
+                    Password    => $JiraPassword,
+                    Verbose     => $verbose,
+                    Project     => $JiraProject,
+		      		CookieFile  => $cookieFile,
+					ZtnaBoard   => $ztnaBoardName);
 
 unless ($jira) {
     die "Could not login to $JiraUrl\n";
@@ -58,7 +60,7 @@ $display->printTitle("Getting YouTrack Issues");
 my $export = $yt->exportIssues(Project => $YTProject, Max => $maxissues);
 print "Exported issues: ".scalar @{$export}."\n";
 
-# Find active users from issues, commetns and other YT activity
+# Find active users from issues, comments and other YT activity
 my %users;
 foreach my $issue (@{$export}) {
 	$users{$issue->{Assignee}} = 1;
@@ -69,7 +71,7 @@ foreach my $issue (@{$export}) {
 }
 # Join those active with those that are listed in config 
 # in case if config ones are not listed in the %users
-foreach my $configUser (keys %User) {
+foreach my $configUser (keys %Users) {
 	$users{$configUser} = 1;
 }
 print Dumper(%users) if ($verbose);
@@ -82,7 +84,7 @@ my $check = check->new(
 	Passwords => \%JiraPasswords,
 	JiraUserIds => \%JiraUserIds,
 	RealUsers =>  \%users,
-	Users => \%User,
+	Users => \%Users,
 	TypeFieldName => $typeCustomFieldName,
 	Types => \%Type,
 	Links => \%IssueLinks,
@@ -96,7 +98,7 @@ my $check = check->new(
 	StatusToResolutions => \%StatusToResolution
 );
 
-%User = %{$check->users()};
+%Users = %{$check->users()};
 
 unless ($notest) {
 	$check->passwords();
@@ -114,7 +116,38 @@ my $issuesCount = 0;
 
 $display->printTitle("Export To Jira");
 
-foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export}) {
+my @sortedIssues = sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export};
+
+my $length = scalar @{$export};
+if ($verbose){
+	print "count items export: $length\n";
+	%length = scalar keys @sortedIssues;
+	print "count items sortedIssues: $length\n";
+}
+
+$first = $length if (not defined $first);
+print "Will process first $first issues\n";
+
+my @firstNIssues = (values @sortedIssues)[0..($first-1)];
+print "Print this list of issues to help with troubleshooting";
+if ($verbose){
+	foreach my $issue (@firstNIssues) {
+		print "Issue ID: " . $issue->{idReadable} . "\tNumber in Project: " . $issue->{numberInProject} . "\n";
+	}
+	#Issue ID: SA-2		Number in Project: 2
+	#Issue ID: SA-3		Number in Project: 3
+	#Issue ID: SA-4		Number in Project: 4
+	#Issue ID: SA-5		Number in Project: 5
+	#Issue ID: SA-6		Number in Project: 6
+	#Issue ID: SA-7		Number in Project: 7
+	#Issue ID: SA-8		Number in Project: 8
+	#Issue ID: SA-9		Number in Project: 9
+	#Issue ID: SA-11	Number in Project: 11
+	#Issue ID: SA-12	Number in Project: 12
+	&ifProceed;
+}
+
+foreach my $issue (@firstNIssues) {
 	$display->printTitle($YTProject."-".$issue->{numberInProject});
 	
 	if ($skip && $issue->{numberInProject} <= $skip) {
@@ -123,6 +156,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	}
 	$issuesCount++;
 	last if ($maxissues && $issuesCount>$maxissues);
+	print "Processing issue number $issuesCount\n";
 	
 	my $attachmentFileNamesMapping;
 	my $attachments;
@@ -141,16 +175,19 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	my $header = "";
 	if (not($exportCreationTime)) {
 		$header .= "[Created ";
-		if ($User{$issue->{reporter}->{login}} eq $JiraLogin) { 
+		if ($Users{$issue->{reporter}->{login}} eq $JiraLogin) { 
 			$header .= "by ".$issue->{reporter}->{login}." "; 
 		}
 		$header .= $creationTime;
 		$header .= "]\n";
 	}
 
-
 	# Convert Markdown to Jira-specific rich text formatting
 	my $description = convertUserMentions($issue->{description});
+	my $remove = '<div class="wiki text prewrapped">';	
+	$description =~ s/\Q$remove\E//; 
+	$remove = '</div>';
+	$description =~ s/\Q$remove\E//; 
 	$description = convertAttachmentsLinks($description, $attachmentFileNamesMapping);
 
 	if($convertTextFormatting eq 'true') {	
@@ -161,21 +198,32 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	
 	my %import = ( project => { key => $JiraProject },
 	               issuetype => { name => $Type{$issue->{$typeCustomFieldName}} || $issue->{$typeCustomFieldName} },
-                   assignee => { id => $JiraUserIds{$User{$issue->{Assignee}} || $issue->{Assignee}} },
-                   reporter => { id => $JiraUserIds{$User{$issue->{reporter}->{login}} || $issue->{reporter}->{login}} },
+                   assignee => { id => $JiraUserIds{$Users{$issue->{Assignee}} || $issue->{Assignee}} },
+                   reporter => { id => $JiraUserIds{$Users{$issue->{reporter}->{login}} || $issue->{reporter}->{login}} },
                    summary => $issue->{summary},
                    description => $header.$description,
-                   priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || 'Medium' }
+                   priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || '200' } #TODO: change this to empty string
 	);
+	# if there is no assignee in YouTrack, then remove the assignee field from the import hash so it's unassigned in Jira
+	if(!defined $issue->{Assignee} || $issue->{Assignee} eq '') {
+		delete $import{assignee};
+	}
 
 	# Let's check through custom fields
 	my %custom;
 	foreach my $field (keys %CustomFields) {
 		if (defined $issue->{$field}) {
-			if (defined $User{$issue->{$field}}) {
+			if (defined $Users{$issue->{$field}}) {
 				# If the value of the field happens to be a username, assume this is a user field.
 				$custom{$CustomFields{$field}} = $JiraUserIds{$User{$issue->{$field}}};
 			} else {
+				if ($field eq "Fix for") {
+					#regex to remove the blank space and anything after. example "0.8 (P8)" -> "0.8"
+					$issue->{$field} =~ s/ .*$// if defined $issue->{$field};
+				} elsif ($field eq "Impact") {
+					# if Impact in YouTrack is empty, then set it to "Not reviewed" in JIRA
+					$issue->{$field}->[0] = "Not reviewed" if defined $issue->{$field} and $issue->{$field}->[0] eq '';
+				}
 				$custom{$CustomFields{$field}} = $issue->{$field};
 			}
 		}
@@ -197,58 +245,65 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	if ($exportCreationTime eq 'true') {
 		my @parsedTime = localtime ($issue->{created}/1000);
 		$custom{$creationTimeCustomFieldName} = strftime($dateTimeFormats{"$creationDateTimeFormat"}, @parsedTime);
+		print "Setting original creation time to ".$custom{$creationTimeCustomFieldName}."\n";
 	}
 
-	# Let's check for labels
+	# Let's check for labels/tags
 	if ($exportTags eq 'true') {
+		$msg = "Checking for tags";
 		my @tags = $yt->getTags(IssueKey => $issue->{id});
 		if (@tags) {
+			$msg .= " - setting tags and their values";
 			$import{labels} = [@tags];
 			print "Found tags: ".Dumper(@tags) if ($verbose);
 		}
+		else {
+			$msg .= " - no tags found";
+		}
+		print $msg."\n";
 	}
 	
-	my $key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue";
+	my $key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue\n";
 	print "Jira issue key generated $key\n";
 
 	# Checking issue number in key (eg in FOO-20 the issue number is 20)
-	if ($key =~ /^[A-Z]+-(\d+)$/) {
+	if ($key =~ /^[A-Z0-9]+-(\d+)$/) {
 		while ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
 			print "We're having a gap and will delete the issue\n";
 			unless ($jira->deleteIssue(Key => $key)) {
-				warn "Error while deleting the issue $key";
+				warn "Error while deleting the issue $key\n";
 			}
-			$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue";
-			print "\nNew Jira issue key generated $key\n";
-			$key =~ /^[A-Z]+-(\d+)$/;
+			$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue\n";
+			print "New Jira issue key generated $key\n";
+			$key =~ /^[A-Z0-9]+-(\d+)$/;
 		}
 	} else {
-		die "Wrong issue key $key";
+		die "Wrong issue key $key\n";
 	}
 
-	# Save Jira issue key for forther linking
+	# Save Jira issue key for further linking
 	$issue->{jiraKey} = $key;
 
 	# Transition
 	if ($Status{$issue->{State}}) {
-		print "\nChanging status to ".$Status{$issue->{State}}."\n";
+		print "Changing status to ".$Status{$issue->{State}}."\n";
 		unless ($jira->doTransition(Key => $key, Status => $Status{$issue->{State}})) {
-			warn "Failed doing transition";
+			warn "Failed doing transition\n";
 		}
 	}
 
 	# Resolution
 	if ($StatusToResolution{$issue->{State}}) {
-		print "\nChanging resolution to ".$StatusToResolution{$issue->{State}}."\n";
+		print "Changing resolution to ".$StatusToResolution{$issue->{State}}."\n";
 		unless ($jira->changeFields(Key => $key, Fields => { 'Resolution' => $StatusToResolution{$issue->{State}} } )) {
-			warn "Failed updating fields"
+			warn "Failed updating fields\n"
 		}
 	}
 
 	# Create comments
-	print "\nCreating comments\n";
+	print "Creating comments\n";
 	foreach my $comment (@{$issue->{comments}}) {
-		my $author = $User{$comment->{author}->{login}} || $comment->{author}->{login};
+		my $author = $Users{$comment->{author}->{login}} || $comment->{author}->{login};
 		my $date = scalar localtime ($comment->{created}/1000);
 
 		my $text = $comment->{text};
@@ -267,17 +322,17 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 		if ( $JiraPasswords{$author} && not $JiraPasswords{$author} eq $JiraPassword ) {
 			$header = "[ $date ]\n";
 			$text = $header.$text;
-			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || warn "Error creating comment";
+			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || warn "Error creating comment\n";
 		} else {
 			$header = convertUserMentions("[ \@".$comment->{author}->{login}." $date ]\n");
 			$text = $header.$text;
-			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || warn "Error creating comment";
+			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || warn "Error creating comment\n";
 		}
 	}
 
 	# Export work log
 	if ($exportWorkLog eq 'true') {
-		print "\nExporting work log\n";
+		print "Exporting work log\n";
 		my $workLogs = $yt->getWorkLog( IssueKey => $issue->{idReadable} );
 		foreach my $workLog (@{$workLogs->{workItems}}) {
 			my @parsedTime = localtime ($workLog->{created}/1000);
@@ -287,24 +342,24 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 				timeSpentSeconds => $workLog->{duration}->{minutes} * 60
 			);
 
-			if ( $JiraPasswords{$User{ $workLog->{author}->{login} }} and not $JiraPasswords{$User{ $workLog->{author}->{login} }} eq $JiraPassword ) {
+			if ( $JiraPasswords{$Users{ $workLog->{author}->{login} }} and not $JiraPasswords{$Users{ $workLog->{author}->{login} }} eq $JiraPassword ) {
 				$jira->addWorkLog(Key => $key, 
 								WorkLog => \%jiraWorkLog, 
-								Login => $User{ $workLog->{author}->{login} }, 
-								Password => $JiraPasswords{$User{ $workLog->{author}->{login} }}) 
-					|| warn "\nError creating work log";
+								Login => $Users{ $workLog->{author}->{login} }, 
+								Password => $JiraPasswords{$Users{ $workLog->{author}->{login} }}) 
+					|| warn "Error creating work log\n";
 			} else {
 				my $originalAuthor = convertUserMentions("[ Original Author: \@".$workLog->{author}->{login}." ]\n");
 				$jiraWorkLog{comment} = $originalAuthor."".$jiraWorkLog{comment};
 				$jira->addWorkLog(Key => $key, WorkLog => \%jiraWorkLog) 
-					|| warn "\nError creating work log";
+					|| warn "Error creating work log\n";
 			}			
 		}
 	}
 
 	# If descriptions exceeds Jira limitations - save it as an attachment
 	if (length $header.$description >= 32766) {
-		print "\nDescription exceeds Jira max symbol limitation and will be saved as attachment.\n";
+		print "Description exceeds Jira max symbol limitation and will be saved as attachment.\n";
 		my $tempdir = tempdir();
 		open my $fh, ">", "$tempdir/description.md";
 		binmode $fh, "encoding(UTF-8)";
@@ -317,7 +372,7 @@ foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$e
 	if (@{$attachments}) {
 		print "Uploading ".scalar @{$attachments}." files\n";
 		unless ($jira->addAttachments(IssueKey => $key, Files => $attachments)) {
-			warn "Cannot upload attachment to $key";
+			warn "Cannot upload attachment to $key\n";
 		}
 	}
 }
@@ -402,7 +457,7 @@ sub convertUserMentions {
 	# Convert user @foo mentions to Jira [~accountid:$personId] links (doesn't seem to work)
 	# $textToConvert =~ s/\B\@(\S+)/\@$1 \[\~acccountid:$JiraUserIds{$User{$1}}\])/g;
 	# Convert user @foo mentions to Jira [@foo|/jira/people/$personId] links
-	$textToConvert =~ s/\B\@([^\s,]+)/\[\@$1\|\/jira\/people\/$JiraUserIds{$User{$1}}\]/g;
+	$textToConvert =~ s/\B\@([^\s,]+)/\[\@$1\|\/jira\/people\/$JiraUserIds{$Users{$1}}\]/g;
 
 	return $textToConvert;
 }

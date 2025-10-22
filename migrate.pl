@@ -383,6 +383,7 @@ if ($exportLinks eq 'true') {
 	my %alreadyEstablishedLinksWith = map { $_ => () } keys %IssueLinks;
 
 	foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export}) {
+		print "Attempting to create links on issue ".$issue->{idReadable}."\n";
 		my $links = $yt->getIssueLinks(IssueKey => $issue->{id});
 
 		foreach my $link (@{$links}) {

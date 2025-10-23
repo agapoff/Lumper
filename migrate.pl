@@ -509,6 +509,26 @@ sub removeHtmlTags {
       $textToConvert =~ s/\Q$a\E//;
       $begin_pos = index($textToConvert, '[a');
    }
-   
+
+   $html_begin = '[/li]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[li]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[h3]';   
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[/h3]';   
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[ul class="wiki-list0"]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[/ul]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[strong]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[/strong]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '\[br/\]';
+   $textToConvert =~ s/$html_begin/\n/g;   
+
    return $textToConvert;
 }
+

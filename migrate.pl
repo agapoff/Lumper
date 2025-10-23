@@ -526,8 +526,10 @@ sub removeHtmlTags {
    $textToConvert =~ s/\Q$html_begin\E//g;
    $html_begin = '[/strong]';
    $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[div class="wiki quote"]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
    $html_begin = '\[br/\]';
-   $textToConvert =~ s/$html_begin/\n/g;   
+   $textToConvert =~ s/$html_begin/\n/g;      
 
    return $textToConvert;
 }

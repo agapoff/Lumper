@@ -38,7 +38,7 @@ sub new {
 		print "Logged to Jira successfully\n";
 		$self = { basic => $basic, url => $arg{Url}, verbose => $arg{Verbose} };
 	} else {
-		print "Login to Jira was unsuccessfull\n";
+		print "Login to Jira was unsuccessful\n";
 		print $response->status_line if ($self->{verbose});
 		return;
 	}
@@ -261,51 +261,62 @@ sub createIssue {
 	foreach my $customField (keys %{$arg{CustomFields}}) {
 		my $fieldId = $self->{meta}->{fields}->{$arg{Issue}->{issuetype}->{name}}->{$customField};
 		my $fieldType = $self->{meta}->{fieldtypes}->{$customField};
-		
+
+		#print "$customField => $fieldId of type $fieldType\n";
+
 		if ($customField eq 'customfield_10752') {
 			# this is Original Creation Date field; for some reason it doesn't have $fieldId or $fieldType set. So shortcut time!
 			$data{fields}->{customfield_10752} = $arg{CustomFields}->{$customField};
-		}
-		elsif (defined $fieldId && defined $fieldType) {
-			if ($fieldType eq 'string') {
+		}elsif (defined $fieldId) {
+			if ($fieldId eq 'customfield_10028') {
+				#Story Points
+				$data{fields}->{customfield_10028} = $arg{CustomFields}->{$customField};
+			} elsif ($fieldId eq 'customfield_10818') { 
+				#Impact
+				my %impactMapper = (
+					'No Impact'                   => '11345',
+					'Docs Needs Update'           => '11346',
+					'Release Notes Needs Update'  => '11347',
+					'VPAT Needs Update'           => '11348',
+					'Not reviewed'                => '11349',
+				);
+				my $ids = [];
+				foreach my $impact (@{$arg{CustomFields}->{$customField}}) {
+					if (exists $impactMapper{$impact}) {
+						push @{$ids}, { id => $impactMapper{$impact} };
+					}
+				}
+				if (scalar(@{$ids}) == 0) {
+					push @{$ids}, { id => '11349' };
+				}
+				$data{fields}->{$fieldId} = $ids;
+			} elsif ($fieldId eq 'customfield_10020') { 
+				#equal to Sprint; skip over mapping here; it's handled further down
+				next;
+			} elsif ($fieldId eq 'customfield_10983') {
+				# Original Estimate - adding to both timetracking and custom field
+				print "setting original estimate to ".$arg{CustomFields}->{$customField}."d\n";
+				my $estimate = $arg{CustomFields}->{$customField};
+				$data{fields}->{timetracking} = { originalEstimate => $estimate."d" };
 				$data{fields}->{$fieldId} = $arg{CustomFields}->{$customField};
-			} elsif ($fieldType eq 'option') {
-				my $fieldValue = $arg{CustomFields}->{$customField};
-				if ($fieldId eq 'customfield_10851' and ($fieldValue eq 'Test' || $fieldValue eq 'Controller')) {
-					warn "Skipping setting 'Test' or 'Controller' value for field 'ZTNA Subsystem'\n";
-				}
-				else {
-					$data{fields}->{$fieldId}->{value} = $fieldValue;
-				}
-			} elsif ($fieldType eq 'array') {
-				if ($fieldId eq 'customfield_10818') {
-					my %impactMapper = (
-						'No Impact'                   => '11345',
-						'Docs Needs Update'           => '11346',
-						'Release Notes Needs Update'  => '11347',
-						'VPAT Needs Update'           => '11348',
-						'Not reviewed'                => '11349',
-					);
-					my $ids = [];
-					foreach my $impact (@{$arg{CustomFields}->{$customField}}) {
-						if (exists $impactMapper{$impact}) {
-							push @{$ids}, { id => $impactMapper{$impact} };
-						}
-					}
-					if (scalar(@{$ids}) == 0) {
-						push @{$ids}, { id => '11349' };
-					}
-					$data{fields}->{$fieldId} = $ids;
-				}
-				elsif ($fieldId ne 'customfield_10020') {
+			} elsif (defined $fieldType) {
+				if ($fieldType eq 'string' || $fieldType eq 'number') {
+					$data{fields}->{$fieldId} = $arg{CustomFields}->{$customField};
+				} elsif ($fieldType eq 'option') {
+					$data{fields}->{$fieldId}->{value} = $arg{CustomFields}->{$customField};;
+				} elsif ($fieldType eq 'array') {
 					$data{fields}->{$fieldId}->[0]->{name} = $arg{CustomFields}->{$customField};
+				} elsif ($fieldType eq 'resolution') {
+					$data{fields}->{$fieldId}->{name} = $arg{CustomFields}->{$customField};
+				} elsif ($fieldType eq 'datetime' || $fieldType eq 'date') {
+					$data{fields}->{$fieldId} = $arg{CustomFields}->{$customField};
+				} elsif ($fieldType eq 'user') {
+					$data{fields}->{$fieldId} = {id => $arg{CustomFields}->{$customField} };
+				} else {
+					print "Undefined field type for custom field '$customField' and field Id '$fieldId'\n";
 				}
-			} elsif ($fieldType eq 'resolution') {
-				$data{fields}->{$fieldId}->{name} = $arg{CustomFields}->{$customField};
-			} elsif ($fieldType eq 'datetime' || $fieldType eq 'date') {
-				$data{fields}->{$fieldId} = $arg{CustomFields}->{$customField};
-			} elsif ($fieldType eq 'user') {
-				$data{fields}->{$fieldId} = {id => $arg{CustomFields}->{$customField} };
+			} else {
+				print "Undefined fieldId for custom field '$customField'\n";
 			}
 		}
 	}
@@ -359,18 +370,18 @@ sub createIssue {
 
 	# ensure sprint value exists
 	my $sprintsToAdd = {};
-	foreach my $ytSprintField (@{$data{fields}->{customfield_10020}}) {
-		foreach my $ytSprint (@{$ytSprintField->{name}}) {
-			my $exists = 0;
-			foreach my $jiraSprintName (keys %{$meta->{sprints}}) {
-				if ($jiraSprintName eq $ytSprint) {
-					$exists = 1;
-					last;
-				}
+	my $ytSprints = $arg{CustomFields}->{Sprint};
+	$ytSprints = [] unless ref $ytSprints eq 'ARRAY';
+	foreach my $ytSprint (@$ytSprints) {
+		my $exists = 0;
+		foreach my $jiraSprintName (keys %{$meta->{sprints}}) {
+			if ($jiraSprintName eq $ytSprint) {
+				$exists = 1;
+				last;
 			}
-			if(!$exists) {
-				$sprintsToAdd->{$ytSprint} = 1;
-			}
+		}
+		if(!$exists) {
+			$sprintsToAdd->{$ytSprint} = 1;
 		}
 	}
 	foreach my $sprintName (keys %{$sprintsToAdd}) {
@@ -385,8 +396,9 @@ sub createIssue {
 		my $response = $ua->post($self->{url}.'/rest/agile/1.0/sprint', Authorization => 'Basic '.$self->{basic}, 'Accept' => 'application/json', 'Content-Type' => 'application/json', 'Content' => $createSprintContent);
 		if (!$response->is_success) {
 			print "Got error while creating sprint\n";
-			print $response->status_line."\n" ;#if ($self->{verbose});
-			print $response->decoded_content."\n";# if ($self->{verbose});
+			print $createSprintContent."\n";
+			print $response->status_line."\n";
+			print $response->decoded_content."\n";
 			return;
 		}
 		print "Sprint '$sprintName' created successfully.\n";
@@ -397,24 +409,13 @@ sub createIssue {
 		$meta->{sprints}->{$sprintName} = $sprintId;
 	}
 	my $isSetSprintId = 0;
-	if (defined $data{fields}->{customfield_10020}) {
-		# if $data{fields}->{customfield_10020} has 1 or more sprints, take the first one 
-		if (ref $data{fields}->{customfield_10020} eq 'ARRAY') {
-			# if the sprint is an array, we need to convert it to an id		
-			my $length = scalar @{$data{fields}->{customfield_10020}};
-			if ($length > 0) {
-				my $sprintNameArray = $data{fields}->{customfield_10020}->[0]->{name}; 
-				$length = scalar @{$sprintNameArray};
-				if ($length > 0) {
-					#if there's 1 or more sprints, sort in desc and take the first one
-					@$sprintNameArray = sort { $b cmp $a } @$sprintNameArray;
-					my $sprintName = $sprintNameArray->[0];
-					my $sprintId = $meta->{sprints}->{$sprintName};
-					$data{fields}->{customfield_10020} = $sprintId;
-					$isSetSprintId = 1;
-				}
-			}
-		}
+	my $length = scalar @$ytSprints;
+	if ($length > 0) {
+		my @sortedSprintNames = sort { $b cmp $a } @$ytSprints;
+		my $sprintName = $sortedSprintNames[0];
+		my $sprintId = $meta->{sprints}->{$sprintName};
+		$data{fields}->{customfield_10020} = $sprintId;
+		$isSetSprintId = 1;
 	}
 	if (!$isSetSprintId) {
 		delete $data{fields}->{customfield_10020};

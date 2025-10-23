@@ -6,14 +6,14 @@ our $JiraUrl='https://appgateinc.atlassian.net';
 # The project ID to migrate from (eg FOO, BAR)
 our $YTProject='SA';
 # The project ID to migrate to (eg FOO, BAR)
-our $JiraProject='Z121';
+our $JiraProject='ZT27';
 
 # Export tags from YT and import them as labels in Jira
 our $exportTags='true';
 # This is quite obvious
 our $exportAttachments='true';
 our $exportLinks='true';
-our $exportWorkLog='true';
+our $exportWorkLog='false';
 # Creation date and time will be exported in Original Creation Time field
 our $exportCreationTime='true';
 # You can change the name of the creation date field if you want to :)

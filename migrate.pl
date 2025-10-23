@@ -297,7 +297,8 @@ foreach my $issue (@firstNIssues) {
 
 	# Create comments
 	print "Creating comments\n";
-	foreach my $comment (@{$issue->{comments}}) {
+	my @sorted_comments = sort { $b->{created} <=> $a->{created} } @{$issue->{comments}};
+	foreach my $comment (@sorted_comments) {
 		my $author = $Users{$comment->{author}->{login}} || $comment->{author}->{login};
 		my $date = scalar localtime ($comment->{created}/1000);
 

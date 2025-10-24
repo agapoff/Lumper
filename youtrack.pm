@@ -233,15 +233,44 @@ sub exportIssues {
 				ErrorMessage => "Got error while exporting issues\n",
 				CharacterSupport => 'true');
 
+	my $file = 'yt-export.json';
+	open my $fh, '<', $file or die "Could not open '$file': $!";
+	local $/;  # Enable 'slurp' mode
+	my $json_text = <$fh>;
+	close $fh;
+	my $ytOverrideData = decode_json($json_text);
+
 	foreach my $issue (@{$issues}) {
 		foreach my $field (@{$issue->{customFields}}) {	
-
 			$issue->{$field->{name}} = undef;
 			next if (not($field->{value}));
 
 			$issue->{$field->{name}} = collectValuesFromCustomField(\%{$field});
 		}
+
+		foreach my $ticket (@$ytOverrideData) {
+			next if $ticket->{key} ne $issue->{idReadable};
+			next if !defined $ticket->{description};
+			print "Overriding description for issue ".$issue->{idReadable}."\n";
+			$issue->{description} = $ticket->{description};
+
+			next if !defined $ticket->{comments};
+			next if !defined $issue->{comments};
+			foreach my $comment (@{$issue->{comments}}) {
+				foreach my $ticketComment (@{$ticket->{comments}}) {
+					if ($comment->{created} == $ticketComment->{created}) {
+						print "Overriding comment ".$ticketComment->{created}." for issue ".$issue->{idReadable}."\n";
+						$comment->{text} = $ticketComment->{text};
+						last;
+					}
+				}
+			}
+			last;			
+		}
 	}
+
+	print "Print this list of issues directly exported from YouTrack to help with troubleshooting";
+	#print Dumper($issues);
 
 	return $issues;
 }

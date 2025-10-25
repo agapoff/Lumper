@@ -47,63 +47,50 @@ async function convertToDataset() {
   for (const issue of issues) {
     try {
       const issueData = {
-        id: issue.id,
-        idReadable: issue.idReadable,
-        numberInProject: issue.numberInProject,
-        summary: issue.summary,
-        created: issue.created,
-        updated: issue.updated,
-        resolved: issue.resolved,
-        // We'll add these from custom fields
-        Priority: null,
-        State: null,
-        Assignee: null,
-        customFields: {},
-        reporter: issue.reporter
+        key: issue.idReadable, // Issue key for mapping
       };
 
-      // Extract custom fields needed by migrate.pl
-      if (issue.customFields) {
-        for (const field of issue.customFields) {
-          issueData.customFields[field.name] = field.value;
-
-          // Map common fields that migrate.pl expects at top level
-          if (field.name === 'Priority') {
-            issueData.Priority = field.value?.name || field.value;
-          } else if (field.name === 'State') {
-            issueData.State = field.value?.name || field.value;
-          } else if (field.name === 'Assignee') {
-            issueData.Assignee = field.value?.login || field.value;
-          }
-        }
-      }
-
-      // Convert description to ADF (catch errors separately so release note can still succeed)
-      let descriptionADF = null;
+      // Convert description to ADF if present
       if (issue.description && issue.description.trim().length > 0) {
         try {
           const descResult = htmlToMd.convertDescription(issue.description, null);
-          descriptionADF = adfConverter.convertToADF(descResult.markdown);
-          issueData.descriptionADF = descriptionADF;
+          issueData.description = adfConverter.convertToADF(descResult.markdown);
         } catch (descError) {
           console.error(`  ⚠ Error converting description for ${issue.idReadable}: ${descError.message}`);
-          // Will use fallback plain description
         }
       }
-      // Keep original description for fallback
-      issueData.description = issue.description;
 
-      // Convert Release note to ADF if present (catch errors separately)
+      // Convert Release note to ADF if present
       const releaseNoteField = issue.customFields?.find(f => f.name === 'Release note');
       if (releaseNoteField?.value?.text) {
         try {
           const rnMarkdown = releaseNoteField.value.markdownText || releaseNoteField.value.text;
           const rnResult = htmlToMd.convertDescription(releaseNoteField.value.text, rnMarkdown);
-          const releaseNoteADF = adfConverter.convertToADF(rnResult.markdown);
-          issueData.releaseNoteADF = releaseNoteADF;
+          issueData.releaseNote = adfConverter.convertToADF(rnResult.markdown);
         } catch (rnError) {
           console.error(`  ⚠ Error converting release note for ${issue.idReadable}: ${rnError.message}`);
-          // Release note will not be included for this issue
+        }
+      }
+
+      // Convert comments to ADF if present
+      if (issue.comments && issue.comments.length > 0) {
+        issueData.comments = [];
+
+        for (const comment of issue.comments) {
+          try {
+            if (comment.text && comment.text.trim().length > 0) {
+              const commentResult = htmlToMd.convertDescription(comment.text, null);
+              const commentADF = adfConverter.convertToADF(commentResult.markdown);
+
+              issueData.comments.push({
+                body: commentADF,
+                author: comment.author?.login || comment.author?.fullName || comment.author,
+                created: comment.created
+              });
+            }
+          } catch (commentError) {
+            console.error(`  ⚠ Error converting comment ${comment.id} for ${issue.idReadable}: ${commentError.message}`);
+          }
         }
       }
 
@@ -132,13 +119,23 @@ async function convertToDataset() {
   console.log();
   console.log('Dataset Statistics:');
   console.log(`  Total issues:              ${dataset.length}`);
-  console.log(`  With ADF description:      ${dataset.filter(i => i.descriptionADF).length}`);
-  console.log(`  With ADF release note:     ${dataset.filter(i => i.releaseNoteADF).length}`);
+  console.log(`  With description:          ${dataset.filter(i => i.description).length}`);
+  console.log(`  With release note:         ${dataset.filter(i => i.releaseNote).length}`);
+  console.log(`  With comments:             ${dataset.filter(i => i.comments && i.comments.length > 0).length}`);
+  const totalComments = dataset.reduce((sum, i) => sum + (i.comments?.length || 0), 0);
+  console.log(`  Total comments:            ${totalComments}`);
+  console.log();
+  console.log('Dataset Format:');
+  console.log('  Each issue contains:');
+  console.log('    - key: Issue identifier (e.g., "SA-458")');
+  console.log('    - description: ADF formatted description (if present)');
+  console.log('    - releaseNote: ADF formatted release note (if present)');
+  console.log('    - comments: Array of ADF comments with author, body, created (if present)');
   console.log();
   console.log('Next steps:');
   console.log('  1. Review dataset file for accuracy');
-  console.log('  2. Run migrate.pl with --use-adf-dataset flag');
-  console.log('  3. Dataset will be used instead of direct YouTrack API calls');
+  console.log('  2. Use this dataset in migrate.pl to override text fields');
+  console.log('  3. Peter\'s script will handle all other fields');
   console.log('='.repeat(80));
 }
 

@@ -33,21 +33,18 @@ export class YouTrackClient {
       'updated',
       'resolved',
       'customFields(id,name,value(id,name,text,markdownText))',
-      'comments(id,text,created,updated,author(login,fullName))',
+      'comments(id,text,created,author(login,fullName))',
     ];
 
     const fieldsToFetch = fields.length > 0 ? fields : defaultFields;
 
     try {
-      const response = await this.client.get('/api/issues', {
-        params: {
-          query,
-          fields: fieldsToFetch.join(','),
-          $skip: skip,
-          $top: top,
-        },
-      });
+      // Manually construct URL with query parameters to ensure proper encoding
+      const fieldsParam = encodeURIComponent(fieldsToFetch.join(','));
+      const queryParam = encodeURIComponent(query);
+      const url = `/api/issues?query=${queryParam}&fields=${fieldsParam}&$skip=${skip}&$top=${top}`;
 
+      const response = await this.client.get(url);
       return response.data;
     } catch (error) {
       console.error('Error fetching issues:', error.message);
@@ -70,6 +67,7 @@ export class YouTrackClient {
     let skip = 0;
     const batchSize = 100;
     let hasMore = true;
+    let previousBatchSize = 0;
 
     console.log(`Fetching issues with query: ${query}`);
 
@@ -81,12 +79,15 @@ export class YouTrackClient {
         hasMore = false;
       } else {
         allIssues.push(...issues);
-        skip += batchSize;
-        console.log(`Fetched ${allIssues.length} issues so far...`);
 
-        // If we got fewer than batchSize, we've reached the end
-        if (issues.length < batchSize) {
+        // If this batch is smaller than the previous one, we've reached the end
+        if (previousBatchSize > 0 && issues.length < previousBatchSize) {
+          console.log(`Fetched ${allIssues.length} issues total (last batch was smaller)`);
           hasMore = false;
+        } else {
+          previousBatchSize = issues.length;
+          skip += issues.length;
+          console.log(`Fetched ${allIssues.length} issues so far...`);
         }
       }
     }

@@ -18,7 +18,7 @@ our $exportWorkLog='false';
 our $exportCreationTime='true';
 # You can change the name of the creation date field if you want to :)
 #our $creationTimeCustomFieldName='Original Creation Date';
-our $creationTimeCustomFieldName='customfield_10752';
+our $creationTimeCustomFieldName='customfield_11084';
 # Jira can be configured to use diffrerent time formats. Recommended is ISO8601.
 # Currently there's a bug https://jira.atlassian.com/browse/JRACLOUD-61378
 # Jira is not able to parse exact ISO8601 format (see the link for details)
@@ -85,10 +85,10 @@ our %Status = (
 # Some statuses in YT can be mapped to Resolutions in Jira
 # In order to use this feature a field Resolution should be added to screens (and removed after the migration if not needed)
 our %StatusToResolution = (
-	"Verified" => "Fixed",
-	"Won't Fix" => "Won't Fix",
-	"Duplicate" => "Duplicate",
-	"Obsolete" => "Invalid"
+	#"Verified" => "Fixed",
+	#"Won't Fix" => "Won't Fix",
+	#"Duplicate" => "Duplicate",
+	#"Obsolete" => "Invalid"
 );
 
 # Custom fields mapping

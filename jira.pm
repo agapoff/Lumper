@@ -264,9 +264,9 @@ sub createIssue {
 
 		#print "$customField => $fieldId of type $fieldType\n";
 
-		if ($customField eq 'customfield_10752') {
+		if ($customField eq 'customfield_11084') {
 			# this is Original Creation Date field; for some reason it doesn't have $fieldId or $fieldType set. So shortcut time!
-			$data{fields}->{customfield_10752} = $arg{CustomFields}->{$customField};
+			$data{fields}->{customfield_11084} = $arg{CustomFields}->{$customField};
 		}elsif (defined $fieldId) {
 			if ($fieldId eq 'customfield_10028') {
 				#Story Points
@@ -423,7 +423,7 @@ sub createIssue {
 
 	# and lastly, actually create the issue
 	my $content = encode_json \%data;
-	print "Issue Content: " . $content . "\n";
+	print "Create Issue Content: " . $content . "\n";
 	my $response = $ua->post($self->{url}.'/rest/api/latest/issue', Authorization => 'Basic '.$self->{basic}, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
 		print $response->status_line."\n" if ($self->{verbose});
@@ -464,7 +464,7 @@ sub changeFields {
 	}
 
 	my $content = encode_json \%data;
-	print $content."\n" if ($self->{verbose});
+	print "Change Fields Content:".$content."\n";
 	my $basic = ($arg{Login} && $arg{Password}) ? encode_base64($arg{Login}.":".$arg{Password}) : $self->{basic};
 
 	my $response = $ua->put($self->{url}.'/rest/api/latest/issue/'.$arg{Key}, Authorization => 'Basic '.$basic, 'Content-Type' => 'application/json', 'Content' => $content);

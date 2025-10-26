@@ -23,7 +23,7 @@ adf-converter/
 1. **Install dependencies:**
    ```bash
    cd adf-converter
-   npm install
+   yarn install
    ```
 
 2. **Configure environment:**
@@ -47,7 +47,7 @@ adf-converter/
 Run analysis to see which issues need ADF conversion:
 
 ```bash
-npm run analyze
+yarn run analyze
 ```
 
 This will show:
@@ -61,7 +61,7 @@ This will show:
 Convert all issues to ADF format:
 
 ```bash
-npm run convert
+yarn run convert
 ```
 
 This generates `output/adf-dataset.json` containing:

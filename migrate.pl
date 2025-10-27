@@ -21,12 +21,13 @@ my $display = display->new();
 
 $display->printTitle("Initialization");
 
-my ($skip, $notest, $first, $cookieFile, $verbose);
+my ($skip, $notest, $first, $checkKeys, $cookieFile, $verbose);
 Getopt::Long::Configure('bundling');
 GetOptions(
 	"first|f=i"       => \$first,
-    "skip|s=i"      => \$skip,
-    "no-test|t"      => \$notest,
+    "skip|s=i"        => \$skip,
+	"check-keys|ck=i" => \$checkKeys,
+    "no-test|t"       => \$notest,
     "cookie-file|c=s" => \$cookieFile,
     "verbose|v"       => \$verbose
 );
@@ -261,20 +262,22 @@ foreach my $issue (@firstNIssues) {
 	print "Jira issue key generated $key\n";
 
 	# Checking issue number in key (eg in FOO-20 the issue number is 20)
-	if ($key =~ /^[A-Z0-9]+-(\d+)$/) {
-		while ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
-			print "We're having a gap and will delete the issue\n";
-			unless ($jira->deleteIssue(Key => $key)) {
-				warn "Error while deleting the issue $key\n";
+	if ($checkKeys eq 'true') {
+		if ($key =~ /^[A-Z0-9]+-(\d+)$/) {
+			while ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
+				print "We're having a gap and will delete the issue\n";
+				unless ($jira->deleteIssue(Key => $key)) {
+					warn "Error while deleting the issue $key\n";
+				}
+				$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue\n";
+				print "New Jira issue key generated $key\n";
+				$key =~ /^[A-Z0-9]+-(\d+)$/;
 			}
-			$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue\n";
-			print "New Jira issue key generated $key\n";
-			$key =~ /^[A-Z0-9]+-(\d+)$/;
+		} else {
+			die "Wrong issue key $key\n";
 		}
-	} else {
-		die "Wrong issue key $key\n";
 	}
-
+	
 	# Save Jira issue key for further linking
 	$issue->{jiraKey} = $key;
 
@@ -327,9 +330,20 @@ foreach my $issue (@firstNIssues) {
 			# For ADF, skip header - original timestamp preserved in Jira comment metadata
 			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || warn "Error creating comment\n";
 		} else {
+			$header = convertUserMentions("[ \@".$comment->{author}->{login}." $date ]\n");
 			if (!$isADF) {
-				$header = convertUserMentions("[ \@".$comment->{author}->{login}." $date ]\n");
 				$text = $header.$text;
+			}else{
+				# prepend a header to the ADF document's content array.
+				unshift @{$text->{content}}, {
+					type => 'paragraph',
+					content => [
+						{
+							type => 'text',
+							text => $header
+						}
+					]
+				};
 			}
 			# For ADF, skip header - original timestamp preserved in Jira comment metadata
 			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || warn "Error creating comment\n";
@@ -384,6 +398,8 @@ foreach my $issue (@firstNIssues) {
 }
 
 &ifProceed;
+
+
 
 # Create Issue Links
 if ($exportLinks eq 'true') {	

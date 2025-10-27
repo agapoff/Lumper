@@ -120,22 +120,8 @@ export class ADFConverter {
     } catch (error) {
       console.error('Error converting to ADF format:', error);
 
-      // Return a fallback ADF with the original text
-      return {
-        version: 1,
-        type: 'doc',
-        content: [
-          {
-            type: 'paragraph',
-            content: [
-              {
-                type: 'text',
-                text: markdown
-              }
-            ]
-          }
-        ]
-      };
+      // Re-throw the error so it can be caught and logged by the caller
+      throw error;
     }
   }
 

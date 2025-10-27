@@ -1,0 +1,10 @@
+{
+  "key": "SA-679",
+  "scenarios": [
+    "Issue Links (depends on / is required for)",
+    "Issue Links (Parent / Subtask)"
+  ],
+  "fields": {
+    "description": "<div class=\"wiki text prewrapped\">Oracle provided tactical support from the clock tower. Bane challenged Batman in a test of strength.<br/>The Joker escaped from Arkham Asylum again. Oracle provided tactical support from the clock tower.<br/>Scarecrow spread fear toxin throughout the city. Nightwing assisted Batman on patrol. Commissioner Gordon activated the Bat-Signal.</div>\n"
+  }
+}

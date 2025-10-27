@@ -1,0 +1,100 @@
+{
+  "key": "SA-30",
+  "scenarios": [
+    "Comments (code blocks, mentions)"
+  ],
+  "fields": {
+    "comments": [
+      {
+        "id": "48-18668",
+        "text": "<div class=\"wiki text prewrapped\">The Dark Knight watches over Gotham City. The Batmobile raced through the streets. Nightwing assisted Batman on patrol. Batman threw a Batarang with precision. Batman used his detective skills to solve the case. The Batmobile raced through the streets.<br/><a href=\"https://gotham.city/batman\" title=\"Commissioner Gordon activated the Bat-Signal.\" data-user-id=\"22-42\">Bane challenged Batman in a test of strength. Alfred prepared the Batmobile in the Batcave.</a></div>\n",
+        "author": {
+          "login": "batman",
+          "fullName": "Batman",
+          "$type": "User"
+        },
+        "created": 1435653030656
+      },
+      {
+        "id": "48-18669",
+        "text": "<div class=\"wiki text prewrapped\">Harley Quinn caused chaos in downtown Gotham. Alfred prepared the Batmobile in the Batcave. The Dark Knight watches over Gotham City.</div>\n",
+        "author": {
+          "login": "ventriloquist",
+          "fullName": "Ventriloquist",
+          "$type": "User"
+        },
+        "created": 1435654889258
+      },
+      {
+        "id": "48-18716",
+        "text": "<div class=\"wiki text prewrapped\">The Riddler left cryptic clues for Batman. Penguin operated his criminal empire from the Iceberg Lounge. Alfred prepared the Batmobile in the Batcave.<br/><pre class=\"wikicode prettyprint\">const batcave = {\n  location: \"Wayne Manor\",\n  vehicles: [\"Batmobile\", \"Batwing\"],\n  status: \"operational\"\n};<br/>Commissioner Gordon activated the Bat-Signal. The Riddler left cryptic clues for Batman. Bane challenged Batman in a test of strength.<br/>Two-Face made decisions with his coin. Mr. Freeze sought a cure for his wife.<br/>Robin trained with Batman in Wayne Manor. Batman used his detective skills to solve the case.<br/>The Dark Knight watches over Gotham City.<br/>Batman used his detective skills to solve the case. Harley Quinn caused chaos in downtown Gotham.<br/>Two-Face made decisions with his coin. Robin trained with Batman in Wayne Manor.<br/>Alfred prepared the Batmobile in the Batcave. Alfred prepared the Batmobile in the Batcave. Robin trained with Batman in Wayne Manor.<br/>Mr. Freeze sought a cure for his wife. Batman used his detective skills to solve the case. Penguin operated his criminal empire from the Iceberg Lounge. Batman threw a Batarang with precision.</pre><br/>The utility belt contained many useful gadgets. Alfred prepared the Batmobile in the Batcave.<br/><pre class=\"wikicode prettyprint\">SELECT * FROM gotham_crimes WHERE solved_by = \"Batman\";<br/>Commissioner Gordon activated the Bat-Signal. Batman threw a Batarang with precision.<br/>The utility belt contained many useful gadgets.<br/>The utility belt contained many useful gadgets. Oracle provided tactical support from the clock tower. Scarecrow spread fear toxin throughout the city.<br/>Batman threw a Batarang with precision. Mr. Freeze sought a cure for his wife.<br/>Batman threw a Batarang with precision. Batman threw a Batarang with precision. Harley Quinn caused chaos in downtown Gotham.<br/>Mr. Freeze sought a cure for his wife. Bane challenged Batman in a test of strength. Catwoman prowled the rooftops of Gotham.<br/>Scarecrow spread fear toxin throughout the city. Mr. Freeze sought a cure for his wife. Robin trained with Batman in Wayne Manor.<br/>Nightwing assisted Batman on patrol. Two-Face made decisions with his coin. The Dark Knight watches over Gotham City. Mr. Freeze sought a cure for his wife.<br/>Penguin operated his criminal empire from the Iceberg Lounge. The Dark Knight watches over Gotham City. Batman threw a Batarang with precision.<br/>Poison Ivy controlled the plants in Robinson Park. The Riddler left cryptic clues for Batman. Scarecrow spread fear toxin throughout the city. The utility belt contained many useful gadgets.<br/>Penguin operated his criminal empire from the Iceberg Lounge. Bane challenged Batman in a test of strength.<br/>Alfred prepared the Batmobile in the Batcave. Penguin operated his criminal empire from the Iceberg Lounge. Poison Ivy controlled the plants in Robinson Park.<br/>Oracle provided tactical support from the clock tower. Nightwing assisted Batman on patrol. Batman used his detective skills to solve the case.<br/>Batman used his detective skills to solve the case.<br/>The Batmobile raced through the streets. The Joker escaped from Arkham Asylum again. Catwoman prowled the rooftops of Gotham. Catwoman prowled the rooftops of Gotham. Bane challenged Batman in a test of strength.<br/>Bane challenged Batman in a test of strength.</pre><br/>Bane challenged Batman in a test of strength.<br/><br/><pre class=\"wikicode prettyprint\">if (batSignal.isActivated()) {\n  batman.respond();\n}<br/>Batman threw a Batarang with precision. Two-Face made decisions with his coin. Oracle provided tactical support from the clock tower.<br/>Commissioner Gordon activated the Bat-Signal. The Batmobile raced through the streets.<br/>Alfred prepared the Batmobile in the Batcave. Batman used his detective skills to solve the case.<br/>The Batmobile raced through the streets. The utility belt contained many useful gadgets.<br/>The utility belt contained many useful gadgets. Poison Ivy controlled the plants in Robinson Park.<br/>Penguin operated his criminal empire from the Iceberg Lounge. Nightwing assisted Batman on patrol.<br/>Catwoman prowled the rooftops of Gotham. The utility belt contained many useful gadgets.<br/>Oracle provided tactical support from the clock tower. Two-Face made decisions with his coin. Nightwing assisted Batman on patrol.<br/>Two-Face made decisions with his coin. Catwoman prowled the rooftops of Gotham. The utility belt contained many useful gadgets. Batman used his detective skills to solve the case.<br/>The Batmobile raced through the streets. The Dark Knight watches over Gotham City. Two-Face made decisions with his coin. Penguin operated his criminal empire from the Iceberg Lounge.<br/>The Riddler left cryptic clues for Batman. Batman used his detective skills to solve the case.<br/>Batman used his detective skills to solve the case. Scarecrow spread fear toxin throughout the city. The Batmobile raced through the streets. Batman threw a Batarang with precision.<br/>The utility belt contained many useful gadgets. Scarecrow spread fear toxin throughout the city.<br/>The Batmobile raced through the streets. The utility belt contained many useful gadgets. The Riddler left cryptic clues for Batman.<br/>Alfred prepared the Batmobile in the Batcave. The Dark Knight watches over Gotham City. Poison Ivy controlled the plants in Robinson Park.<br/>The Joker escaped from Arkham Asylum again. Nightwing assisted Batman on patrol. Scarecrow spread fear toxin throughout the city.<br/>Batman threw a Batarang with precision. Bane challenged Batman in a test of strength. Batman used his detective skills to solve the case.<br/>Commissioner Gordon activated the Bat-Signal. Robin trained with Batman in Wayne Manor. The Riddler left cryptic clues for Batman.<br/>Two-Face made decisions with his coin. Scarecrow spread fear toxin throughout the city. Catwoman prowled the rooftops of Gotham.<br/>Robin trained with Batman in Wayne Manor. The Joker escaped from Arkham Asylum again.<br/>Nightwing assisted Batman on patrol. The Batmobile raced through the streets. Batman used his detective skills to solve the case.<br/>The utility belt contained many useful gadgets. Batman used his detective skills to solve the case.<br/>The utility belt contained many useful gadgets. The Riddler left cryptic clues for Batman.<br/>Poison Ivy controlled the plants in Robinson Park. The Batmobile raced through the streets. Robin trained with Batman in Wayne Manor. Alfred prepared the Batmobile in the Batcave.<br/></pre><br/>Scarecrow spread fear toxin throughout the city. Penguin operated his criminal empire from the Iceberg Lounge.<br/><br/>Nightwing assisted Batman on patrol. The Batmobile raced through the streets. Nightwing assisted Batman on patrol. Batman used his detective skills to solve the case. Poison Ivy controlled the plants in Robinson Park.<strong>The Joker escaped from Arkham Asylum again. Robin trained with Batman in Wayne Manor. Poison Ivy controlled the plants in Robinson Park.</strong>Alfred prepared the Batmobile in the Batcave. The utility belt contained many useful gadgets.<br/><br/><pre class=\"wikicode prettyprint\">const batcave = {\n  location: \"Wayne Manor\",\n  vehicles: [\"Batmobile\", \"Batwing\"],\n  status: \"operational\"\n};<br/>Mr. Freeze sought a cure for his wife. The Joker escaped from Arkham Asylum again.<br/>Robin trained with Batman in Wayne Manor. Commissioner Gordon activated the Bat-Signal.<br/><br/>Mr. Freeze sought a cure for his wife. Batman threw a Batarang with precision.<br/>Batman used his detective skills to solve the case. Catwoman prowled the rooftops of Gotham. The Dark Knight watches over Gotham City.<br/><br/>The utility belt contained many useful gadgets. Batman used his detective skills to solve the case.<br/>Robin trained with Batman in Wayne Manor. The Joker escaped from Arkham Asylum again.<br/><br/>Nightwing assisted Batman on patrol. Penguin operated his criminal empire from the Iceberg Lounge.<br/>The Joker escaped from Arkham Asylum again. Alfred prepared the Batmobile in the Batcave.<br/></pre><br/>Nightwing assisted Batman on patrol. The utility belt contained many useful gadgets. Nightwing assisted Batman on patrol.</div>\n",
+        "author": {
+          "login": "huntress",
+          "fullName": "Huntress",
+          "$type": "User"
+        },
+        "created": 1435909902770
+      },
+      {
+        "id": "48-18872",
+        "text": "<div class=\"wiki text prewrapped\">Nightwing assisted Batman on patrol. Catwoman prowled the rooftops of Gotham. Commissioner Gordon activated the Bat-Signal.<strong>The Batmobile raced through the streets. The Joker escaped from Arkham Asylum again. Mr. Freeze sought a cure for his wife.</strong>Alfred prepared the Batmobile in the Batcave. Batman used his detective skills to solve the case. Oracle provided tactical support from the clock tower.<strong>The utility belt contained many useful gadgets. Nightwing assisted Batman on patrol. Harley Quinn caused chaos in downtown Gotham.</strong>Batman used his detective skills to solve the case. Oracle provided tactical support from the clock tower.<strong>Catwoman prowled the rooftops of Gotham. Alfred prepared the Batmobile in the Batcave.</strong>Batman used his detective skills to solve the case. Penguin operated his criminal empire from the Iceberg Lounge. The Riddler left cryptic clues for Batman. Batman threw a Batarang with precision.<strong>The Joker escaped from Arkham Asylum again. Alfred prepared the Batmobile in the Batcave. Poison Ivy controlled the plants in Robinson Park.</strong>Commissioner Gordon activated the Bat-Signal. Catwoman prowled the rooftops of Gotham.<br/><br/>Batman threw a Batarang with precision. Batman threw a Batarang with precision. The Dark Knight watches over Gotham City. The Batmobile raced through the streets. Nightwing assisted Batman on patrol.<strong>The Riddler left cryptic clues for Batman. Oracle provided tactical support from the clock tower. Mr. Freeze sought a cure for his wife.</strong>Two-Face made decisions with his coin. Two-Face made decisions with his coin. Robin trained with Batman in Wayne Manor.</div>\n",
+        "author": {
+          "login": "mr-freeze",
+          "fullName": "Mr Freeze",
+          "$type": "User"
+        },
+        "created": 1436869475631
+      },
+      {
+        "id": "48-18920",
+        "text": "<div class=\"wiki text prewrapped\">Batman used his detective skills to solve the case.<code class=\"inline-code\">Harley Quinn caused chaos in downtown Gotham. Robin trained with Batman in Wayne Manor.</code>Poison Ivy controlled the plants in Robinson Park. The Joker escaped from Arkham Asylum again. The utility belt contained many useful gadgets.<br/><span class=\"monospace\">Harley Quinn caused chaos in downtown Gotham. Oracle provided tactical support from the clock tower. Alfred prepared the Batmobile in the Batcave. Two-Face made decisions with his coin. Robin trained with Batman in Wayne Manor.</span><br/><br/><span class=\"monospace\">Robin trained with Batman in Wayne Manor. Commissioner Gordon activated the Bat-Signal. Harley Quinn caused chaos in downtown Gotham. Batman used his detective skills to solve the case. Alfred prepared the Batmobile in the Batcave. The Dark Knight watches over Gotham City. Scarecrow spread fear toxin throughout the city. The Dark Knight watches over Gotham City. The Joker escaped from Arkham Asylum again. Robin trained with Batman in Wayne Manor.</span></div>\n",
+        "author": {
+          "login": "black-mask",
+          "fullName": "Black Mask",
+          "$type": "User"
+        },
+        "created": 1436973070014
+      },
+      {
+        "id": "48-18921",
+        "text": "<div class=\"wiki text prewrapped\">Oracle provided tactical support from the clock tower.</div>\n",
+        "author": {
+          "login": "two-face",
+          "fullName": "Two Face",
+          "$type": "User"
+        },
+        "created": 1436973183146
+      },
+      {
+        "id": "48-18923",
+        "text": "<div class=\"wiki text prewrapped\">Robin trained with Batman in Wayne Manor. Harley Quinn caused chaos in downtown Gotham. Bane challenged Batman in a test of strength. Scarecrow spread fear toxin throughout the city. Bane challenged Batman in a test of strength.</div>\n",
+        "author": {
+          "login": "batgirl",
+          "fullName": "Batgirl",
+          "$type": "User"
+        },
+        "created": 1436974459589
+      },
+      {
+        "id": "48-18926",
+        "text": "<div class=\"wiki text prewrapped\"><div class=\"wiki quote\">The Joker escaped from Arkham Asylum again. Scarecrow spread fear toxin throughout the city. Nightwing assisted Batman on patrol. Scarecrow spread fear toxin throughout the city. The Riddler left cryptic clues for Batman.</div><br/><br/>The Joker escaped from Arkham Asylum again. Harley Quinn caused chaos in downtown Gotham. Mr. Freeze sought a cure for his wife. Alfred prepared the Batmobile in the Batcave. Two-Face made decisions with his coin.</div>\n",
+        "author": {
+          "login": "alfred",
+          "fullName": "Alfred",
+          "$type": "User"
+        },
+        "created": 1436977398153
+      },
+      {
+        "id": "48-18945",
+        "text": "<div class=\"wiki text prewrapped\">Nightwing assisted Batman on patrol. Mr. Freeze sought a cure for his wife. Nightwing assisted Batman on patrol. Two-Face made decisions with his coin. Batman used his detective skills to solve the case.<br/>The Joker escaped from Arkham Asylum again. Batman used his detective skills to solve the case. The Riddler left cryptic clues for Batman. Oracle provided tactical support from the clock tower.<br/><br/>Bane challenged Batman in a test of strength. Bane challenged Batman in a test of strength. Catwoman prowled the rooftops of Gotham. Commissioner Gordon activated the Bat-Signal.</div>\n",
+        "author": {
+          "login": "spoiler",
+          "fullName": "Spoiler",
+          "$type": "User"
+        },
+        "created": 1437031660217
+      }
+    ]
+  }
+}

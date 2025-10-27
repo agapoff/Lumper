@@ -55,8 +55,9 @@ async function convertToDataset() {
 
       // Convert description to ADF if present
       if (issue.description && issue.description.trim().length > 0) {
+        let descResult = null;
         try {
-          const descResult = htmlToMd.convertDescription(issue.description, null);
+          descResult = htmlToMd.convertDescription(issue.description, null);
           issueData.description = adfConverter.convertToADF(descResult.markdown);
         } catch (descError) {
           console.error(`  ⚠ Error converting description for ${issue.idReadable}: ${descError.message}`);
@@ -76,9 +77,10 @@ async function convertToDataset() {
       // Convert Release note to ADF if present
       const releaseNoteField = issue.customFields?.find(f => f.name === 'Release note');
       if (releaseNoteField?.value?.text) {
+        let rnResult = null;
         try {
           const rnMarkdown = releaseNoteField.value.markdownText || releaseNoteField.value.text;
-          const rnResult = htmlToMd.convertDescription(releaseNoteField.value.text, rnMarkdown);
+          rnResult = htmlToMd.convertDescription(releaseNoteField.value.text, rnMarkdown);
           issueData.releaseNote = adfConverter.convertToADF(rnResult.markdown);
         } catch (rnError) {
           console.error(`  ⚠ Error converting release note for ${issue.idReadable}: ${rnError.message}`);
@@ -100,9 +102,10 @@ async function convertToDataset() {
         issueData.comments = [];
 
         for (const comment of issue.comments) {
+          let commentResult = null;
           try {
             if (comment.text && comment.text.trim().length > 0) {
-              const commentResult = htmlToMd.convertDescription(comment.text, null);
+              commentResult = htmlToMd.convertDescription(comment.text, null);
               const commentADF = adfConverter.convertToADF(commentResult.markdown);
 
               issueData.comments.push({

@@ -70,8 +70,19 @@ export class ADFConverter {
         return placeholder;
       });
 
+      // Replace horizontal rules BEFORE sanitizeMarkdown (which mangles them into ` *`)
+      // md-to-adf has bugs with horizontal rules (---, ***, * * *, etc)
+      processed = processed.replace(/^\s*[*]\s*[*]\s*[*]\s*$/gm, '---');
+      processed = processed.replace(/^\s*[-_*]{3,}\s*$/gm, '---');
+
       // Now sanitize markdown to prevent empty text nodes
       processed = this.sanitizeMarkdown(processed);
+
+      // Fix strikethrough that causes "Text must be at least one character long" errors
+      // GitHub markdown uses ~~ for strikethrough, but Jira ADF uses ~ (single tilde)
+      // The md-to-adf library has bugs with ~~, so we'll just remove all strikethrough markers
+      // Note: This loses strikethrough formatting, but it's better than failing the conversion
+      processed = processed.replace(/~~/g, '');
 
       // Convert angle-bracketed URLs to plain URLs before md-to-adf processes them
       // Format: <https://example.com> → https://example.com
@@ -120,22 +131,8 @@ export class ADFConverter {
     } catch (error) {
       console.error('Error converting to ADF format:', error);
 
-      // Return a fallback ADF with the original text
-      return {
-        version: 1,
-        type: 'doc',
-        content: [
-          {
-            type: 'paragraph',
-            content: [
-              {
-                type: 'text',
-                text: markdown
-              }
-            ]
-          }
-        ]
-      };
+      // Re-throw the error so it can be caught and logged by the caller
+      throw error;
     }
   }
 

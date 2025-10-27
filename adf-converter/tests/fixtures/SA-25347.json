@@ -1,0 +1,132 @@
+{
+  "key": "SA-25347",
+  "scenarios": [
+    "Release note (simple markup)"
+  ],
+  "fields": {
+    "description": "## Task description\n\nRight now the filtering is divided for application discovery (normal search and hidden in configuration). We need to extend it and unify it.\n\n[Design](https://internal-system/design/BVwjGDjelz3CwV9ITXZE8I/Handoff---App-Discovery-Enhancements-for-v1.0?node-id=1-5&p=f&t=eWygsPQR630GTVTc-0)\n\n## Background\n\nCustomers have described their approach to prioritize which applications they want to secure next. One of the approaches is to focus on applications that use a specific port. For example, an admin wants to narrow entitlements for SSH access, or database management ports, and so on. To simply their experience, the administrator needs the ability to filter the list of discovered apps by port(s).\n\n## Definition of done\n\nSearch ability according to design suggestion\n\n## Limitation\n\nSaving searches will be split out to a separate thing.",
+    "releaseNote": "Includes:\n- Pinned search\n- New keywords for advanced search\n- Removed system-wide filtered list\n",
+    "comments": [
+      {
+        "id": "48-63006",
+        "text": "It looks like the batcomputer already have support for that filtering. In case it doesn't this can be turned into a story.",
+        "author": {
+          "login": "nightwing",
+          "fullName": "Nightwing",
+          "$type": "User"
+        },
+        "created": 1741880985023
+      },
+      {
+        "id": "48-63139",
+        "text": "The design team doesn't see any UX issues with this. Just add an input field below the keywords.\n\n(EDIT: Removed image at that was a result of misunderstanding the ticket).",
+        "author": {
+          "login": "bane",
+          "fullName": "Bane",
+          "$type": "User"
+        },
+        "created": 1743403500444
+      },
+      {
+        "id": "48-63159",
+        "text": "A note for implementation: This might be affected by this story: <https://internal-system/issue/SA-25318/Ability-to-group-discovered-applications-by-hostname-in-Application-Discovery>",
+        "author": {
+          "login": "poison-ivy",
+          "fullName": "Poison Ivy",
+          "$type": "User"
+        },
+        "created": 1743492938538
+      },
+      {
+        "id": "48-63212",
+        "text": "I saw the description was updated. We'll take another look.",
+        "author": {
+          "login": "commissioner-gordon",
+          "fullName": "Commissioner Gordon",
+          "$type": "User"
+        },
+        "created": 1744025256020
+      },
+      {
+        "id": "48-63213",
+        "text": "@huntress I put in the wrong link, have updated now. Though I don't know how relevant that PP idea is, but maybe?",
+        "author": {
+          "login": "joker",
+          "fullName": "Joker",
+          "$type": "User"
+        },
+        "created": 1744026402145
+      },
+      {
+        "id": "48-63215",
+        "text": "@deadshot - This task is a subset of that PP ticket. Might be good to think through how and what kind of filtering we want on the discovered apps.",
+        "author": {
+          "login": "hush",
+          "fullName": "Hush",
+          "$type": "User"
+        },
+        "created": 1744027721365
+      },
+      {
+        "id": "48-63251",
+        "text": "Do we want the port search to support ranges? like `1024–65535`",
+        "author": {
+          "login": "ventriloquist",
+          "fullName": "Ventriloquist",
+          "$type": "User"
+        },
+        "created": 1744287006362
+      },
+      {
+        "id": "48-63285",
+        "text": "Can you please provide a better explanation (preferably in the description) of exactly what issue(s) this ticket should solve? Note that all relevant information needs to be in YouTrack as some of us don’t have (nor should have) access to ProdPad.",
+        "author": {
+          "login": "batgirl",
+          "fullName": "Batgirl",
+          "$type": "User"
+        },
+        "created": 1744875592290
+      },
+      {
+        "id": "48-63287",
+        "text": "It closely relate to <https://internal-system/issue/SA-25508/Improved-filtering-of-discovered-apps>\n\nFrom PP: \n\nAn SDP Administrator wants to identify and focus on building entitlements for applications they deem important. This work is made a little more difficult by the fact that the important apps are buried within the hundreds, even thousands of other discovered applications. The SDP admin needs more control over how much \"noise\" appears in the results.",
+        "author": {
+          "login": "joker",
+          "fullName": "Joker",
+          "$type": "User"
+        },
+        "created": 1744876112572
+      },
+      {
+        "id": "48-63689",
+        "text": "Removing tag as this go through Craft.io instead.",
+        "author": {
+          "login": "nightwing",
+          "fullName": "Nightwing",
+          "$type": "User"
+        },
+        "created": 1749719329396
+      },
+      {
+        "id": "48-64036",
+        "text": "@man-bat is there some update for it on CraftIO? (If you have the link, we should replace the old PP one too)",
+        "author": {
+          "login": "nightwing",
+          "fullName": "Nightwing",
+          "$type": "User"
+        },
+        "created": 1754903565554
+      },
+      {
+        "id": "48-64038",
+        "text": "Updated",
+        "author": {
+          "login": "harley-quinn",
+          "fullName": "Harley Quinn",
+          "$type": "User"
+        },
+        "created": 1754904304812
+      }
+    ]
+  }
+}

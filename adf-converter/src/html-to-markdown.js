@@ -138,9 +138,13 @@ export class HtmlToMarkdownConverter {
   isHtmlContent(description) {
     if (!description) return false;
 
-    // Check for HTML tags
+    // First, remove markdown autolinks (angle-bracketed URLs) to avoid false positives
+    // Format: <https://...> or <http://...>
+    const withoutAutolinks = description.replace(/<https?:\/\/[^>\s]+>/g, '');
+
+    // Check for HTML tags in the remaining content
     const htmlPattern = /<[^>]+>/;
-    return htmlPattern.test(description);
+    return htmlPattern.test(withoutAutolinks);
   }
 
   /**
@@ -220,8 +224,9 @@ export class HtmlToMarkdownConverter {
 
     // If description contains HTML, it's old Wiki format
     if (this.isHtmlContent(description)) {
+      const result = this.convert(description);
       return {
-        markdown: this.convert(description),
+        markdown: result,
         wasConverted: true,
         originalFormat: 'youtrack-wiki',
       };

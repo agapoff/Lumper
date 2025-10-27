@@ -31,7 +31,7 @@ sub new {
 	$ua = LWP::UserAgent->new;
 	if ($arg{CookieFile}) {
 		$ua->cookie_jar( $cookie_jar );
-	}	
+	}
 	$ua->timeout(30);
 	my $response = $ua->get($arg{Url}.'/rest/auth/latest/session', Authorization => 'Basic '.$basic);
 	if ($response->is_success) {
@@ -424,7 +424,8 @@ sub createIssue {
 	# and lastly, actually create the issue
 	my $content = encode_json \%data;
 	print "Create Issue Content: " . $content . "\n";
-	my $response = $ua->post($self->{url}.'/rest/api/latest/issue', Authorization => 'Basic '.$self->{basic}, 'Content-Type' => 'application/json', 'Content' => $content);
+	# Use API v3 for ADF support in description field
+	my $response = $ua->post($self->{url}.'/rest/api/3/issue', Authorization => 'Basic '.$self->{basic}, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
 		print $response->status_line."\n" if ($self->{verbose});
 		print $response->decoded_content."\n" if ($self->{verbose});
@@ -543,11 +544,24 @@ sub createComment {
 	my $self = shift;
 	my %arg = @_;
 	my %data;
-	$data{body} = substr ($arg{Body}, 0, 32766); # Jira doesn't allow to post comments longer than 32k
-		my $content = encode_json \%data;
-	print $content."\n" if ($self->{verbose});
-	my $basic = ($arg{Login} && $arg{Password}) ? encode_base64($arg{Login}.":".$arg{Password}) : $self->{basic}; 
-	my $response = $ua->post($self->{url}.'/rest/api/latest/issue/'.$arg{IssueKey}.'/comment', Authorization => 'Basic '.$basic, 'Content-Type' => 'application/json', 'Content' => $content);
+
+	# Check if Body is ADF (hash reference) or plain text (string)
+	if (ref($arg{Body}) eq 'HASH') {
+		# ADF format - use directly
+		$data{body} = $arg{Body};
+	} else {
+		# Plain text - truncate to Jira's limit
+		$data{body} = substr ($arg{Body}, 0, 32766); # Jira doesn't allow to post comments longer than 32k
+	}
+
+	my $content = encode_json \%data;
+	print "Comment JSON being sent:\n";
+	print $content."\n";
+	my $basic = ($arg{Login} && $arg{Password}) ? encode_base64($arg{Login}.":".$arg{Password}) : $self->{basic};
+
+	# Use API v3 endpoint for ADF support in comments
+	my $api_version = (ref($arg{Body}) eq 'HASH') ? '3' : 'latest';
+	my $response = $ua->post($self->{url}.'/rest/api/'.$api_version.'/issue/'.$arg{IssueKey}.'/comment', Authorization => 'Basic '.$basic, 'Content-Type' => 'application/json', 'Content' => $content);
 	if ($response->is_success) {
 		return decode_json $response->decoded_content;
 	} else {

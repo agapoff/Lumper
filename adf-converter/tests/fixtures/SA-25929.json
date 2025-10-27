@@ -1,0 +1,10 @@
+{
+  "key": "SA-25929",
+  "scenarios": [
+    "Release note (user mention)"
+  ],
+  "fields": {
+    "description": "## Task description\nInvalid policies are failing silently on create\nWe need to handle that\n\nslack: https://internal-system/archives/C059E8K9XAR/p1750859388827419?thread_ts=v1.0&cid=C059E8K9XAR\n\n\nIt seems that some errors on entitlements need some attention too\nslack: https://internal-system/archives/C059E8K9XAR/p1750939059003479\n\n## Design\nhttps://internal-system/design/2u5jVqOy2cletgjoph7hIf/SDP-Admin-UI---Handoff?node-id=5841-7437&p=f&m=dev\n\n## Definition of done\n",
+    "releaseNote": "@talia-al-ghul it should be added as a known issue for v1.0.0 I think\n\n- Add missing error feedback on policies in Application Discovery configure modal"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "key": "SA-268",
+  "scenarios": [
+    "Issue Links (duplicates / is duplicated by)"
+  ],
+  "fields": {
+    "description": "<div class=\"wiki text prewrapped\">Catwoman prowled the rooftops of Gotham. Bane challenged Batman in a test of strength. Catwoman prowled the rooftops of Gotham.<br/><br/>Scarecrow spread fear toxin throughout the city.<br/>Robin trained with Batman in Wayne Manor.<br/>Nightwing assisted Batman on patrol. Commissioner Gordon activated the Bat-Signal. Mr. Freeze sought a cure for his wife.<br/>Nightwing assisted Batman on patrol. Penguin operated his criminal empire from the Iceberg Lounge. Poison Ivy controlled the plants in Robinson Park.<br/>Poison Ivy controlled the plants in Robinson Park.</div>\n"
+  }
+}

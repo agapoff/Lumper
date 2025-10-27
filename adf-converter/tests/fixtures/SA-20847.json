@@ -1,0 +1,21 @@
+{
+  "key": "SA-20847",
+  "scenarios": [
+    "Quotations"
+  ],
+  "fields": {
+    "description": "Right now we base the profile name on the k8s tag for the cluster plus a hardcoded suffix.\nUnfortunately that can easily exceed the limit set by the batcomputer.\n\nSee those batcomputer logs:\n```\nDec 06 13:35:08 gotham.city bat-controllerd[3236]: INFO [UnprocessableEntityExceptionMapper] save.arg1.spaKeyName: may only contain alphanumeric characters, underscore, hyphen and may not be longer than 20 characters.\nDec 06 13:35:08 gotham.city bat-controllerd[3236]: save.arg1.spaKeyName may only contain alphanumeric characters, underscore, hyphen and may not be longer than 20 characters.\nDec 06 13:35:08 gotham.city bat-controllerd[3236]: v1.0.v1.0 - - [06/Dec/2022:13:35:08 +0000] \"POST /admin/client-profiles HTTP/v1.0\" 422 209 \"-\" \"-\" 4\n```\n\nA possible fix is using a scheme similar to what k8s does with a prefix based on the tag trimmed to max 15 characters and a random 5 character suffix.\nIf we use a dash to separate the prefix and suffix that means we reserve 6 characters.\n\nQuoting @harley-quinn :\n> we only have 20 chars though\n> so 15+5 random\n> or whatever plus 5 random\n> but always 5 random\n> yeah\n> k8s style",
+    "comments": [
+      {
+        "id": "48-54546",
+        "text": "This is the issue you hit @man-bat ",
+        "author": {
+          "login": "bane",
+          "fullName": "Bane",
+          "$type": "User"
+        },
+        "created": 1670417287775
+      }
+    ]
+  }
+}

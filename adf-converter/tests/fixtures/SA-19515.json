@@ -1,0 +1,21 @@
+{
+  "key": "SA-19515",
+  "scenarios": [
+    "Description (user mentions)"
+  ],
+  "fields": {
+    "description": "This requires changes in:\n\n* batcomputer @man-bat \n* bat-signal\n* sdpctl @ra-s-al-ghul \n\n  \n",
+    "comments": [
+      {
+        "id": "48-55143",
+        "text": "Making the v1.0 release light on the BDR side.",
+        "author": {
+          "login": "riddler",
+          "fullName": "Riddler",
+          "$type": "User"
+        },
+        "created": 1675168641286
+      }
+    ]
+  }
+}

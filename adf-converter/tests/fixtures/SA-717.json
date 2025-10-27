@@ -1,0 +1,41 @@
+{
+  "key": "SA-717",
+  "scenarios": [
+    "Issue Links (relates to / is related to)"
+  ],
+  "fields": {
+    "description": "<div class=\"wiki text prewrapped\">Alfred prepared the Batmobile in the Batcave. The Riddler left cryptic clues for Batman. Scarecrow spread fear toxin throughout the city.<a href=\"https://gotham.city/batman\" title=\"Oracle provided tactical support from the clock tower.\" data-user-id=\"22-142\">The Batmobile raced through the streets. Two-Face made decisions with his coin.</a>Robin trained with Batman in Wayne Manor.<br/><br/><div class=\"wiki quote\">The Joker escaped from Arkham Asylum again. Alfred prepared the Batmobile in the Batcave. Mr. Freeze sought a cure for his wife. Mr. Freeze sought a cure for his wife. Robin trained with Batman in Wayne Manor. Penguin operated his criminal empire from the Iceberg Lounge.<br/>Nightwing assisted Batman on patrol. The utility belt contained many useful gadgets. Penguin operated his criminal empire from the Iceberg Lounge. Poison Ivy controlled the plants in Robinson Park.</div></div>\n",
+    "comments": [
+      {
+        "id": "48-19508",
+        "text": "<div class=\"wiki text prewrapped\">Penguin operated his criminal empire from the Iceberg Lounge. Scarecrow spread fear toxin throughout the city. Harley Quinn caused chaos in downtown Gotham. Penguin operated his criminal empire from the Iceberg Lounge. Penguin operated his criminal empire from the Iceberg Lounge. The utility belt contained many useful gadgets. The Dark Knight watches over Gotham City.</div>\n",
+        "author": {
+          "login": "catwoman",
+          "fullName": "Catwoman",
+          "$type": "User"
+        },
+        "created": 1440507681286
+      },
+      {
+        "id": "48-19578",
+        "text": "<div class=\"wiki text prewrapped\">Batman threw a Batarang with precision. The Dark Knight watches over Gotham City. The Dark Knight watches over Gotham City. Poison Ivy controlled the plants in Robinson Park.<br/><pre class=\"wikicode prettyprint\">const batcave = {\n  location: \"Wayne Manor\",\n  vehicles: [\"Batmobile\", \"Batwing\"],\n  status: \"operational\"\n};</pre><br/>Commissioner Gordon activated the Bat-Signal. Poison Ivy controlled the plants in Robinson Park.<br/><pre class=\"wikicode prettyprint\">SELECT * FROM gotham_crimes WHERE solved_by = \"Batman\";<br/>Bane challenged Batman in a test of strength. Commissioner Gordon activated the Bat-Signal. The Dark Knight watches over Gotham City.<br/>Commissioner Gordon activated the Bat-Signal. Nightwing assisted Batman on patrol. Mr. Freeze sought a cure for his wife. Batman used his detective skills to solve the case.<br/>Alfred prepared the Batmobile in the Batcave.<br/>Robin trained with Batman in Wayne Manor. Poison Ivy controlled the plants in Robinson Park.<br/>Bane challenged Batman in a test of strength. The Dark Knight watches over Gotham City.</pre><br/>Batman threw a Batarang with precision. The Dark Knight watches over Gotham City. The utility belt contained many useful gadgets.<br/><pre class=\"wikicode prettyprint\">if (batSignal.isActivated()) {\n  batman.respond();\n}<br/>The Riddler left cryptic clues for Batman.<br/>Penguin operated his criminal empire from the Iceberg Lounge. Oracle provided tactical support from the clock tower.<br/>Batman threw a Batarang with precision. Harley Quinn caused chaos in downtown Gotham. Mr. Freeze sought a cure for his wife.</pre><br/>Poison Ivy controlled the plants in Robinson Park. Batman threw a Batarang with precision. Mr. Freeze sought a cure for his wife. The Joker escaped from Arkham Asylum again. Alfred prepared the Batmobile in the Batcave. Commissioner Gordon activated the Bat-Signal. Catwoman prowled the rooftops of Gotham. Two-Face made decisions with his coin.<br/><pre class=\"wikicode prettyprint\">const gadgets = [\"Batarang\", \"Grappling Hook\", \"Smoke Bomb\"];<br/>Alfred prepared the Batmobile in the Batcave. Poison Ivy controlled the plants in Robinson Park.<br/>Batman threw a Batarang with precision. Harley Quinn caused chaos in downtown Gotham.<br/>Alfred prepared the Batmobile in the Batcave.<br/>Batman threw a Batarang with precision. Scarecrow spread fear toxin throughout the city. Mr. Freeze sought a cure for his wife.</pre><br/>Poison Ivy controlled the plants in Robinson Park. Batman used his detective skills to solve the case. Oracle provided tactical support from the clock tower.<br/><br/>The Dark Knight watches over Gotham City.<br/><pre class=\"wikicode prettyprint\">const gadgets = [\"Batarang\", \"Grappling Hook\", \"Smoke Bomb\"];</pre></div>\n",
+        "author": {
+          "login": "talia-al-ghul",
+          "fullName": "Talia Al Ghul",
+          "$type": "User"
+        },
+        "created": 1440690403167
+      },
+      {
+        "id": "48-19603",
+        "text": "<div class=\"wiki text prewrapped\">Mr. Freeze sought a cure for his wife. Mr. Freeze sought a cure for his wife. Penguin operated his criminal empire from the Iceberg Lounge. Robin trained with Batman in Wayne Manor. Alfred prepared the Batmobile in the Batcave.</div>\n",
+        "author": {
+          "login": "deathstroke",
+          "fullName": "Deathstroke",
+          "$type": "User"
+        },
+        "created": 1441018914162
+      }
+    ]
+  }
+}

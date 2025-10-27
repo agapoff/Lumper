@@ -60,8 +60,23 @@ export class ADFConverter {
     }
 
     try {
-      // Sanitize markdown to prevent empty text nodes
-      let processed = this.sanitizeMarkdown(markdown);
+      // Extract fenced code blocks FIRST, before sanitization
+      // md-to-adf fails to recognize ``` code blocks properly
+      // AND sanitizeMarkdown would destroy them with its backtick removal
+      const codeBlocks = [];
+      let processed = markdown.replace(/```[\s\S]*?```/g, (match) => {
+        const placeholder = `{{CODEBLOCK${codeBlocks.length}}}`;
+        codeBlocks.push(match);
+        return placeholder;
+      });
+
+      // Now sanitize markdown to prevent empty text nodes
+      processed = this.sanitizeMarkdown(processed);
+
+      // Convert angle-bracketed URLs to plain URLs before md-to-adf processes them
+      // Format: <https://example.com> → https://example.com
+      // This prevents md-to-adf from treating angle brackets as HTML tags
+      processed = processed.replace(/<(https?:\/\/[^>\s]+)>/g, '$1');
 
       // Remove unnecessary markdown escapes that shouldn't be in ADF
       // Remove backslash before periods (numbered lists)
@@ -99,7 +114,7 @@ export class ADFConverter {
       const adf = JSON.parse(JSON.stringify(rawResult));
 
       // Post-process the ADF to handle custom elements and clean up placeholders
-      this.postProcessADF(adf);
+      this.postProcessADF(adf, codeBlocks);
 
       return adf;
     } catch (error) {
@@ -127,15 +142,134 @@ export class ADFConverter {
   /**
    * Post-process ADF to handle custom elements
    * @param {Object} adf - The ADF document
+   * @param {Array} codeBlocks - Array of original fenced code block strings
    */
-  postProcessADF(adf) {
+  postProcessADF(adf, codeBlocks = []) {
     if (!adf || !adf.content) return;
 
     this.processNodes(adf.content);
     this.fixFalseEmojiNodes(adf.content);
+    this.restoreCodeBlocks(adf.content, codeBlocks); // Restore code blocks from placeholders
+    this.convertCodeMarksToCodeBlocks(adf.content); // Convert inline code marks to codeBlock nodes where appropriate
     this.mergeConsecutiveLists(adf.content);
     this.restorePlaceholders(adf); // Restore placeholders BEFORE URL conversion
     this.convertUrlsToLinks(adf.content); // Convert URLs after placeholders are restored
+  }
+
+  /**
+   * Restore code block placeholders to actual codeBlock nodes
+   * @param {Array} nodes - Array of ADF nodes
+   * @param {Array} codeBlocks - Array of original code block strings
+   */
+  restoreCodeBlocks(nodes, codeBlocks) {
+    if (!Array.isArray(nodes) || codeBlocks.length === 0) return;
+
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+
+      if (!node || typeof node !== 'object') continue;
+
+      // Check if this is a paragraph with a code block placeholder
+      if (node.type === 'paragraph' && node.content && Array.isArray(node.content)) {
+        for (let j = 0; j < node.content.length; j++) {
+          const contentNode = node.content[j];
+
+          if (contentNode.type === 'text' && contentNode.text) {
+            const match = contentNode.text.match(/\{\{CODEBLOCK(\d+)\}\}/);
+            if (match) {
+              const blockIndex = parseInt(match[1], 10);
+              const codeBlock = codeBlocks[blockIndex];
+
+              if (codeBlock) {
+                // Extract code content from ``` blocks
+                const codeContent = codeBlock.replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '');
+
+                // Replace the paragraph with a codeBlock node
+                nodes[i] = {
+                  type: 'codeBlock',
+                  attrs: {},
+                  content: [
+                    {
+                      type: 'text',
+                      text: codeContent
+                    }
+                  ]
+                };
+                break; // Move to next node
+              }
+            }
+          }
+        }
+      }
+
+      // Recursively process nested content
+      if (node.content && Array.isArray(node.content)) {
+        this.restoreCodeBlocks(node.content, codeBlocks);
+      }
+    }
+  }
+
+  /**
+   * Convert paragraph nodes with only code marks into codeBlock nodes
+   * md-to-adf library fails to recognize triple-backtick code blocks and converts them to paragraphs with code marks
+   * This detects multi-line code content and converts it to proper codeBlock nodes
+   * @param {Array} nodes - Array of ADF nodes
+   */
+  convertCodeMarksToCodeBlocks(nodes) {
+    if (!Array.isArray(nodes)) return;
+
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+
+      if (!node || typeof node !== 'object') continue;
+
+      // Check if this is a paragraph with only code-marked text
+      if (node.type === 'paragraph' && node.content && Array.isArray(node.content)) {
+        // Check if all content nodes have code marks and contain newlines (multi-line code)
+        const hasOnlyCodeMarks = node.content.every(contentNode => {
+          if (contentNode.type !== 'text') return false;
+          if (!contentNode.marks || !Array.isArray(contentNode.marks)) return false;
+          return contentNode.marks.some(mark => mark.type === 'code');
+        });
+
+        if (hasOnlyCodeMarks && node.content.length > 0) {
+          // Combine all text from code marks
+          const codeText = node.content
+            .filter(n => n.type === 'text' && n.text)
+            .map(n => n.text)
+            .join('');
+
+          // Detect if this should be a code block:
+          // 1. Contains newlines (multi-line)
+          // 2. Is substantial (>=40 chars) AND contains code patterns
+          // 3. Contains code-like patterns (braces, semicolons, etc.)
+          const hasNewlines = codeText.includes('\n');
+          const isSubstantial = codeText.length >= 40;
+          const hasCodePatterns = /[{};]|const |let |var |function |=>|import |export /.test(codeText);
+
+          // Convert to codeBlock if any of these conditions are met
+          if (hasNewlines || (isSubstantial && hasCodePatterns)) {
+            // Convert to codeBlock node
+            nodes[i] = {
+              type: 'codeBlock',
+              attrs: {},
+              content: [
+                {
+                  type: 'text',
+                  text: codeText
+                }
+              ]
+            };
+            continue; // Don't recursively process this node
+          }
+        }
+      }
+
+      // Recursively process nested content
+      if (node.content && Array.isArray(node.content)) {
+        this.convertCodeMarksToCodeBlocks(node.content);
+      }
+    }
   }
 
   /**
@@ -239,7 +373,8 @@ export class ADFConverter {
     if (!Array.isArray(nodes)) return;
 
     // URL regex pattern - matches http(s):// URLs
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    // Excludes trailing punctuation that's likely part of the sentence (.,;:!?)
+    const urlRegex = /(https?:\/\/[^\s]+?)([.,;:!?]*)(?=\s|$)/g;
 
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
@@ -253,6 +388,7 @@ export class ADFConverter {
 
         // If the entire text is a single URL, just add link mark
         if (matches.length === 1 && matches[0][0] === text) {
+          const url = matches[0][1]; // Capture group 1 is the URL without trailing punctuation
           if (!node.marks) {
             node.marks = [];
           }
@@ -261,17 +397,20 @@ export class ADFConverter {
             node.marks.push({
               type: 'link',
               attrs: {
-                href: text
+                href: url
               }
             });
           }
+          node.text = url; // Update text to URL without punctuation
         } else if (matches.length > 0) {
           // Text contains URLs mixed with other text - split into multiple nodes
           const newNodes = [];
           let lastIndex = 0;
 
           matches.forEach(match => {
-            const url = match[0];
+            const fullMatch = match[0]; // Full match including punctuation
+            const url = match[1]; // URL without trailing punctuation
+            const punctuation = match[2] || ''; // Trailing punctuation
             const urlIndex = match.index;
 
             // Add text before URL
@@ -298,7 +437,16 @@ export class ADFConverter {
               ]
             });
 
-            lastIndex = urlIndex + url.length;
+            // Add trailing punctuation as separate text node if present
+            if (punctuation) {
+              newNodes.push({
+                type: 'text',
+                text: punctuation,
+                ...(node.marks && { marks: node.marks })
+              });
+            }
+
+            lastIndex = urlIndex + fullMatch.length;
           });
 
           // Add remaining text after last URL
@@ -307,7 +455,7 @@ export class ADFConverter {
               type: 'text',
               text: text.substring(lastIndex),
               ...(node.marks && { marks: node.marks })
-            });
+              });
           }
 
           // Replace current node with new nodes

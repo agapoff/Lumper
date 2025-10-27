@@ -67,7 +67,7 @@ describe('ADFConverter - Description Conversion', () => {
   });
 
   describe('Hyperlinks in Descriptions', () => {
-    test('SA-458: converts issue links to clickable URLs', () => {
+    test('SA-458: preserves YouTrack issue links in ordered lists', () => {
       const fixture = loadFixture('SA-458');
       expect(fixture).toBeDefined();
 
@@ -76,21 +76,54 @@ describe('ADFConverter - Description Conversion', () => {
       }
 
       const htmlContent = fixture.fields.description;
+
+      // Count links in original HTML
+      const htmlLinkMatches = htmlContent.match(/<a[^>]*href="\/issue\/[^"]*"[^>]*>.*?<\/a>/g) || [];
+      expect(htmlLinkMatches.length).toBe(3); // SA-458 has 3 YouTrack issue links
+
+      // Convert HTML → Markdown
       const mdResult = htmlToMd.convertDescription(htmlContent, null);
+
+      // Count links in Markdown
+      const markdownLinkMatches = mdResult.markdown.match(/\[([^\]]+)\]\(([^)]+)\)/g) || [];
+      expect(markdownLinkMatches.length).toBe(3); // All 3 links should be preserved
+
+      // Convert Markdown → ADF
       const adf = adfConverter.convertToADF(mdResult.markdown);
 
-      const adfString = JSON.stringify(adf);
-      expect(adf.type).toBe('doc');
+      // Count links in ADF
+      let linkCount = 0;
+      const linkHrefs = [];
 
-      // Should have link marks (has multiple <a href="...">)
-      expect(adfString.includes('"type":"link"')).toBe(true);
+      function countLinks(node) {
+        if (node && typeof node === 'object') {
+          if (node.type === 'text' && node.marks) {
+            node.marks.forEach(mark => {
+              if (mark.type === 'link') {
+                linkCount++;
+                linkHrefs.push(mark.attrs.href);
+              }
+            });
+          }
+          if (node.content && Array.isArray(node.content)) {
+            node.content.forEach(countLinks);
+          }
+        }
+      }
 
-      // Should have paragraph content
-      const hasParagraph = adf.content.some(node => node.type === 'paragraph');
-      expect(hasParagraph).toBe(true);
+      adf.content.forEach(countLinks);
+
+      // Verify all 3 links are preserved in ADF
+      expect(linkCount).toBe(3);
+
+      // Verify the link hrefs are issue IDs (not full URLs)
+      expect(linkHrefs).toContain('SA-852');
+      expect(linkHrefs).toContain('SA-833');
+      // Note: The third link shows as SA-1069 in HTML but GW-356 in link text
+      expect(linkHrefs.some(href => href === 'SA-1069' || href === 'GW-356')).toBe(true);
     });
 
-    test('SA-459: converts complex content with valid structure', () => {
+    test('SA-459: preserves text after code blocks', () => {
       const fixture = loadFixture('SA-459');
       expect(fixture).toBeDefined();
 
@@ -99,17 +132,71 @@ describe('ADFConverter - Description Conversion', () => {
       }
 
       const htmlContent = fixture.fields.description;
+
+      // Verify text exists in HTML
+      expect(htmlContent.includes('In case proxyd')).toBe(true);
+
+      // Convert HTML → Markdown
       const mdResult = htmlToMd.convertDescription(htmlContent, null);
+
+      // Verify text exists in Markdown
+      expect(mdResult.markdown.includes('In case proxyd')).toBe(true);
+
+      // Convert Markdown → ADF
       const adf = adfConverter.convertToADF(mdResult.markdown);
+      const adfString = JSON.stringify(adf);
 
-      // Verify valid ADF structure
-      expect(adf.type).toBe('doc');
-      expect(adf.version).toBe(1);
-      expect(adf.content.length).toBeGreaterThan(0);
+      // Verify text exists in ADF (most important - text wasn't lost)
+      expect(adfString.includes('In case proxyd')).toBe(true);
 
-      // Verify content has proper paragraph structure
-      const hasContent = adf.content.some(node => node.type === 'paragraph' || node.type === 'orderedList' || node.type === 'bulletList');
-      expect(hasContent).toBe(true);
+      // Verify there's a code block (may be nested in orderedList)
+      function hasCodeBlock(node) {
+        if (node && typeof node === 'object') {
+          if (node.type === 'codeBlock') return true;
+          if (node.content && Array.isArray(node.content)) {
+            return node.content.some(hasCodeBlock);
+          }
+        }
+        return false;
+      }
+
+      const foundCodeBlock = adf.content.some(hasCodeBlock);
+      expect(foundCodeBlock).toBe(true);
+
+      // The key test: verify "In case proxyd" text appears in a text node AFTER a code block
+      // This verifies the fix for text being lost after code blocks
+      let foundCodeBlockInTree = false;
+      let foundTextAfterCodeBlock = false;
+
+      function searchTree(nodes) {
+        for (let i = 0; i < nodes.length; i++) {
+          const node = nodes[i];
+
+          if (node.type === 'codeBlock') {
+            foundCodeBlockInTree = true;
+          }
+
+          // After finding a code block, look for our text in subsequent nodes
+          if (foundCodeBlockInTree && node.type === 'paragraph') {
+            const nodeText = JSON.stringify(node);
+            if (nodeText.includes('In case proxyd')) {
+              foundTextAfterCodeBlock = true;
+              return true;
+            }
+          }
+
+          // Recursively search nested content
+          if (node.content && Array.isArray(node.content)) {
+            if (searchTree(node.content)) return true;
+          }
+        }
+        return false;
+      }
+
+      searchTree(adf.content);
+
+      // The critical assertion: text after code block is preserved
+      expect(foundTextAfterCodeBlock).toBe(true);
     });
   });
 

@@ -29,6 +29,9 @@ async function convertToDataset() {
   const htmlToMd = new HtmlToMarkdownConverter();
   const adfConverter = new ADFConverter();
 
+  // Track conversion failures for debugging
+  const conversionFailures = [];
+
   console.log(`Fetching issues from YouTrack...`);
   console.log(`Query: ${YOUTRACK_QUERY}`);
   console.log();
@@ -57,6 +60,16 @@ async function convertToDataset() {
           issueData.description = adfConverter.convertToADF(descResult.markdown);
         } catch (descError) {
           console.error(`  ⚠ Error converting description for ${issue.idReadable}: ${descError.message}`);
+
+          // Log failure details for debugging
+          conversionFailures.push({
+            issueId: issue.idReadable,
+            fieldType: 'description',
+            error: descError.message,
+            stack: descError.stack,
+            originalHtml: issue.description,
+            markdown: descResult?.markdown || '[conversion to markdown failed]'
+          });
         }
       }
 
@@ -69,6 +82,16 @@ async function convertToDataset() {
           issueData.releaseNote = adfConverter.convertToADF(rnResult.markdown);
         } catch (rnError) {
           console.error(`  ⚠ Error converting release note for ${issue.idReadable}: ${rnError.message}`);
+
+          // Log failure details for debugging
+          conversionFailures.push({
+            issueId: issue.idReadable,
+            fieldType: 'releaseNote',
+            error: rnError.message,
+            stack: rnError.stack,
+            originalHtml: releaseNoteField.value.text,
+            markdown: rnResult?.markdown || '[conversion to markdown failed]'
+          });
         }
       }
 
@@ -90,6 +113,18 @@ async function convertToDataset() {
             }
           } catch (commentError) {
             console.error(`  ⚠ Error converting comment ${comment.id} for ${issue.idReadable}: ${commentError.message}`);
+
+            // Log failure details for debugging
+            conversionFailures.push({
+              issueId: issue.idReadable,
+              fieldType: `comment-${comment.id}`,
+              error: commentError.message,
+              stack: commentError.stack,
+              originalHtml: comment.text,
+              markdown: commentResult?.markdown || '[conversion to markdown failed]',
+              commentAuthor: comment.author?.login || comment.author?.fullName || comment.author,
+              commentCreated: comment.created
+            });
           }
         }
       }
@@ -137,6 +172,40 @@ async function convertToDataset() {
   console.log('  2. Use this dataset in migrate.pl to override text fields');
   console.log('  3. Peter\'s script will handle all other fields');
   console.log('='.repeat(80));
+
+  // Write conversion failures log if there are any failures
+  if (conversionFailures.length > 0) {
+    const failuresFile = path.join(OUTPUT_DIR, 'conversion-failures.json');
+    fs.writeFileSync(failuresFile, JSON.stringify(conversionFailures, null, 2));
+
+    console.log();
+    console.log('='.repeat(80));
+    console.log(`⚠ ${conversionFailures.length} conversion failures logged to: ${failuresFile}`);
+    console.log();
+    console.log('Failed Issues:');
+
+    // Group failures by issue ID for cleaner output
+    const failuresByIssue = {};
+    conversionFailures.forEach(failure => {
+      if (!failuresByIssue[failure.issueId]) {
+        failuresByIssue[failure.issueId] = [];
+      }
+      failuresByIssue[failure.issueId].push(failure);
+    });
+
+    Object.keys(failuresByIssue).forEach(issueId => {
+      const failures = failuresByIssue[issueId];
+      console.log(`  ${issueId}:`);
+      failures.forEach(failure => {
+        console.log(`    - ${failure.fieldType}: ${failure.error}`);
+      });
+    });
+
+    console.log();
+    console.log('To debug a failed issue:');
+    console.log('  YOUTRACK_QUERY="<issue-id>" node convert-to-dataset.js');
+    console.log('='.repeat(80));
+  }
 }
 
 // Run conversion

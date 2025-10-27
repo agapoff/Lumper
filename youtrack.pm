@@ -252,23 +252,20 @@ sub exportIssues {
 			print "Overriding fields for issue ".$ytIssue->{idReadable}."\n";
 			if (defined $overrideTicket->{description}) {
 				#print "Overriding description for issue ".$ytIssue->{idReadable}."\n";
-				my $jsonDesc = encode_json($overrideTicket->{description});
-				$ytIssue->{description} = $jsonDesc;
+				$ytIssue->{description} = $overrideTicket->{description};
 			}
 			if (defined $overrideTicket->{'Release note'}) {
 				#print "Overriding description for issue ".$ytIssue->{idReadable}." with release_note\n";
-				my $jsonRelNote = encode_json($overrideTicket->{'Release note'});
-				$ytIssue->{'Release note'} = $jsonRelNote;
+				$ytIssue->{'Release note'} = $overrideTicket->{'Release note'};
 			}
-			
+
 			next if !defined $overrideTicket->{comments};
 			next if !defined $ytIssue->{comments};
 			foreach my $comment (@{$ytIssue->{comments}}) {
 				foreach my $overrideComment (@{$overrideTicket->{comments}}) {
 					if ($comment->{created} == $overrideComment->{created}) {
 						#print "Overriding comment ".$overrideComment->{created}." for issue ".$ytIssue->{idReadable}."\n";
-						my $jsonComment = encode_json($overrideComment->{body});
-						$comment->{text} = $jsonComment;
+						$comment->{text} = $overrideComment->{body};
 						last;
 					}
 				}

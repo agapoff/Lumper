@@ -164,7 +164,7 @@ export class ADFConverter {
   restoreCodeBlocks(nodes, codeBlocks) {
     if (!Array.isArray(nodes) || codeBlocks.length === 0) return;
 
-    for (let i = 0; i < nodes.length; i++) {
+    for (let i = nodes.length - 1; i >= 0; i--) {
       const node = nodes[i];
 
       if (!node || typeof node !== 'object') continue;
@@ -184,8 +184,34 @@ export class ADFConverter {
                 // Extract code content from ``` blocks
                 const codeContent = codeBlock.replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '');
 
-                // Replace the paragraph with a codeBlock node
-                nodes[i] = {
+                // Split the text around the placeholder
+                const beforePlaceholder = contentNode.text.substring(0, match.index);
+                const afterPlaceholder = contentNode.text.substring(match.index + match[0].length);
+
+                // Build replacement nodes
+                const replacementNodes = [];
+
+                // Add paragraph with text before placeholder (if any)
+                if (beforePlaceholder.trim()) {
+                  const beforeContent = [...node.content.slice(0, j)];
+                  beforeContent.push({
+                    type: 'text',
+                    text: beforePlaceholder
+                  });
+                  replacementNodes.push({
+                    type: 'paragraph',
+                    content: beforeContent
+                  });
+                } else if (j > 0) {
+                  // There are other content nodes before this one
+                  replacementNodes.push({
+                    type: 'paragraph',
+                    content: node.content.slice(0, j)
+                  });
+                }
+
+                // Add the codeBlock
+                replacementNodes.push({
                   type: 'codeBlock',
                   attrs: {},
                   content: [
@@ -194,7 +220,29 @@ export class ADFConverter {
                       text: codeContent
                     }
                   ]
-                };
+                });
+
+                // Add paragraph with text after placeholder (if any)
+                if (afterPlaceholder.trim()) {
+                  const afterContent = [{
+                    type: 'text',
+                    text: afterPlaceholder
+                  }];
+                  afterContent.push(...node.content.slice(j + 1));
+                  replacementNodes.push({
+                    type: 'paragraph',
+                    content: afterContent
+                  });
+                } else if (j < node.content.length - 1) {
+                  // There are other content nodes after this one
+                  replacementNodes.push({
+                    type: 'paragraph',
+                    content: node.content.slice(j + 1)
+                  });
+                }
+
+                // Replace the single paragraph with multiple nodes
+                nodes.splice(i, 1, ...replacementNodes);
                 break; // Move to next node
               }
             }

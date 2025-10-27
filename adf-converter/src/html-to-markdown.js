@@ -161,12 +161,17 @@ export class HtmlToMarkdownConverter {
     // Convert <br> and <br/> to paragraph breaks for better Turndown processing
     $('br').replaceWith('</p><p>');
 
-    // Handle YouTrack issue links - extract just the issue ID
+    // Handle YouTrack issue links - convert to markdown link format
+    // This preserves them as actual links rather than plain text
     $('a[href^="/issue/"]').each((i, elem) => {
       const $elem = $(elem);
       const href = $elem.attr('href');
       const issueId = href.replace('/issue/', '');
-      $elem.replaceWith(issueId);
+      const text = $elem.text() || issueId;
+
+      // Create a markdown link: [text](issueId)
+      // We use just the issue ID as the "URL" since these will be converted to Jira issue keys
+      $elem.replaceWith(`[${text}](${issueId})`);
     });
 
     // Remove wiki wrapper divs but keep content

@@ -180,23 +180,22 @@ foreach my $issue (@firstNIssues) {
 	}
 
 	# Convert Markdown to Jira-specific rich text formatting
-	my $description = convertUserMentions($issue->{description});
-	$description = convertAttachmentsLinks($description, $attachmentFileNamesMapping);
-
-	if($convertTextFormatting eq 'true') {	
-		$description = convertCodeSnippets($description);
-		$description = convertQuotations($description);
-		$description = convertMarkdownToJira($description);
-	}
-
-	$description = removeHtmlTags($description);
+#	my $description = convertUserMentions($issue->{description});
+#	$description = convertAttachmentsLinks($description, $attachmentFileNamesMapping);
+#	if($convertTextFormatting eq 'true') {	
+#		$description = convertCodeSnippets($description);
+#		$description = convertQuotations($description);
+#		$description = convertMarkdownToJira($description);
+#	}
+#	$description = removeHtmlTags($description);
+	my $description = $issue->{description};
 	
 	my %import = ( project => { key => $JiraProject },
 	               issuetype => { name => $Type{$issue->{$typeCustomFieldName}} || $issue->{$typeCustomFieldName} },
                    assignee => { id => $JiraUserIds{$Users{$issue->{Assignee}} || $issue->{Assignee}} },
                    reporter => { id => $JiraUserIds{$Users{$issue->{reporter}->{login}} || $issue->{reporter}->{login}} },
                    summary => $issue->{summary},
-                   description => $header.$description,
+                   description => $description,
                    priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || '200' } #TODO: change this to empty string
 	);
 	# if there is no assignee in YouTrack, then remove the assignee field from the import hash so it's unassigned in Jira
@@ -305,15 +304,15 @@ foreach my $issue (@firstNIssues) {
 		my $text = $comment->{text};
 		
 		# Convert Markdown to Jira-specific rich text formatting
-		$text = convertUserMentions($text);
-		$text = convertAttachmentsLinks($text, $attachmentFileNamesMapping);
+		#$text = convertUserMentions($text);
+		#$text = convertAttachmentsLinks($text, $attachmentFileNamesMapping);
+		#if($convertTextFormatting eq 'true') {
+		#	$text = convertCodeSnippets($text);
+		#	$text = convertQuotations($text);
+		#	$text = convertMarkdownToJira($text);
+		#}
+		#$text = removeHtmlTags($text);
 
-		if($convertTextFormatting eq 'true') {
-			$text = convertCodeSnippets($text);
-			$text = convertQuotations($text);
-			$text = convertMarkdownToJira($text);
-		}
-		$text = removeHtmlTags($text);
 		my $header;
 		if ( $JiraPasswords{$author} && not $JiraPasswords{$author} eq $JiraPassword ) {
 			$header = "[ $date ]\n";

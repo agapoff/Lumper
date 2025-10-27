@@ -4,7 +4,7 @@ use strict;
 use Data::Dumper;
 use LWP::UserAgent;
 #use LWP::Protocol::https; # Required for https support
-use JSON qw( decode_json );
+use JSON qw( encode_json decode_json );
 use File::Temp qw ( tempdir );
 use List::Util qw( first );
 use File::Basename;
@@ -233,39 +233,47 @@ sub exportIssues {
 				ErrorMessage => "Got error while exporting issues\n",
 				CharacterSupport => 'true');
 
-	my $file = 'yt-export.json';
+	my $file = './adf-converter/output/adf-dataset.json';
 	open my $fh, '<', $file or die "Could not open '$file': $!";
 	local $/;  # Enable 'slurp' mode
 	my $json_text = <$fh>;
 	close $fh;
 	my $ytOverrideData = decode_json($json_text);
 
-	foreach my $issue (@{$issues}) {
-		foreach my $field (@{$issue->{customFields}}) {	
-			$issue->{$field->{name}} = undef;
+	foreach my $ytIssue (@{$issues}) {
+		foreach my $field (@{$ytIssue->{customFields}}) {
+			$ytIssue->{$field->{name}} = undef;
 			next if (not($field->{value}));
-
-			$issue->{$field->{name}} = collectValuesFromCustomField(\%{$field});
+			$ytIssue->{$field->{name}} = collectValuesFromCustomField($field);
 		}
 
-		foreach my $ticket (@$ytOverrideData) {
-			next if $ticket->{key} ne $issue->{idReadable};
-			next if !defined $ticket->{description};
-			print "Overriding description for issue ".$issue->{idReadable}."\n";
-			$issue->{description} = $ticket->{description};
-
-			next if !defined $ticket->{comments};
-			next if !defined $issue->{comments};
-			foreach my $comment (@{$issue->{comments}}) {
-				foreach my $ticketComment (@{$ticket->{comments}}) {
-					if ($comment->{created} == $ticketComment->{created}) {
-						print "Overriding comment ".$ticketComment->{created}." for issue ".$issue->{idReadable}."\n";
-						$comment->{text} = $ticketComment->{text};
+		foreach my $overrideTicket (@$ytOverrideData) {
+			next if $overrideTicket->{key} ne $ytIssue->{idReadable};
+			print "Overriding fields for issue ".$ytIssue->{idReadable}."\n";
+			if (defined $overrideTicket->{description}) {
+				#print "Overriding description for issue ".$ytIssue->{idReadable}."\n";
+				my $jsonDesc = encode_json($overrideTicket->{description});
+				$ytIssue->{description} = $jsonDesc;
+			}
+			if (defined $overrideTicket->{'Release note'}) {
+				#print "Overriding description for issue ".$ytIssue->{idReadable}." with release_note\n";
+				my $jsonRelNote = encode_json($overrideTicket->{'Release note'});
+				$ytIssue->{'Release note'} = $jsonRelNote;
+			}
+			
+			next if !defined $overrideTicket->{comments};
+			next if !defined $ytIssue->{comments};
+			foreach my $comment (@{$ytIssue->{comments}}) {
+				foreach my $overrideComment (@{$overrideTicket->{comments}}) {
+					if ($comment->{created} == $overrideComment->{created}) {
+						#print "Overriding comment ".$overrideComment->{created}." for issue ".$ytIssue->{idReadable}."\n";
+						my $jsonComment = encode_json($overrideComment->{body});
+						$comment->{text} = $jsonComment;
 						last;
 					}
 				}
 			}
-			last;			
+			last;
 		}
 	}
 

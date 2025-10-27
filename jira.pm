@@ -250,7 +250,7 @@ sub createIssue {
 	my %data;
 	$data{fields} = $arg{Issue};
 	# Jira doesn't allow to post description longer than 32k
-	$data{fields}->{description} = substr ($data{fields}->{description}, 0, 32766) if ($data{fields}->{description});
+	#$data{fields}->{description} = substr ($data{fields}->{description}, 0, 32766) if ($data{fields}->{description});
 	# Jira doesn't allow to post summary longer than 255 bytes
 	$data{fields}->{summary} = substr ($data{fields}->{summary}, 0, 254);
 	# # Jira doesn't allow spaces in labels

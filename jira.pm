@@ -555,7 +555,7 @@ sub createComment {
 	}
 
 	my $content = encode_json \%data;
-	print "Comment Content: $content\n";
+	print "Comment Content: $content\n" if ($self->{verbose});
 	my $basic = ($arg{Login} && $arg{Password}) ? encode_base64($arg{Login}.":".$arg{Password}) : $self->{basic};
 
 	# Use API v3 endpoint for ADF support in comments

@@ -301,53 +301,50 @@ foreach my $issue (@firstNIssues) {
 	print "Creating comments\n";
 	my @sorted_comments = sort { $b->{created} <=> $a->{created} } @{$issue->{comments}};
 	foreach my $comment (@sorted_comments) {
-		my $author = $Users{$comment->{author}->{login}} || $comment->{author}->{login};
+		my $login = $comment->{author}->{login};
+		my $author = $Users{$login} || $login;
 		my $date = scalar localtime ($comment->{created}/1000);
 
 		my $text = $comment->{text};
 
 		# Check if text is ADF format (hash reference) or plain text
 		my $isADF = ref($text) eq 'HASH';
-
-		if (!$isADF) {
-			# Convert Markdown to Jira-specific rich text formatting (only for non-ADF)
-			#$text = convertUserMentions($text);
-			#$text = convertAttachmentsLinks($text, $attachmentFileNamesMapping);
-			#if($convertTextFormatting eq 'true') {
-			#	$text = convertCodeSnippets($text);
-			#	$text = convertQuotations($text);
-			#	$text = convertMarkdownToJira($text);
-			#}
-			#$text = removeHtmlTags($text);
-		}
-
-		my $header;
 		if ( $JiraPasswords{$author} && not $JiraPasswords{$author} eq $JiraPassword ) {
 			if (!$isADF) {
-				$header = "[ $date ]\n";
+				my $header = "[ $date ]\n";
 				$text = $header.$text;
 			}
 			# For ADF, skip header - original timestamp preserved in Jira comment metadata
 			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || warn "Error creating comment\n";
 		} else {
-			$header = convertUserMentions("[ \@".$comment->{author}->{login}." $date ]\n");
 			if (!$isADF) {
+				my $header = convertUserMentions("[ \@$login $date ]\n");
 				$text = $header.$text;
 			}else{
 				# prepend a header to the ADF document's content array.
-				unshift @{$text->{content}}, {
-					type => 'paragraph',
-					content => [
-						{
-							type => 'text',
-							text => $header
-						}
-					]
-				};
+				unshift @{$text->{content}}, 
+					{
+						type => "paragraph",
+						content => [
+							{ type => "text", text => "[ " },
+							{
+								type => "text",
+								text => "\@".$login,
+								marks => [
+									{
+										type => "link",
+										attrs => {
+											href => "/jira/people/".$JiraUserIds{$author}
+										}
+									}
+								]
+							},
+							{ type => "text", text => " $date ]" }
+						]
+					};
 			}
-			# For ADF, skip header - original timestamp preserved in Jira comment metadata
 			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || warn "Error creating comment\n";
-		}
+		}		
 	}
 
 	# Export work log
@@ -559,4 +556,3 @@ sub removeHtmlTags {
 
    return $textToConvert;
 }
-

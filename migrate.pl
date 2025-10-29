@@ -107,13 +107,12 @@ unless ($notest) {
 	$check->priorities();
 	$check->statuses();
 	$check->resolutions();
-
-	&ifProceed;
 }
 
 my $issuesCount = 0;
 
 $display->printTitle("Export To Jira");
+&ifProceed;
 
 my @sortedIssues = sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export};
 
@@ -394,11 +393,11 @@ foreach my $issue (@firstNIssues) {
 	}
 }
 
-&ifProceed;
-
 # Create Issue Links
 if ($exportLinks eq 'true') {	
 	$display->printTitle("Creating Issue Links");
+	&ifProceed;
+
 	# Turn YT issues to a hash to be able to search for issue ID
 	my %issuesById = map { $_->{id} => $_ } @{$export};
 	# Keep linked issues in hash to avoid duplicates on BOTH type of links
@@ -427,22 +426,28 @@ if ($exportLinks eq 'true') {
 				if (exists $issuesById{$linkedIssue->{id}}) {
 					my $jiraKey = $issue->{jiraKey};
 					if (!$jiraKey) {
-						# replace "SA" in $jiraKey with "ZT28"
-						my $key = $issue->{idReadable};
-						if (substr($key, 0, 2) eq "SA") {
-							substr($key, 0, 2, "ZT28");
+						# replace "SA" or "ZTP" with Jira project key
+						my ($ytProject, $ytId) = split /-/, $issue->{idReadable};
+						if ($ytProject eq "SA" || $ytProject eq "ZTP") {
+							$ytProject = $JiraProject;
 						}
-						$jiraKey = $key;
+						if ($ytProject eq "ZTP") {
+							#increment id
+						}
+						$jiraKey = $ytProject."-".$ytId;
 					}
 
 					my $linkedJiraKey = $issuesById{$linkedIssue->{id}}->{jiraKey};
 					if (!$linkedJiraKey) {
-						# replace "SA" in $linkedJiraKey with "ZT28"
-						my $key = $issuesById{$linkedIssue->{id}}->{idReadable};
-						if (substr($key, 0, 2) eq "SA") {
-							substr($key, 0, 2, "ZT28");
+						# replace "SA" or "ZTP" with Jira project key
+						my ($ytProject, $ytId) = split /-/, $issuesById{$linkedIssue->{id}}->{idReadable};
+						if ($ytProject eq "SA" || $ytProject eq "ZTP") {
+							$ytProject = $JiraProject;
 						}
-						$linkedJiraKey = $key;
+						if ($ytProject eq "ZTP") {
+							#increment id
+						}
+						$linkedJiraKey = $ytProject."-".$ytId;
 					}
 
 					if ($link->{direction} eq 'INWARD' || $link->{direction} eq 'BOTH') {

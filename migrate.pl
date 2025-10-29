@@ -396,8 +396,6 @@ foreach my $issue (@firstNIssues) {
 
 &ifProceed;
 
-
-
 # Create Issue Links
 if ($exportLinks eq 'true') {	
 	$display->printTitle("Creating Issue Links");
@@ -427,12 +425,32 @@ if ($exportLinks eq 'true') {
 
 			foreach my $linkedIssue (@{$link->{issues}}) {
 				if (exists $issuesById{$linkedIssue->{id}}) {
+					my $jiraKey = $issue->{jiraKey};
+					if (!$jiraKey) {
+						# replace "SA" in $jiraKey with "ZT28"
+						my $key = $issue->{idReadable};
+						if (substr($key, 0, 2) eq "SA") {
+							substr($key, 0, 2, "ZT28");
+						}
+						$jiraKey = $key;
+					}
+
+					my $linkedJiraKey = $issuesById{$linkedIssue->{id}}->{jiraKey};
+					if (!$linkedJiraKey) {
+						# replace "SA" in $linkedJiraKey with "ZT28"
+						my $key = $issuesById{$linkedIssue->{id}}->{idReadable};
+						if (substr($key, 0, 2) eq "SA") {
+							substr($key, 0, 2, "ZT28");
+						}
+						$linkedJiraKey = $key;
+					}
+
 					if ($link->{direction} eq 'INWARD' || $link->{direction} eq 'BOTH') {
-						$jiraLink->{inwardIssue}->{key} = $issue->{jiraKey};
-						$jiraLink->{outwardIssue}->{key} = $issuesById{$linkedIssue->{id}}->{jiraKey};
-					} elsif ($link->{direction} eq 'OUTWARD') {						
-						$jiraLink->{inwardIssue}->{key} = $issuesById{$linkedIssue->{id}}->{jiraKey};
-						$jiraLink->{outwardIssue}->{key} = $issue->{jiraKey};
+						$jiraLink->{inwardIssue}->{key} = $jiraKey;
+						$jiraLink->{outwardIssue}->{key} = $linkedJiraKey;
+					} elsif ($link->{direction} eq 'OUTWARD') {
+						$jiraLink->{inwardIssue}->{key} = $linkedJiraKey;
+						$jiraLink->{outwardIssue}->{key} = $jiraKey;
 					} 
 
 					if (not $alreadyEstablishedLinksWith{$link->{linkType}->{name}}{join(" ", sort($linkedIssue->{id}, $issue->{id}))}) {

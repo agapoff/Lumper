@@ -249,7 +249,7 @@ sub exportIssues {
 
 		foreach my $overrideTicket (@$ytOverrideData) {
 			next if $overrideTicket->{key} ne $ytIssue->{idReadable};
-			print "Overriding fields for issue ".$ytIssue->{idReadable}."\n";
+			#print "Overriding fields for issue ".$ytIssue->{idReadable}."\n";
 			if (defined $overrideTicket->{description}) {
 				#print "Overriding description for issue ".$ytIssue->{idReadable}."\n";
 				$ytIssue->{description} = $overrideTicket->{description};

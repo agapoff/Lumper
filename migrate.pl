@@ -26,7 +26,7 @@ Getopt::Long::Configure('bundling');
 GetOptions(
 	"first|f=i"       => \$first,
     "skip|s=i"        => \$skip,
-	"check-keys|ck=i" => \$checkKeys,
+	"keys|k=i"        => \$checkKeys,
     "no-test|t"       => \$notest,
     "cookie-file|c=s" => \$cookieFile,
     "verbose|v"       => \$verbose
@@ -112,6 +112,13 @@ unless ($notest) {
 my $issuesCount = 0;
 
 $display->printTitle("Export To Jira");
+print "Ready to import into Jira using options:\n";
+print "\tfirst=$first\n";
+print "\tskip=$skip\n";
+print "\tcheck-keys=$checkKeys\n";
+print "\tYouTrack Project=$YTProject\n";
+print "\tJira Project=$JiraProject\n";
+
 &ifProceed;
 
 my @sortedIssues = sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export};
@@ -261,7 +268,7 @@ foreach my $issue (@firstNIssues) {
 	print "Jira issue key generated $key\n";
 
 	# Checking issue number in key (eg in FOO-20 the issue number is 20)
-	if ($checkKeys eq 'true') {
+	if ($checkKeys eq '1') {
 		if ($key =~ /^[A-Z0-9]+-(\d+)$/) {
 			while ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
 				print "We're having a gap and will delete the issue\n";

@@ -26,11 +26,15 @@ Getopt::Long::Configure('bundling');
 GetOptions(
 	"first|f=i"       => \$first,
     "skip|s=i"        => \$skip,
-	"keys|k=i"        => \$checkKeys,
+	"check-keys!"     => \$checkKeys,
     "no-test|t"       => \$notest,
     "cookie-file|c=s" => \$cookieFile,
     "verbose|v"       => \$verbose
 );
+
+if (not defined $checkKeys) {
+	$checkKeys = 0;
+}
 
 my $yt = youtrack->new( Url      => $YTUrl,
                         Token    => $YTtoken,
@@ -268,7 +272,7 @@ foreach my $issue (@firstNIssues) {
 	print "Jira issue key generated $key\n";
 
 	# Checking issue number in key (eg in FOO-20 the issue number is 20)
-	if ($checkKeys eq '1') {
+	if ($checkKeys) {
 		if ($key =~ /^[A-Z0-9]+-(\d+)$/) {
 			while ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
 				print "We're having a gap and will delete the issue\n";

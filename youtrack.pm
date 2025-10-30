@@ -240,6 +240,13 @@ sub exportIssues {
 	close $fh;
 	my $ytOverrideData = decode_json($json_text);
 
+	my $manualFile = './adf-converter/output/adf-dataset-manual.json';
+	open my $mfh, '<', $manualFile or die "Could not open '$manualFile': $!";
+	local $/;  # Enable 'slurp' mode
+	my $json_text_manual = <$mfh>;
+	close $mfh;
+	my $ytManualOverrideData = decode_json($json_text_manual);
+
 	foreach my $ytIssue (@{$issues}) {
 		foreach my $field (@{$ytIssue->{customFields}}) {
 			$ytIssue->{$field->{name}} = undef;
@@ -247,8 +254,17 @@ sub exportIssues {
 			$ytIssue->{$field->{name}} = collectValuesFromCustomField($field);
 		}
 
-		foreach my $overrideTicket (@$ytOverrideData) {
-			next if $overrideTicket->{key} ne $ytIssue->{idReadable};
+		foreach my $autoOverrideTicket (@$ytOverrideData) {
+			next if $autoOverrideTicket->{key} ne $ytIssue->{idReadable};
+
+			my $overrideTicket = $autoOverrideTicket;
+			foreach my $manualOverrideTicket (@$ytManualOverrideData) {
+				next if $manualOverrideTicket->{key} ne $ytIssue->{idReadable};
+				$overrideTicket = $manualOverrideTicket;
+				print "Overriding automatic with manual for issue ".$ytIssue->{idReadable}."\n";
+				last;
+			}
+
 			#print "Overriding fields for issue ".$ytIssue->{idReadable}."\n";
 			if (defined $overrideTicket->{description}) {
 				#print "Overriding description for issue ".$ytIssue->{idReadable}."\n";

@@ -69,6 +69,34 @@ export class HtmlToMarkdownConverter {
       },
     });
 
+    // Handle inline images (wiki picture format)
+    this.turndown.addRule('inlineImage', {
+      filter: (node) => {
+        return node.nodeName === 'IMG';
+      },
+      replacement: (content, node) => {
+        const src = node.getAttribute('src') || '';
+
+        // YouTrack format: src="[](filename)" or src="filename"
+        // Extract the actual filename
+        let filename = src;
+
+        // Remove markdown-style wrappers: [](filename) → filename
+        const markdownMatch = src.match(/\[\]\(([^)]+)\)/);
+        if (markdownMatch) {
+          filename = markdownMatch[1];
+        }
+
+        // Get filename from URL path if it's a full URL
+        if (filename.includes('/')) {
+          filename = filename.split('/').pop();
+        }
+
+        // Return attachment marker that lumper can process
+        return `[attachment:${filename}]`;
+      },
+    });
+
     // Handle attachment links
     this.turndown.addRule('attachmentLink', {
       filter: (node) => {

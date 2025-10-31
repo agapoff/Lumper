@@ -397,7 +397,7 @@ foreach my $issue (@firstNIssues) {
 
 	# Upload attachments to Jira
 	if (@{$attachments}) {
-		print "Uploading ".scalar @{$attachments}." files\n";
+		print "Uploading ".scalar @{$attachments}." attachments\n";
 		unless ($jira->addAttachments(IssueKey => $key, Files => $attachments)) {
 			warn "Cannot upload attachment to $key\n";
 		}

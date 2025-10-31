@@ -72,7 +72,7 @@ sub downloadAttachments {
   		my ($filename, $dirs, $suffix) = fileparse($attachment->{name}, qr/\.[^.]*$/);
 
 		my $localizedFileName = decode_utf8($attachment->{name});
-		$oldFileNamesDirectory{$localizedFileName} = "attachment$counter$suffix";
+		$oldFileNamesDirectory{$localizedFileName} = $localizedFileName;
 		
 		# Rename the file to avoid problems with exotic file names
 		open my $fh, ">", "$tempdir/".$oldFileNamesDirectory{$localizedFileName};

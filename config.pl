@@ -6,7 +6,7 @@ our $JiraUrl='https://appgateinc.atlassian.net';
 # The project ID to migrate from (eg FOO, BAR)
 our $YTProject='SA';
 # The project ID to migrate to (eg FOO, BAR)
-our $JiraProject='ZT28';
+our $JiraProject='ZT27';
 
 # Export tags from YT and import them as labels in Jira
 our $exportTags='true';

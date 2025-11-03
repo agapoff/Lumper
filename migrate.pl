@@ -16,6 +16,10 @@ use IPC::Run qw( run );
 use Date::Format;
 use Encode;
 
+use IO::Handle;
+STDOUT->autoflush(1);
+STDERR->autoflush(1);  # if you print to stderr too
+
 # Used to display column-like output
 my $display = display->new(); 
 

@@ -73,7 +73,8 @@ sub downloadAttachments {
 
 		my $localizedFileName = decode_utf8($attachment->{name});
 		my $sanitizedFileName = $localizedFileName;
-		$sanitizedFileName =~ s/[\\\/"%:\$\?\*]//g; #strip out characters that jira does not allow in attachment names
+		$sanitizedFileName =~ s#[/:\x00-\x1F]##g; # Remove invalid macOS filename characters (/, :, control chars)
+		$sanitizedFileName =~ s/[\\\/"%:\$\?\*]//g; #strip out characters that Jira does not allow in attachment names
 		$sanitizedFileName =~ s/[\x{200B}\x{200C}\x{200D}\x{FEFF}]//g; #strip out zero-width characters
 		$oldFileNamesDirectory{$localizedFileName} = $sanitizedFileName;
 		

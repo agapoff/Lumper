@@ -72,7 +72,10 @@ sub downloadAttachments {
   		my ($filename, $dirs, $suffix) = fileparse($attachment->{name}, qr/\.[^.]*$/);
 
 		my $localizedFileName = decode_utf8($attachment->{name});
-		$oldFileNamesDirectory{$localizedFileName} = $localizedFileName;
+		my $sanitizedFileName = $localizedFileName;
+		$sanitizedFileName =~ s/[\\\/"%:\$\?\*]//g; #strip out characters that jira does not allow in attachment names
+		$sanitizedFileName =~ s/[\x{200B}\x{200C}\x{200D}\x{FEFF}]//g; #strip out zero-width characters
+		$oldFileNamesDirectory{$localizedFileName} = $sanitizedFileName;
 		
 		# Rename the file to avoid problems with exotic file names
 		open my $fh, ">", "$tempdir/".$oldFileNamesDirectory{$localizedFileName};

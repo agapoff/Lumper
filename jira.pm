@@ -589,12 +589,18 @@ sub addAttachments {
 	my $self = shift;
 	my %arg = @_;
 	foreach my $file (@{$arg{Files}}) {
+		print "Uploading file $file to issue ".$arg{IssueKey}."\n";
 		my $filesize = -s $file;
 		if ( $filesize > 10485760 ) {
 			print "The file size exceeds the maximum permitted size of 10485760 bytes";
-			return 1;
+			return 0;
 		}
-		my $response = $ua->post($self->{url}.'/rest/api/latest/issue/'.$arg{IssueKey}.'/attachments', Authorization => 'Basic '.$self->{basic}, 'Content_Type' => 'multipart/form-data', Content => [file => [$file]], 'X-Atlassian-Token' => 'no-check');
+		my $response = $ua->post($self->{url}.'/rest/api/3/issue/'.$arg{IssueKey}.'/attachments', 
+			Authorization => 'Basic '.$self->{basic}, 
+			'Content-Type' => 'multipart/form-data', 
+			Content => [file => [$file]], 
+			'X-Atlassian-Token' => 'no-check', 
+			'Accept' => 'application/json');
 		if ($response->is_success) {
 			print $response->status_line."\n" if ($self->{verbose});
 			print $response->decoded_content if ($self->{verbose});
@@ -602,7 +608,7 @@ sub addAttachments {
 			print "Got error while uploading files\n";
 			print $response->status_line."\n";
 			print $response->decoded_content."\n";
-			return;
+			return 0;
 		}
 	}
 	return 1;

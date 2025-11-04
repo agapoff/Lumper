@@ -1,5 +1,1886 @@
 [
   {
+    "key": "SA-1995",
+    "description": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "The problem is that udev creates a mapping of nic names to mac addresses but we dont persist it so names CAN change at every reboot if there is no deterministic way to assign the nic names on that hardware."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "This file in question is /etc/udev/rules.d/70-persistent-net.rules."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Workaround, after first boot do this to persist mapping:"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "root"
+            },
+            {
+              "type": "mention",
+              "attrs": {
+                "id": "b2",
+                "text": "@b2"
+              }
+            },
+            {
+              "type": "text",
+              "text": ":/home/cz# mount -o remount,rw /mnt/root-ro root"
+            },
+            {
+              "type": "mention",
+              "attrs": {
+                "id": "b2",
+                "text": "@b2"
+              }
+            },
+            {
+              "type": "text",
+              "text": ":/home/cz# nano /mnt/root-rw/etc/udev/rules.d/70-persistent-net.rules - Change so that pluged-in 10 gigabit network are labled eth0 and eth1 root"
+            },
+            {
+              "type": "mention",
+              "attrs": {
+                "id": "b2",
+                "text": "@b2"
+              }
+            },
+            {
+              "type": "text",
+              "text": ":/home/cz# cp /mnt/root-rw/etc/udev/rules.d/70-persistent-net.rules /mnt/root-ro/etc/udev/rules.d/70-persistent-net.rules root"
+            },
+            {
+              "type": "mention",
+              "attrs": {
+                "id": "b2",
+                "text": "@b2"
+              }
+            },
+            {
+              "type": "text",
+              "text": ":/home/cz# mount -o remount,ro /mnt/root-ro"
+            }
+          ]
+        }
+      ],
+      "version": 1
+    },
+    "comments": [
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "I can suggest a few different solutions:"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "The enterprise solution"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "We allow the option to specify a physical MAC address in the appliance config for each NIC, so that you can tie down the NIC names the way you want. Actually, if the assignment is random, even with a persistent file, the assignment on first boot might not match the numbering on the physical or virtual server!"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "The cowardly solution"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Give up overlayfs."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "The ugly solution"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Configd copies /etc/udev/rules.d/70-persistent-net.rules to /mnt/state/patches/xxx/etc/udev/rules.d/70-persistent-net.rules on startup. Will not persist across upgrades though, and will not pick up changes if NICs are added."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "The half-ugly solution"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Extract the assignments and save in local.json on first boot, then compile the rules file from config. Will not pick up changes if NICs are added."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "The proper solution"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Fix Linux/Debian/Ubuntu, wherever this comes from? Is there really no notion of NIC order on the hardware level?"
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "tom.weber",
+        "created": 1448549827792
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "http://linux.dell.com/files/whitepapers/nic-enum-whitepaper.pdf",
+                  "marks": [
+                    {
+                      "type": "link",
+                      "attrs": {
+                        "href": "http://linux.dell.com/files/whitepapers/nic-enum-whitepaper.pdf"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "tom.weber",
+        "created": 1448550188421
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Some hints on how to change order at runtime: "
+                },
+                {
+                  "type": "text",
+                  "text": "http://retrospekt.dk/2012/02/persistant-enumeration-of-network-interfaces-across-hardware-addresses/",
+                  "marks": [
+                    {
+                      "type": "link",
+                      "attrs": {
+                        "href": "http://retrospekt.dk/2012/02/persistant-enumeration-of-network-interfaces-across-hardware-addresses/"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "tom.weber",
+        "created": 1448550461069
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "We allow the option to specify a physical MAC address in the appliance config for each NIC, so that you can tie down the NIC names the way you want. Actually, if the assignment is random, even with a persistent file, the assignment on first boot might not match the numbering on the physical or virtual server!"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "I think that is what systemd does by default now so fixed in 16.04. They use interface names based on the mac address. The problem is that our whole configuration relies on names like eth0. We need to think if this is the right way to do it long term."
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "thomas.cellerier",
+        "created": 1448550778706
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Fix Linux/Debian/Ubuntu, wherever this comes from? Is there really no notion of NIC order on the hardware level?"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "That mostly depends on driver support I think. So there are two fixes: switch to systemd like ubuntu did or upgrade the NIC drivers for the physical appliance we support."
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "thomas.cellerier",
+        "created": 1448550834514
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Here is the document from systemd. Maybe it is usable with upstart as well since udev is part of the systemd project and we use udev."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "http://www.freedesktop.org/wiki/Software/systemd/PredictableNetworkInterfaceNames/",
+                  "marks": [
+                    {
+                      "type": "link",
+                      "attrs": {
+                        "href": "http://www.freedesktop.org/wiki/Software/systemd/PredictableNetworkInterfaceNames/"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "thomas.cellerier",
+        "created": 1448550871047
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Good article explaining the problem: "
+                },
+                {
+                  "type": "text",
+                  "text": "http://lwn.net/Articles/356900/",
+                  "marks": [
+                    {
+                      "type": "link",
+                      "attrs": {
+                        "href": "http://lwn.net/Articles/356900/"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "tom.weber",
+        "created": 1448550925557
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Workaround, after first boot do this to persist mapping:"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Yes, that is the butt-ugly solution. It breaks the filesystem checksum. :-)"
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "tom.weber",
+        "created": 1448551619349
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "This paragraph caught my attention in the Systemd article:"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "This combined policy is only applied as last resort. That means, if the system has biosdevname installed, it will take precedence. If the user has added udev rules which change the name of the kernel devices these will take precedence too. Also, any distribution specific naming schemes generally take precedence."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Apparently Ubuntu (at least some flavors of it) come with biosdevname preinstalled. It's not included in Ubuntu Core, so we would have to include it ourselves. It looks promising:"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Device"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Embedded network interface (LOM)"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "eth"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "em"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "PCI card network interface"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "eth[0123…]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": ""
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "I had it already installed on my virtual Ubuntu Server, but for some reason it was not being used by the system. Googling for it I found:"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "https://www.s3it.uzh.ch/blog/biosdevname/",
+                  "marks": [
+                    {
+                      "type": "link",
+                      "attrs": {
+                        "href": "https://www.s3it.uzh.ch/blog/biosdevname/"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Further, [DELL1] states that new naming scheme kicks in if:"
+                }
+              ]
+            },
+            {
+              "type": "orderedList",
+              "content": [
+                {
+                  "type": "listItem",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "SMBIOS has a version >= 2.6 and SMBIOS Type 9 and Type 41 tables are supported."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "listItem",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "If the first point does not hold, it falls back to the IRQ Routing Table"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Well, it would be nice if the man page of biosdevname(1) or [DELL1] state a little more prominently, that "
+                        },
+                        {
+                          "type": "text",
+                          "text": "the new naming scheme is not used under any circumstances when running in a VM",
+                          "marks": [
+                            {
+                              "type": "em"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": "."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Apparently this software is written by Dell, for use with PowerEdge servers and nothing else, and the Ubuntu guys are discussing whether to use biosdevname on physical servers but ethN on other machines, as this creates inconsistency:"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "https://bugs.launchpad.net/ubuntu/+source/biosdevname/+bug/891258",
+                          "marks": [
+                            {
+                              "type": "link",
+                              "attrs": {
+                                "href": "https://bugs.launchpad.net/ubuntu/+source/biosdevname/+bug/891258"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "https://lists.ubuntu.com/archives/ubuntu-devel/2012-January/034687.html",
+                          "marks": [
+                            {
+                              "type": "link",
+                              "attrs": {
+                                "href": "https://lists.ubuntu.com/archives/ubuntu-devel/2012-January/034687.html"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "https://lists.ubuntu.com/archives/ubuntu-devel/2012-February/thread.html",
+                          "marks": [
+                            {
+                              "type": "link",
+                              "attrs": {
+                                "href": "https://lists.ubuntu.com/archives/ubuntu-devel/2012-February/thread.html"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "And by the way, even if we forcibly enabled biosdevname on virtual machines, it seems the numbering becomes unpredictable, whereas it is now predictable. The command-line tool says that my VM's NICs would be called p2p1, p7p1 and p8p1. How would I know that in advance?"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Indeed, someone writes:"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "https://bugs.launchpad.net/ubuntu/+source/biosdevname/+bug/1284043",
+                          "marks": [
+                            {
+                              "type": "link",
+                              "attrs": {
+                                "href": "https://bugs.launchpad.net/ubuntu/+source/biosdevname/+bug/1284043"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "None of the solutions works all the time. In a virtual machine with 10 nics, the booting algorithm changes the PCI number all the time, it seems, so we need to match the name via the mac address."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Also, if you read the last link above, biosdevname can be quite buggy."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "So in summary I think we should avoid using biosdevname, and instead use ethN or the systemd scheme, whatever the OS gives us, and at least for ethN we should allow selecting an interface by MAC address, as that seems to be the surest way."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "tom.weber",
+        "created": 1455879773074
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Ok, we could avoid this problem by upgrading the drivers for the specific NICs we will use for hardware appliances. For virtual appliances this problem does not seem to appear anyways."
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "thomas.cellerier",
+        "created": 1456133135585
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "What difference would an updated driver make for the ordering?"
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "tom.weber",
+        "created": 1456134419543
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "I think the problem with undeterministic order only occurs if the driver doesn't have enough information to reliably order the NICs. We don't see it with most NICs we tried, only some particular (10Gbit) models."
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "thomas.cellerier",
+        "created": 1456142707479
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Interesting. Have we confirmed that the problem goes away on our performance testing machines if we use newer drivers? Also, will we have control over the hardware the customers are going to use, or will we distribute the XDP installer ISO, meaning that the customers can install on any machine?"
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "tom.weber",
+        "created": 1456151760463
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Well we have only seen it happen on the hardware we use for performance testing, not on the hardware we plan on selling (at least so far, lets see what Kasper finds). I think the idea is that we only support the hardware that we sell. ISO are to be used by customers only for deploying virtual machines."
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "thomas.cellerier",
+        "created": 1456159005340
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Now I figured out why I never got the persistent-rules file in my VM's, it's because Ubuntu's script filters out VirtualBox NICs, so rules will not be autogenerated for these."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Also, I tried out Ubuntu Server 15.10 which has gone full systemd, and instead of eth0 I get enp0s3. This is another problem, since the NIC names need to be known in advance when creating a config to be exported. You can apparently configure systemd to use a different naming scheme."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "I think we need to decide how we want to handle NIC ordering and naming schemes, preferably come up with a solution which suits both 14.04 and 16.04. My suggestion is to stay with the ethN scheme (even in 16.04), but to let the admin (optionally) specify each ethN by MAC address. (It's not entirely straightforward though. For instance, if the MAC is specified for one NIC, it should be specified for all NICs, otherwise we have a mess.)"
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "tom.weber",
+        "created": 1456248871895
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Per Allansson [18:37]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "eth52:54:00:c8:00:1c",
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " "
+                },
+                {
+                  "type": "text",
+                  "text": "."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Tom Weber [18:38]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "this would mean that in the appliance ui, where you have "
+                },
+                {
+                  "type": "text",
+                  "text": "Name",
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " for each NIC, that would stay the same ("
+                },
+                {
+                  "type": "text",
+                  "text": "eth0",
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " etc), but you could have an extra field like "
+                },
+                {
+                  "type": "text",
+                  "text": "Select by MAC",
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " where you can enter "
+                },
+                {
+                  "type": "text",
+                  "text": "52:54:00:c8:00:1c",
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " or similar"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "[18:38]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "then the appliance makes sure to map the "
+                },
+                {
+                  "type": "text",
+                  "text": "52:54:00:c8:00:1c",
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " interface to "
+                },
+                {
+                  "type": "text",
+                  "text": "eth0",
+                  "marks": [
+                    {
+                      "type": "code"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Per Allansson [18:39]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "yeah I guess that makes for the easiest solution"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Tom Weber [18:41]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "this would solve three problems:"
+                }
+              ]
+            },
+            {
+              "type": "orderedList",
+              "content": [
+                {
+                  "type": "listItem",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "under 14.04, with physical nics, the order can change from boot to boot (because the generated map is not persisted)"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "listItem",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "under 14.04, with physical nics, even with persistent file, the order at first boot is unpredictable, so a mismatch in the exported seed can easily brick the machine (the appliance and controller not being able to talk to each other)"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "listItem",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "under 16.04 with systemd, the naming scheme is slightly unpredictable, especially in vm's (i get ens0p3, ens0p8... how should i know the phony pci bus numbers in advance?) (edited)"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Kurt Glazemakers [18:44]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Looks like a good solution for me"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[18:45]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "I assume we can create a list of Mac addresses in cz-setup that you can pick from?"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Tom Weber [18:45]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "cz-setup is not a problem, that can be automated"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Kurt Glazemakers [18:47]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "What about additional appliances? Once controller has been deployed (edited)"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Tom Weber [18:48]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "adding an appliance is the tedious part... if it's a physical one, the admin would have to know all the nic macs in advance and fill them in when creating the appliance config"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[18:49]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "i don't even know if the macs are usually readable on the backside of a multi-port card in a server"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Kurt Glazemakers [18:50]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Hmm that sounds not very userfriendly"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Tom Weber [18:50]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "it doesn't"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Kurt Glazemakers [18:50]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "What if we just pick an order for additional appliance and you could switch the order if needed afterwards?"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Tom Weber [18:52]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "suppose that the appliance has 8 ports and one of them can reach the controller. the right nic has to get the right settings (ip/subnet/gw/dhcp) before the appliance can talk to the controller"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[18:53]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "if that nic gets any other settings, or if the right settings are assigned to the wrong nic, the machines can't talk (edited)"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[18:53]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "so in that case you have a 1/8 chance of success, assuming the order is entirely random"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Kurt Glazemakers [18:54]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "If it is not reachable nothing happens I guess. So you could switch the nic order and try again"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[18:55]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Just a menu that allows you to change nic ordering. Once connected it will do the seeding"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Tom Weber [18:57]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "aha, you mean to handle the ordering entirely in the appliance, not involving the controller?"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[18:57]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "that may actually be much better"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[18:57]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "it could be a local setting"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[18:57]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "just like log levels"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[18:59]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "it could be a submenu in cz-setup, where you get a list of nics with mac and 'cable plugged' status"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[19:00]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "we could even do something with blinking the leds on the nics"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Per Allansson [19:00]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "and remember that nics can be added or removed"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Tom Weber [19:00]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "sure"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Per Allansson [19:00]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "physically I mean"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[19:01]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "just so adding/removing a card keeps the ethX mappings"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Kurt Glazemakers [19:01]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Yes"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Tom Weber [19:02]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "hmm, depends on what behavior you want. suppose you have cards eth0, eth1 and eth2, and you remove eth1, do you want eth2 to shift down, or have a gap between 0 and 2?"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Per Allansson [19:03]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "gap"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Tom Weber [19:03]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "yep... especially since the appliance config in the ctrlr knows nothing about the changes"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Kurt Glazemakers [19:04]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "With the udev rules you will have a gap automatically and will need to reconfigure the mapping for eth1"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Tom Weber [19:05]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "so the local settings can map "
+                        },
+                        {
+                          "type": "text",
+                          "text": "MAC --> ethN",
+                          "marks": [
+                            {
+                              "type": "code"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": " or maybe "
+                        },
+                        {
+                          "type": "text",
+                          "text": "ethN --> MAC",
+                          "marks": [
+                            {
+                              "type": "code"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": ", and even if you remove a card, it will be remembered, the slot will be held for it until changed"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[19:05]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "mention",
+                          "attrs": {
+                            "id": "kurtglazemakers",
+                            "text": "@kurtglazemakers"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "text": ": true"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Jamie Bodley-Scott [19:06]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "mention",
+                          "attrs": {
+                            "id": "tom",
+                            "text": "@tom"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "text": ": when you are done thinking can you document the plan in a YT case pls"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[19:07]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "I assume this needs to be done in R2 latest."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Tom Weber [19:07]"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "i'll paste this chat in the current ticket, close it and open a new one"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "tom.weber",
+        "created": 1456250905312
+      },
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Per Allansson [19:29]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "morse-signaling through the nic leds is optional"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "[19:29]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "although supporting the HELLO-HERE-I-AM LED would be nice"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Thomas Cellerier [19:31]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "oh a led driver!"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Per Allansson [19:31]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "oh I forgot we have Senior Led Driver Developer here"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Kurt Glazemakers [19:32]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Per Allansson [19:32]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "unfortunately it’s probably just a command line away "
+                },
+                {
+                  "type": "text",
+                  "text": "."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Thomas Cellerier [19:33]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "emoji",
+                  "attrs": {
+                    "shortName": ":disappointed:"
+                  }
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "tom.weber",
+        "created": 1456252468965
+      }
+    ]
+  },
+  {
     "key": "SA-247",
     "description": {
       "type": "doc",

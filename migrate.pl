@@ -206,7 +206,7 @@ foreach my $issue (@firstNIssues) {
 	my $description = $issue->{description};
 	
 	my %import = ( project => { key => $JiraProject },
-	               issuetype => { name => $Type{$issue->{$typeCustomFieldName}} || $issue->{$typeCustomFieldName} },
+	               issuetype => { name => $Type{$issue->{$typeCustomFieldName}} || $issue->{$typeCustomFieldName} || 'Task' }, #make Task the default if it's empty
                    assignee => { id => $JiraUserIds{$Users{$issue->{Assignee}} || $issue->{Assignee}} },
                    reporter => { id => $JiraUserIds{$Users{$issue->{reporter}->{login}} || $issue->{reporter}->{login}} },
                    summary => $issue->{summary},
@@ -262,9 +262,15 @@ foreach my $issue (@firstNIssues) {
 		$msg = "Checking for tags";
 		my @tags = $yt->getTags(IssueKey => $issue->{id});
 		if (@tags) {
-			$msg .= " - setting tags and their values";
-			$import{labels} = [@tags];
-			print "Found tags: ".Dumper(@tags) if ($verbose);
+			my @filtered_tags = grep { defined $_ && $_ ne '' } @tags;
+			if (@filtered_tags) {
+				$msg .= " - setting tags and their values";
+				$import{labels} = [@filtered_tags];
+				print "Found tags: ".Dumper(@tags) if ($verbose);
+			}
+			else {
+				$msg .= " - no non-null tags found";
+			}
 		}
 		else {
 			$msg .= " - no tags found";

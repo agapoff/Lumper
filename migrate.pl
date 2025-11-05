@@ -142,7 +142,7 @@ $first = $length if (not defined $first);
 print "Will process first $first issues\n";
 
 my @firstNIssues = grep { $_->{numberInProject} <= $first } @sortedIssues;
-print "Print this list of issues to help with troubleshooting";
+print "Print this list of issues to help with troubleshooting\n";
 if ($verbose){
 	foreach my $issue (@firstNIssues) {
 		print "Issue ID: " . $issue->{idReadable} . "\tNumber in Project: " . $issue->{numberInProject} . "\n";

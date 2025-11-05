@@ -16,21 +16,29 @@ use IPC::Run qw( run );
 use Date::Format;
 use Encode;
 
+use IO::Handle;
+STDOUT->autoflush(1);
+STDERR->autoflush(1);  # if you print to stderr too
+
 # Used to display column-like output
 my $display = display->new(); 
 
 $display->printTitle("Initialization");
 
-my ($skip, $notest, $maxissues, $cookieFile, $verbose);
+my ($skip, $notest, $first, $checkKeys, $cookieFile, $verbose);
 Getopt::Long::Configure('bundling');
 GetOptions(
 	"first|f=i"       => \$first,
-    "skip|s=i"      => \$skip,
-    "no-test|t"      => \$notest,
-    "max-issues|m=i" => \$maxissues,
+    "skip|s=i"        => \$skip,
+	"check-keys!"     => \$checkKeys,
+    "no-test|t"       => \$notest,
     "cookie-file|c=s" => \$cookieFile,
     "verbose|v"       => \$verbose
 );
+
+if (not defined $checkKeys) {
+	$checkKeys = 0;
+}
 
 my $yt = youtrack->new( Url      => $YTUrl,
                         Token    => $YTtoken,
@@ -56,8 +64,7 @@ unless ($jira) {
 print "Success\n";
 
 $display->printTitle("Getting YouTrack Issues");
-
-my $export = $yt->exportIssues(Project => $YTProject, Max => $maxissues);
+my $export = $yt->exportIssues(Project => $YTProject, Max => 0);
 print "Exported issues: ".scalar @{$export}."\n";
 
 # Find active users from issues, comments and other YT activity
@@ -108,13 +115,19 @@ unless ($notest) {
 	$check->priorities();
 	$check->statuses();
 	$check->resolutions();
-
-	&ifProceed;
 }
 
 my $issuesCount = 0;
 
 $display->printTitle("Export To Jira");
+print "Ready to import into Jira using options:\n";
+print "\tfirst=$first\n";
+print "\tskip=$skip\n";
+print "\tcheck-keys=$checkKeys\n";
+print "\tYouTrack Project=$YTProject\n";
+print "\tJira Project=$JiraProject\n";
+
+&ifProceed;
 
 my @sortedIssues = sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export};
 
@@ -128,7 +141,7 @@ if ($verbose){
 $first = $length if (not defined $first);
 print "Will process first $first issues\n";
 
-my @firstNIssues = (values @sortedIssues)[0..($first-1)];
+my @firstNIssues = grep { $_->{numberInProject} <= $first } @sortedIssues;
 print "Print this list of issues to help with troubleshooting";
 if ($verbose){
 	foreach my $issue (@firstNIssues) {
@@ -148,14 +161,15 @@ if ($verbose){
 }
 
 foreach my $issue (@firstNIssues) {
-	$display->printTitle($YTProject."-".$issue->{numberInProject});
+	$display->printTitle($issue->{idReadable});
 	
 	if ($skip && $issue->{numberInProject} <= $skip) {
-		print "Skipping issue $YTProject-".$issue->{numberInProject}."\n";
+		print "Skipping issue ".$issue->{idReadable}."\n";
 		next;
 	}
 	$issuesCount++;
-	last if ($maxissues && $issuesCount>$maxissues);
+	last if ($first && $issuesCount > $first);
+	print "Will import issue ".$issue->{idReadable}."\n";
 	print "Processing issue number $issuesCount\n";
 	
 	my $attachmentFileNamesMapping;
@@ -167,8 +181,6 @@ foreach my $issue (@firstNIssues) {
 		($attachments, $attachmentFileNamesMapping) = $yt->downloadAttachments(IssueKey => $issue->{id});
 		print Dumper(@{$attachments}) if ($verbose);
 	}
-
-	print "Will import issue $YTProject-".$issue->{numberInProject}."\n";
 
 	# Prepare creation time message if exportCreationTime setting is not set
 	my $creationTime = scalar localtime ($issue->{created}/1000);
@@ -183,25 +195,22 @@ foreach my $issue (@firstNIssues) {
 	}
 
 	# Convert Markdown to Jira-specific rich text formatting
-	my $description = convertUserMentions($issue->{description});
-	my $remove = '<div class="wiki text prewrapped">';	
-	$description =~ s/\Q$remove\E//; 
-	$remove = '</div>';
-	$description =~ s/\Q$remove\E//; 
-	$description = convertAttachmentsLinks($description, $attachmentFileNamesMapping);
-
-	if($convertTextFormatting eq 'true') {	
-		$description = convertCodeSnippets($description);
-		$description = convertQuotations($description);
-		$description = convertMarkdownToJira($description);
-	}
+#	my $description = convertUserMentions($issue->{description});
+#	$description = convertAttachmentsLinks($description, $attachmentFileNamesMapping);
+#	if($convertTextFormatting eq 'true') {	
+#		$description = convertCodeSnippets($description);
+#		$description = convertQuotations($description);
+#		$description = convertMarkdownToJira($description);
+#	}
+#	$description = removeHtmlTags($description);
+	my $description = $issue->{description};
 	
 	my %import = ( project => { key => $JiraProject },
-	               issuetype => { name => $Type{$issue->{$typeCustomFieldName}} || $issue->{$typeCustomFieldName} },
+	               issuetype => { name => $Type{$issue->{$typeCustomFieldName}} || $issue->{$typeCustomFieldName} || 'Task' }, #make Task the default if it's empty
                    assignee => { id => $JiraUserIds{$Users{$issue->{Assignee}} || $issue->{Assignee}} },
                    reporter => { id => $JiraUserIds{$Users{$issue->{reporter}->{login}} || $issue->{reporter}->{login}} },
                    summary => $issue->{summary},
-                   description => $header.$description,
+                   description => $description,
                    priority => { name => $Priority{$issue->{Priority}} || $issue->{Priority} || '200' } #TODO: change this to empty string
 	);
 	# if there is no assignee in YouTrack, then remove the assignee field from the import hash so it's unassigned in Jira
@@ -253,9 +262,15 @@ foreach my $issue (@firstNIssues) {
 		$msg = "Checking for tags";
 		my @tags = $yt->getTags(IssueKey => $issue->{id});
 		if (@tags) {
-			$msg .= " - setting tags and their values";
-			$import{labels} = [@tags];
-			print "Found tags: ".Dumper(@tags) if ($verbose);
+			my @filtered_tags = grep { defined $_ && $_ ne '' } @tags;
+			if (@filtered_tags) {
+				$msg .= " - setting tags and their values";
+				$import{labels} = [@filtered_tags];
+				print "Found tags: ".Dumper(@tags) if ($verbose);
+			}
+			else {
+				$msg .= " - no non-null tags found";
+			}
 		}
 		else {
 			$msg .= " - no tags found";
@@ -267,20 +282,22 @@ foreach my $issue (@firstNIssues) {
 	print "Jira issue key generated $key\n";
 
 	# Checking issue number in key (eg in FOO-20 the issue number is 20)
-	if ($key =~ /^[A-Z0-9]+-(\d+)$/) {
-		while ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
-			print "We're having a gap and will delete the issue\n";
-			unless ($jira->deleteIssue(Key => $key)) {
-				warn "Error while deleting the issue $key\n";
+	if ($checkKeys) {
+		if ($key =~ /^[A-Z0-9]+-(\d+)$/) {
+			while ( $1 < $issue->{numberInProject} && ($issue->{numberInProject} - $1) <= $maximumKeyGap ) {
+				print "We're having a gap and will delete the issue\n";
+				unless ($jira->deleteIssue(Key => $key)) {
+					warn "Error while deleting the issue $key\n";
+				}
+				$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue\n";
+				print "New Jira issue key generated $key\n";
+				$key =~ /^[A-Z0-9]+-(\d+)$/;
 			}
-			$key = $jira->createIssue(Issue => \%import, CustomFields => \%custom) || warn "Error while creating issue\n";
-			print "New Jira issue key generated $key\n";
-			$key =~ /^[A-Z0-9]+-(\d+)$/;
+		} else {
+			die "Wrong issue key $key\n";
 		}
-	} else {
-		die "Wrong issue key $key\n";
 	}
-
+	
 	# Save Jira issue key for further linking
 	$issue->{jiraKey} = $key;
 
@@ -302,32 +319,52 @@ foreach my $issue (@firstNIssues) {
 
 	# Create comments
 	print "Creating comments\n";
-	foreach my $comment (@{$issue->{comments}}) {
-		my $author = $Users{$comment->{author}->{login}} || $comment->{author}->{login};
+	my @sorted_comments = sort { $b->{created} <=> $a->{created} } @{$issue->{comments}};
+	foreach my $comment (@sorted_comments) {
+		my $login = $comment->{author}->{login};
+		my $author = $Users{$login} || $login;
 		my $date = scalar localtime ($comment->{created}/1000);
 
 		my $text = $comment->{text};
-		
-		# Convert Markdown to Jira-specific rich text formatting
-		$text = convertUserMentions($text);
-		$text = convertAttachmentsLinks($text, $attachmentFileNamesMapping);
 
-		if($convertTextFormatting eq 'true') {
-			$text = convertCodeSnippets($text);
-			$text = convertQuotations($text);
-			$text = convertMarkdownToJira($text);
-		}
-
-		my $header;
+		# Check if text is ADF format (hash reference) or plain text
+		my $isADF = ref($text) eq 'HASH';
 		if ( $JiraPasswords{$author} && not $JiraPasswords{$author} eq $JiraPassword ) {
-			$header = "[ $date ]\n";
-			$text = $header.$text;
+			if (!$isADF) {
+				my $header = "[ $date ]\n";
+				$text = $header.$text;
+			}
+			# For ADF, skip header - original timestamp preserved in Jira comment metadata
 			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text, Login => $author, Password => $JiraPasswords{$author}) || warn "Error creating comment\n";
 		} else {
-			$header = convertUserMentions("[ \@".$comment->{author}->{login}." $date ]\n");
-			$text = $header.$text;
+			if (!$isADF) {
+				my $header = convertUserMentions("[ \@$login $date ]\n");
+				$text = $header.$text;
+			}else{
+				# prepend a header to the ADF document's content array.
+				unshift @{$text->{content}}, 
+					{
+						type => "paragraph",
+						content => [
+							{ type => "text", text => "[ " },
+							{
+								type => "text",
+								text => "\@".$login,
+								marks => [
+									{
+										type => "link",
+										attrs => {
+											href => "/jira/people/".$JiraUserIds{$author}
+										}
+									}
+								]
+							},
+							{ type => "text", text => " $date ]" }
+						]
+					};
+			}
 			my $jiraComment = $jira->createComment(IssueKey => $key, Body => $text) || warn "Error creating comment\n";
-		}
+		}		
 	}
 
 	# Export work log
@@ -370,7 +407,7 @@ foreach my $issue (@firstNIssues) {
 
 	# Upload attachments to Jira
 	if (@{$attachments}) {
-		print "Uploading ".scalar @{$attachments}." files\n";
+		print "Uploading ".scalar @{$attachments}." attachments\n";
 		unless ($jira->addAttachments(IssueKey => $key, Files => $attachments)) {
 			warn "Cannot upload attachment to $key\n";
 		}
@@ -380,12 +417,15 @@ foreach my $issue (@firstNIssues) {
 # Create Issue Links
 if ($exportLinks eq 'true') {	
 	$display->printTitle("Creating Issue Links");
+	&ifProceed;
+
 	# Turn YT issues to a hash to be able to search for issue ID
 	my %issuesById = map { $_->{id} => $_ } @{$export};
 	# Keep linked issues in hash to avoid duplicates on BOTH type of links
 	my %alreadyEstablishedLinksWith = map { $_ => () } keys %IssueLinks;
 
 	foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export}) {
+		print "Attempting to create links on issue ".$issue->{idReadable}."\n";
 		my $links = $yt->getIssueLinks(IssueKey => $issue->{id});
 
 		foreach my $link (@{$links}) {
@@ -405,12 +445,38 @@ if ($exportLinks eq 'true') {
 
 			foreach my $linkedIssue (@{$link->{issues}}) {
 				if (exists $issuesById{$linkedIssue->{id}}) {
+					my $jiraKey = $issue->{jiraKey};
+					if (!$jiraKey) {
+						# replace "SA" or "ZTP" with Jira project key
+						my ($ytProject, $ytId) = split /-/, $issue->{idReadable};
+						if ($ytProject eq "SA" || $ytProject eq "ZTP") {
+							$ytProject = $JiraProject;
+						}
+						if ($ytProject eq "ZTP") {
+							#increment id
+						}
+						$jiraKey = $ytProject."-".$ytId;
+					}
+
+					my $linkedJiraKey = $issuesById{$linkedIssue->{id}}->{jiraKey};
+					if (!$linkedJiraKey) {
+						# replace "SA" or "ZTP" with Jira project key
+						my ($ytProject, $ytId) = split /-/, $issuesById{$linkedIssue->{id}}->{idReadable};
+						if ($ytProject eq "SA" || $ytProject eq "ZTP") {
+							$ytProject = $JiraProject;
+						}
+						if ($ytProject eq "ZTP") {
+							#increment id
+						}
+						$linkedJiraKey = $ytProject."-".$ytId;
+					}
+
 					if ($link->{direction} eq 'INWARD' || $link->{direction} eq 'BOTH') {
-						$jiraLink->{inwardIssue}->{key} = $issue->{jiraKey};
-						$jiraLink->{outwardIssue}->{key} = $issuesById{$linkedIssue->{id}}->{jiraKey};
-					} elsif ($link->{direction} eq 'OUTWARD') {						
-						$jiraLink->{inwardIssue}->{key} = $issuesById{$linkedIssue->{id}}->{jiraKey};
-						$jiraLink->{outwardIssue}->{key} = $issue->{jiraKey};
+						$jiraLink->{inwardIssue}->{key} = $jiraKey;
+						$jiraLink->{outwardIssue}->{key} = $linkedJiraKey;
+					} elsif ($link->{direction} eq 'OUTWARD') {
+						$jiraLink->{inwardIssue}->{key} = $linkedJiraKey;
+						$jiraLink->{outwardIssue}->{key} = $jiraKey;
 					} 
 
 					if (not $alreadyEstablishedLinksWith{$link->{linkType}->{name}}{join(" ", sort($linkedIssue->{id}, $issue->{id}))}) {
@@ -490,4 +556,47 @@ sub convertQuotations {
 	$textToConvert =~ s/^> *(.*)/{quote}\n$1\n{quote}/gm;
 
 	return $textToConvert;
+}
+
+sub removeHtmlTags {
+   my $textToConvert = shift;
+
+   my $div_begin = '[div class="wiki text prewrapped"]';	
+   my $div_end = '[/div]';  
+
+   $textToConvert =~ s/\Q$div_begin\E//;
+   $textToConvert =~ s/\Q$div_end\E//;
+
+   my $begin_pos = index($textToConvert, '[a');
+   my $a = '';
+
+   while($begin_pos != -1) {
+      my $end_pos = index($textToConvert, '[/a]');
+      $a = substr($textToConvert, $begin_pos, $end_pos-$begin_pos + length('[/a]'));
+      $textToConvert =~ s/\Q$a\E//;
+      $begin_pos = index($textToConvert, '[a');
+   }
+
+   $html_begin = '[/li]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[li]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[h3]';   
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[/h3]';   
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[ul class="wiki-list0"]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[/ul]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[strong]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[/strong]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '[div class="wiki quote"]';
+   $textToConvert =~ s/\Q$html_begin\E//g;
+   $html_begin = '\[br/\]';
+   $textToConvert =~ s/$html_begin/\n/g;      
+
+   return $textToConvert;
 }

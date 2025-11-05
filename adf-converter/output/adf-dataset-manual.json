@@ -1,0 +1,977 @@
+[
+  {
+    "key": "SA-247",
+    "description": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "The purpose of the Teamcity monitor is, currently, to remove finished QA test runs from Teamcity."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "We want to make some improvements."
+            }
+          ]
+        },
+        {
+          "type": "orderedList",
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": " Keep the last X build configurations and their build logs (all or only the ones who failed?)"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": " The program tends to crash because of some invalid parsing."
+                    }
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Copy/paste from logs, regarding the crash:"
+                    }
+                  ]
+                },
+                {
+                  "type": "codeBlock",
+                  "attrs": {},
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "kos@akira:~$ sudo zcat /var/log/upstart/teamcity-monitor.log.1.gz \n2015/04/26 03:57:02 Get https://github.salt:7byWJhSLVL8z@teamcity.cryptzone.ad:443/httpAuth/app/rest/builds/?locator=running%3Atrue: EOF\n2015/04/27 04:01:40 invalid character '<' looking for beginning of value\n2015/04/27 04:01:40 invalid character '<' looking for beginning of value\n2015/04/27 04:01:40 invalid character '<' looking for beginning of value\n2015/04/27 04:01:40 invalid character '<' looking for beginning of value\n2015/04/27 04:01:40 invalid character '<' looking for beginning of value\n2015/04/27 04:01:40 invalid character '<' looking for beginning of value\n2015/04/27 04:01:40 invalid character '<' looking for beginning of value\n2015/04/27 04:01:40 invalid character '<' looking for beginning of value\n2015/04/27 04:01:40 invalid character '<' looking for beginning of value\n2015/04/27 04:01:40 invalid character '<' looking for beginning of value\n2015/04/27 04:01:40 invalid character '<' looking for beginning of value"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "version": 1
+    },
+    "comments": [
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "I think is better to integrate on the toolchain, we can have a periodic task to clean the builds, we have currently the API to talk with TC so it's going to take less time and is better to have everything integrated in the same place and async."
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "aitor.iturri",
+        "created": 1433168611124
+      }
+    ]
+  },
+  {
+    "key": "SA-410",
+    "description": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Place a button on OTP message to start initialization."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "GET "
+            },
+            {
+              "type": "text",
+              "text": "/client/authentication/otp/initialize",
+              "marks": [
+                {
+                  "type": "code"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "codeBlock",
+          "attrs": {},
+          "content": [
+            {
+              "type": "text",
+              "text": "{\n  \"secret\": \"ABCDABCDABCD\",\n  \"barcodeUrl\": http://www.google.com/chart?someidentifier\n}"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "example URL: "
+            },
+            {
+              "type": "text",
+              "text": "https://www.google.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=otpauth://totp/natan@appgate2%%3Fsecret%%3DABCDABCDABCD",
+              "marks": [
+                {
+                  "type": "code"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Returns HTTP 409 if the user already has the seed."
+            }
+          ]
+        }
+      ],
+      "version": 1
+    },
+    "comments": [
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "A new initialization button on OTP dialog."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "[^image.png]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "If it's already initialized, it will return \"Conflict\" error."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "If it isn't this dialog will pop-up again."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "[^image2.png]"
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "natan.abolafya",
+        "created": 1438676995087
+      }
+    ]
+  }
+{
+    "key": "SA-266",
+    "description": {
+      "version": 1,
+      "type": "doc",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:13]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "hi Kristinn... when you setup azure.. did you specify any tcp source port range ?"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:14]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "when azure gw is connecting to logserver , i usually see a port like 1081 -> 1087 .."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:14]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "but at some times, it does a port reuse, when a new tcp connection is made..."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:14]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "and at those times i can see that there is a delay to connect.."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [16:17]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "hm nope not to my knowledge"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [16:17]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "that's weird"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [16:17]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "so it's trying to reuse a port that is already in use or?"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:26]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "i dont know..  it is strange..    from azure i just do a simple connect to the logging server..."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:26]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "all goes ok..."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:26]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "i can see that azure is using ports"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:26]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "like 1080"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:26]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "1081"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:26]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "1082"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:27]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "1083"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:27]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "etc etc.."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:27]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "but then all the sudden it uses 1064"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:27]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "and for some reason the SYN fails."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:27]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "it does not get any responce from the log server"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:27]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "same pattern every time"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [16:27]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "I'm wondering if it has something to do with the natting of the log server"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [16:28]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "or does it work from aws?"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:28]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "it allways work from amazon"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [16:28]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "ok"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [16:28]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "hm"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [16:28]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "let me look into it"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [16:28]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "need to google and stuff, not sure what it can be"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:29]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "i reproduce it like:"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:29]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "nc -vz "
+            },
+            {
+              "type": "text",
+              "text": "log.sa.cryptzone.com",
+              "marks": [
+                {
+                  "type": "link",
+                  "attrs": {
+                    "href": "http://log.sa.cryptzone.com"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " 5000      <-- on azure"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:29]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "sudo tcpdump -i eth0 tcp port 5000 -n -X  <-- on logging server"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [16:29]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "ok cool"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [16:29]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "I will investigate this now"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [16:29]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "thanks"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [16:30]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "np"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Per Leino [17:01]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "there is a article @ "
+            },
+            {
+              "type": "text",
+              "text": "https://msdn.microsoft.com/en-us/library/azure/dn848316.aspx",
+              "marks": [
+                {
+                  "type": "link",
+                  "attrs": {
+                    "href": "https://msdn.microsoft.com/en-us/library/azure/dn848316.aspx"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "   where the number of source ports can be configured?"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [17:02]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "maybe we will need to use the security groups feature. It isn't available in the GUI (at least I haven't found it) so we didn't know about it, that's the reason we use the SNAT hack"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [17:02]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "but if this can be fixed by using security groups then we might need to do that"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [17:23]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "I think it just uses the next available port. I don't know why this would be an issue"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [17:24]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "weird"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [17:24]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "it's using 1024-1040 ca. for me now and it's working"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [17:24]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "from a different azure vm"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [17:24]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "we should investigate this further after RSA"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [17:24]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "I can't do any good tests now"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [17:28]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "I'll add this to the devops backlog in youtrack"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kristinn Örn Sigurðsson [17:28]"
+            },
+            {
+              "type": "hardBreak"
+            },
+            {
+              "type": "text",
+              "text": "we'll take a better look after RSA, unless this is a showstopper for RSA"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

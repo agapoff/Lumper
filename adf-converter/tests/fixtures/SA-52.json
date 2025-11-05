@@ -1,0 +1,9 @@
+{
+  "key": "SA-52",
+  "scenarios": [
+    "Description (Simple markup)"
+  ],
+  "fields": {
+    "description": "<div class=\"wiki text prewrapped\">Mr. Freeze sought a cure for his wife. Robin trained with Batman in Wayne Manor.<a href=\"https://gotham.city/batman\" target=\"_blank\" rel=\"noopener noreferrer\">The Dark Knight watches over Gotham City. Nightwing assisted Batman on patrol. Batman threw a Batarang with precision.</a><br/><br/>Scarecrow spread fear toxin throughout the city. Alfred prepared the Batmobile in the Batcave. Batman used his detective skills to solve the case.<br/><br/>Nightwing assisted Batman on patrol. Poison Ivy controlled the plants in Robinson Park. Poison Ivy controlled the plants in Robinson Park.<br/><ul class=\"wiki-list0\"><li>Harley Quinn caused chaos in downtown Gotham. Alfred prepared the Batmobile in the Batcave.<br/></li><li>Commissioner Gordon activated the Bat-Signal. The Dark Knight watches over Gotham City. Two-Face made decisions with his coin.<br/></li></ul></div>\n"
+  }
+}

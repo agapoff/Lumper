@@ -1,0 +1,61 @@
+{
+  "key": "SA-21068",
+  "scenarios": [
+    "Multiple Tags"
+  ],
+  "fields": {
+    "description": "## Description\nWe should discuss and implement a way to show more relevant hits on top\nIf the query is found in the name it should probably be on top\n\n# Initial ideas for Priority of search results\n\n## Comparing strings\n\n1. exact match (space around it, or beginning / end of string)\n2. exact match, part of a word\n3. (early or late in the string?)\n4. alphabetically by name (or perhaps better created/edited date)\n\n## Priority of attributes\n\n1. Name\n2. Tags\n3. Description\n\n## Different weight for attributes depending of type (like bat-signal, site etc)\n\nIP-field, weight 80/100\n(it's possible that we count the weight (adding?) depending on what kind of object it is, in some of them IP might be super important, and in others not so much)\n\n",
+    "comments": [
+      {
+        "id": "48-55080",
+        "text": "Blocked until SA-21053 is ready",
+        "author": {
+          "login": "red-robin",
+          "fullName": "Red Robin",
+          "$type": "User"
+        },
+        "created": 1674641967362
+      },
+      {
+        "id": "48-55198",
+        "text": "here are the objects in which we search.\n```\n'policies',\n'entitlements',\n'conditions',\n'ringfence-rules',\n'admin-roles',\n'criteria-scripts',\n'entitlement-scripts',\n'bat-signals',\n'sites',\n'bat-signal-customizations',\n'trusted-certificates',\n'client-profiles',\n'identity-providers',\n'ip-pools',\n'mfa-providers',\n'device-claim-scripts',\n'user-claim-scripts',\n'local-users',\n'service-users',\n'active-devices',\n'blacklisted-users',\n'licensed-users',\n'registered-devices',\n'default-time-based-otp-provider-seeds',\n'fido2-provider-devices',\n'issued-certificates',\n'active-sessions',\n```\nHowever I don't know exactly what attributes within these objects we're searching on.. Perhaps @nightwing can shed some light?",
+        "author": {
+          "login": "batman",
+          "fullName": "Batman",
+          "$type": "User"
+        },
+        "created": 1675326468472
+      },
+      {
+        "id": "48-55199",
+        "text": "I think name, tags and notes are enough. Would keep it simple also. \"distinguishedName\" for user&device objects as they don't have name, tags or notes.\n\n\n\nBut this is for global search, right? Other pages have their sorting preferences, so that could be tricky UX wise as well as implementation wise considering there is paging and whatnot.\n\n\n",
+        "author": {
+          "login": "huntress",
+          "fullName": "Huntress",
+          "$type": "User"
+        },
+        "created": 1675327198858
+      },
+      {
+        "id": "48-55200",
+        "text": "Yes, this is for global search, but implementing some kind of weighing in a category _might_ be interesting too (say a title having higher weight than a description)\n\nThe idea is to get rid of paging and have some kind of eternal flow.",
+        "author": {
+          "login": "azrael",
+          "fullName": "Azrael",
+          "$type": "User"
+        },
+        "created": 1675327468938
+      },
+      {
+        "id": "48-55680",
+        "text": "Removing the Design Required tag since this is more of a discussion than a design requirement. Feel free to include the design team in meetings of discussions regarding this. \n",
+        "author": {
+          "login": "huntress",
+          "fullName": "Huntress",
+          "$type": "User"
+        },
+        "created": 1678088845855
+      }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "key": "SA-26578",
+  "scenarios": [
+    "Impact (Multiple values)"
+  ],
+  "fields": {
+    "description": "## Description\n\nThere are several reasons why it is important for the administrator to get visibility into how the Connection Broker is working:\n\n* It is a hard to verify that the configuration of the Connection broker is correct without some kind of feedback.\n* Relay of traffic adds cost and latency which needs to be possible to monitor.\n* If the Connection broker gets overloaded the clients will not be able to connect to the resources.\n\n## Requirements\n\n[PRD](https://internal-system/:w:/r/sites/ztnaproductteam/Shared%20Documents/Product%20Launch%20Documentation/NAT%20Traversal/NAT%20Traversal%20-%20PRD.docx?d=w93330afb20284cfabba2372600504e5e&csf=1&web=1&e=VX1wwE)\n\n* It needs to be easy for the administrator to see how much, and which, traffic is being relayed as this induces cost and latency. It also needs to be made clear that when traffic is being relayed that relay induces cost and latency. \n\n\n* As networks are setup differently, the limit for what is acceptable amount of relay traffic needs to be configurable.\n\n\n* It should be easy for the administrator to see that no traffic is negotiated by the Connection Broker as that would indicate that there is a misconfiguration. \n\n\n* It should be easy for the administrator to see when the Connection Broker is over utilized. \n\n\n* It should be easy for the administrator to see how an active session is connected directly to the GW or if it is being relayed. "
+  }
+}

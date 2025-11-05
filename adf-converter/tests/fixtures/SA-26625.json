@@ -1,0 +1,9 @@
+{
+  "key": "SA-26625",
+  "scenarios": [
+    "Parent & Subtask"
+  ],
+  "fields": {
+    "description": "STUN/Relay User Client (ipt) sends first a JSON-RPC request `update-relay-info` and then a `get-gw-relay-info` to get the NAT/Relay Information of the Gateway. ipt can send one JSON-RPC instead combining those 2. Note that this is only applicable for the User Client (ipt)"
+  }
+}

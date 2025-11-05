@@ -6,7 +6,7 @@ our $JiraUrl='https://appgateinc.atlassian.net';
 # The project ID to migrate from (eg FOO, BAR)
 our $YTProject='SA';
 # The project ID to migrate to (eg FOO, BAR)
-our $JiraProject='ZT27';
+our $JiraProject='ZT28';
 
 # Export tags from YT and import them as labels in Jira
 our $exportTags='true';
@@ -298,7 +298,7 @@ our %JiraUserIds = (
 	'gokhan.berberoglu@appgate.com' => '609a9b9397f3d40070a0c118',
 	'per.leino@appgate.com' => '712020:c886d073-6cac-40be-af7d-bdf7025fbe56',
 	
-	'hadrien.luttiau@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:1f85456f-e98f-4c00-b217-89de18f4a6a4',
+	'hadrien.luttiau@appgate.com' => '712020:1f85456f-e98f-4c00-b217-89de18f4a6a4',
 	'mikael.harsjo@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:8da0101b-4d47-4efe-ae0a-ff252b45318b',
 	'viola.sorgato@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:feb76057-dead-496c-83f1-7bbde6c5fa61',
 	'ian.izaguirre@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:c456a5e5-820e-4f2e-bc54-86d5676560ac',

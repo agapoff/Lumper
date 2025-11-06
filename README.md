@@ -151,6 +151,7 @@ Here's the list of used components:
   * I found many more than need installing, including:
   ** LWP::Protocol::https
   ** HTTP::Request (be sure to run network test) 
+  * Text::Unidecode
 
   cpan -T LWP:Protocol:https
     the -T skips tests. I tried answering both n, N, y and Y to tests and it never worked

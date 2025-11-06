@@ -10,6 +10,7 @@ use List::Util qw( first );
 use File::Basename;
 use Encode;
 use utf8;
+use Text::Unidecode;
 
 my $ua;
 our $currentField;
@@ -76,6 +77,7 @@ sub downloadAttachments {
 		$sanitizedFileName =~ s#[/:\x00-\x1F]##g; # Remove invalid macOS filename characters (/, :, control chars)
 		$sanitizedFileName =~ s/[\\\/"%:\$\?\*]//g; #strip out characters that Jira does not allow in attachment names
 		$sanitizedFileName =~ s/[\x{200B}\x{200C}\x{200D}\x{FEFF}]//g; #strip out zero-width characters
+		my $sanitizedFileName = unidecode($sanitizedFileName);
 		$oldFileNamesDirectory{$localizedFileName} = $sanitizedFileName;
 		
 		# Rename the file to avoid problems with exotic file names

@@ -142,8 +142,13 @@ our sub issueLinks {
     $display->printTitle("Issue Links Mapping");
 
     my %ytDefinedIssueLinkTypes = map { $_->{name} => 1 } @{$yt->getAllLinkTypes()};
-    delete $ytDefinedIssueLinkTypes{Subtask};
-    my %jiraDefinedIssueLinkTypes = map { $_->{name} => 1 } @{$jira->getAllLinkTypes()};
+    print Dumper(\%ytDefinedIssueLinkTypes);
+    #delete $ytDefinedIssueLinkTypes{Subtask};
+    
+    my $jiraLinkTypesArrayRef = $jira->getAllLinkTypes();
+    print Dumper($jiraLinkTypesArrayRef);
+    my %jiraDefinedIssueLinkTypes = map { $_->{name} => 1 } @$jiraLinkTypesArrayRef;
+    print Dumper(\%jiraDefinedIssueLinkTypes);
 
     foreach my $ytIssueLinkType (sort keys %IssueLinks) {	
         print "\nIssue link '".$ytIssueLinkType."' is present in config file but does ".

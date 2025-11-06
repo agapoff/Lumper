@@ -85,10 +85,10 @@ our %Status = (
 # Some statuses in YT can be mapped to Resolutions in Jira
 # In order to use this feature a field Resolution should be added to screens (and removed after the migration if not needed)
 our %StatusToResolution = (
-	#"Verified" => "Fixed",
-	#"Won't Fix" => "Won't Fix",
-	#"Duplicate" => "Duplicate",
-	#"Obsolete" => "Invalid"
+	#"Verified" => "Done",
+	#"Won't Fix" => "Done",
+	#"Duplicate" => "Done",
+	#"Obsolete" => "Done"
 );
 
 # Custom fields mapping
@@ -105,14 +105,15 @@ our %CustomFields = (
 );
 
 # Issue link types mapping
+# this are the NAMES of the Issue Links; not the directions (inward/outward)
 our %IssueLinks = (
 	"Relates" => "Relates",
 	#"Is required for" => "blocks",
 	"Depend" => "Dependency",
 	#"Is duplicated by" => "Relates",
-	"Duplicate" => "Duplicate"
+	"Duplicate" => "Duplicate",
 	#"Parent for" => "",
-	#"Subtask" => ""
+	"Subtask" => "parent for"
 );
 
 # User mapping. By default the username stays the same

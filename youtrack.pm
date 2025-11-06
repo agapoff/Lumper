@@ -153,9 +153,7 @@ sub getAllLinkTypes {
 	my %arg = @_;
 
 	return $self->sendRequestToYouTrack(
-				Request => '/api/issueLinkTypes?'.
-											'fields='.
-												'name',
+				Request => '/api/issueLinkTypes?fields=name',
 				ErrorMessage => "Got error while getting link types\n",
 				CharacterSupport => 'true');
 }

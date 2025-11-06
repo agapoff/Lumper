@@ -8,6 +8,9 @@ our $YTProject='SA';
 # The project ID to migrate to (eg FOO, BAR)
 our $JiraProject='ZT28';
 
+# When migrating ZTP after SA, use this as the offset between YouTRack ZTP project IDs and Jira issue IDs
+our $JiraIssueIdOffset=0;
+
 # Export tags from YT and import them as labels in Jira
 our $exportTags='true';
 # This is quite obvious
@@ -85,10 +88,10 @@ our %Status = (
 # Some statuses in YT can be mapped to Resolutions in Jira
 # In order to use this feature a field Resolution should be added to screens (and removed after the migration if not needed)
 our %StatusToResolution = (
-	#"Verified" => "Done",
-	#"Won't Fix" => "Done",
-	#"Duplicate" => "Done",
-	#"Obsolete" => "Done"
+	"Verified" => "Done",
+	"Won't Fix" => "Done",
+	"Duplicate" => "Done",
+	"Obsolete" => "Done"
 );
 
 # Custom fields mapping

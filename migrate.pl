@@ -424,67 +424,71 @@ if ($exportLinks eq 'true') {
 	# Keep linked issues in hash to avoid duplicates on BOTH type of links
 	my %alreadyEstablishedLinksWith = map { $_ => () } keys %IssueLinks;
 
-	foreach my $issue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export}) {
-		print "Attempting to create links on issue ".$issue->{idReadable}."\n";
-		my $links = $yt->getIssueLinks(IssueKey => $issue->{id});
+	foreach my $ytIssue (sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export}) {
+		print "Attempting to create links on issue ".$ytIssue->{idReadable}."\n";
+		my $ytLinks = $yt->getIssueLinks(IssueKey => $ytIssue->{id});
 
-		foreach my $link (@{$links}) {
+		foreach my $ytLink (@{$ytLinks}) {
 			my $jiraLink;
 
 			# If this link does not have any issues attached - skip to the next one
-			if (!@{$link->{issues}}){
+			if (!@{$ytLink->{issues}}){
 				next;
 			}
 
 			# Check if config has this issue link type name
-		    if (defined $IssueLinks{$link->{linkType}->{name}}) {
-        		$jiraLink->{type}->{name} = $IssueLinks{$link->{linkType}->{name}};
+		    if (defined $IssueLinks{$ytLink->{linkType}->{name}}) {
+        		$jiraLink->{type}->{name} = $IssueLinks{$ytLink->{linkType}->{name}};
     		} else {
         		next;
     		}
 
-			foreach my $linkedIssue (@{$link->{issues}}) {
-				if (exists $issuesById{$linkedIssue->{id}}) {
-					my $jiraKey = $issue->{jiraKey};
+			foreach my $ytLinkedIssue (@{$ytLink->{issues}}) {
+				if (exists $issuesById{$ytLinkedIssue->{id}}) {
+					my $jiraKey = $ytIssue->{jiraKey};
 					if (!$jiraKey) {
 						# replace "SA" or "ZTP" with Jira project key
-						my ($ytProject, $ytId) = split /-/, $issue->{idReadable};
+						my ($ytProject, $ytId) = split /-/, $ytIssue->{idReadable};
 						if ($ytProject eq "SA" || $ytProject eq "ZTP") {
 							$ytProject = $JiraProject;
 						}
 						if ($ytProject eq "ZTP") {
 							#increment id
+							$ytId = int($ytId);
+							$ytId += $JiraIssueIdOffset;
 						}
 						$jiraKey = $ytProject."-".$ytId;
 					}
 
-					my $linkedJiraKey = $issuesById{$linkedIssue->{id}}->{jiraKey};
+					my $linkedJiraKey = $issuesById{$ytLinkedIssue->{id}}->{jiraKey};
 					if (!$linkedJiraKey) {
 						# replace "SA" or "ZTP" with Jira project key
-						my ($ytProject, $ytId) = split /-/, $issuesById{$linkedIssue->{id}}->{idReadable};
+						my ($ytProject, $ytId) = split /-/, $issuesById{$ytLinkedIssue->{id}}->{idReadable};
 						if ($ytProject eq "SA" || $ytProject eq "ZTP") {
 							$ytProject = $JiraProject;
 						}
 						if ($ytProject eq "ZTP") {
 							#increment id
+							$ytId = int($ytId);
+							$ytId += $JiraIssueIdOffset;
 						}
 						$linkedJiraKey = $ytProject."-".$ytId;
 					}
 
-					if ($link->{direction} eq 'INWARD' || $link->{direction} eq 'BOTH') {
+					if ($ytLink->{direction} eq 'INWARD' || $ytLink->{direction} eq 'BOTH') {
 						$jiraLink->{inwardIssue}->{key} = $jiraKey;
 						$jiraLink->{outwardIssue}->{key} = $linkedJiraKey;
-					} elsif ($link->{direction} eq 'OUTWARD') {
+					} elsif ($ytLink->{direction} eq 'OUTWARD') {
 						$jiraLink->{inwardIssue}->{key} = $linkedJiraKey;
 						$jiraLink->{outwardIssue}->{key} = $jiraKey;
 					} 
 
-					if (not $alreadyEstablishedLinksWith{$link->{linkType}->{name}}{join(" ", sort($linkedIssue->{id}, $issue->{id}))}) {
+					if (not $alreadyEstablishedLinksWith{$ytLink->{linkType}->{name}}{join(" ", sort($ytLinkedIssue->{id}, $ytIssue->{id}))}) {
 						print "Creating link between ".$jiraLink->{outwardIssue}->{key}." and ".$jiraLink->{inwardIssue}->{key}."\n";
 
 						if ($jira->createIssueLink( Link => $jiraLink )) {
 							# To avoid link duplications (for BOTH direction type of issue link)
-							$alreadyEstablishedLinksWith{$link->{linkType}->{name}}{join(" ", sort($linkedIssue->{id}, $issue->{id}))} = 1;
+							$alreadyEstablishedLinksWith{$ytLink->{linkType}->{name}}{join(" ", sort($ytLinkedIssue->{id}, $ytIssue->{id}))} = 1;
 							print " Done\n";
 						} else {
 							print " Failed. Most likely the second issue is not migrated yet\n";

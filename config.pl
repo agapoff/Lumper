@@ -88,10 +88,10 @@ our %Status = (
 # Some statuses in YT can be mapped to Resolutions in Jira
 # In order to use this feature a field Resolution should be added to screens (and removed after the migration if not needed)
 our %StatusToResolution = (
-	"Verified" => "Done",
-	"Won't Fix" => "Done",
-	"Duplicate" => "Done",
-	"Obsolete" => "Done"
+	#"Verified" => "Done",
+	#"Won't Fix" => "Done",
+	#"Duplicate" => "Done",
+	#"Obsolete" => "Done"
 );
 
 # Custom fields mapping
@@ -332,10 +332,10 @@ our %JiraUserIds = (
 	
 	'masaya.ando@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:99d5c0bd-0e59-4b7d-a567-3be3274c30f8',
 	'kasper.gustavsson@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:37902401-efb2-4d3f-b84b-581680252ec9',
-	'niko.pietikainen@appgate.com' => '712020:3b5f8abe-66c0-45ee-9f38-fa6be1b1d329',
+	'niko.pietikainen@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:3b5f8abe-66c0-45ee-9f38-fa6be1b1d329',
 	'dori.amara@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:0ee29a96-6f8c-40fa-8f78-ce991e91bc70',
-	'herve.trutt@appgate.com' => '712020:ea1dec82-4404-4fe9-9519-1930300f6b73',
-	'max.wedenmark@appgate.com' => '712020:1b3f3f5d-42aa-4836-9322-db7bd58a3b4c',
+	'herve.trutt@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:ea1dec82-4404-4fe9-9519-1930300f6b73',
+	'max.wedenmark@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:1b3f3f5d-42aa-4836-9322-db7bd58a3b4c',
 	
 	'mark.haase@appgate.com' => '712020:7b762c60-c811-4238-ae03-e51ef5eb45d6',
 	'samuel.crisanto@appgate.com' => '712020:ee9458df-584d-4f89-aff6-3c5ba80b0f2b',	

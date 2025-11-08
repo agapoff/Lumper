@@ -265,7 +265,7 @@ sub exportIssues {
 			foreach my $manualOverrideTicket (@$ytManualOverrideData) {
 				next if $manualOverrideTicket->{key} ne $ytIssue->{idReadable};
 				$overrideTicket = $manualOverrideTicket;
-				print "Overriding automatic with manual for issue ".$ytIssue->{idReadable}."\n";
+				print "Overriding fields Description, Release note and Comments with manual ADF for ticket ".$ytIssue->{idReadable}."\n";
 				last;
 			}
 

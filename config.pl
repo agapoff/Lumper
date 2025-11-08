@@ -309,13 +309,13 @@ our %JiraUserIds = (
 	'aaron.case@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:f59b582a-29ab-4a2c-8a69-4a16c2418406',
 	'eva.fireborn@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:d8e48fc8-159d-4f84-85f8-e42365a3207f',
 
-	'petter.hancock@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:3e2ec51b-a983-4b12-b0cb-1d989d7a65df',
+	'petter.hancock@appgate.com' => '712020:3e2ec51b-a983-4b12-b0cb-1d989d7a65df',
 	'oskar.dahlberg@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:1a17894f-0b43-43f6-988c-d7e15af4bec8',
 	'joachim.pedersen@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:ffcbdea3-7e6b-45ec-b816-7335f00b18be',
 	'christopher.cox@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:a16f333b-d83c-409d-b176-a577d29f15c3',
-	'natan.abolafya@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:529105ef-6ba3-4a74-a555-7a8c1e2621e8',
+	'natan.abolafya@appgate.com' => '712020:529105ef-6ba3-4a74-a555-7a8c1e2621e8',
 
-	'kosmas.valianos@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:486c7104-250e-485f-8def-4c9d5ede56fb',
+	'kosmas.valianos@appgate.com' => '712020:486c7104-250e-485f-8def-4c9d5ede56fb',
 	'per.allansson@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:f4b3a9cd-3baa-4be6-911c-24007eb31356',
 	'anton.lundgren@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:1b2ffe51-1b24-414d-9212-35965a46989b',
 	'david.butler@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:c4ae331c-88e8-4918-b1e4-e6990932d082',
@@ -330,7 +330,7 @@ our %JiraUserIds = (
 	'freddy.ayuso-henson@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:d35adf5b-f3d6-45f0-9f36-1849676fab6b',
 	'david.frogley@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:10074ab0-e199-44d9-bac4-20ca3e3001ab',
 	
-	'masaya.ando@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:99d5c0bd-0e59-4b7d-a567-3be3274c30f8',
+	'masaya.ando@appgate.com' => '712020:99d5c0bd-0e59-4b7d-a567-3be3274c30f8',
 	'kasper.gustavsson@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:37902401-efb2-4d3f-b84b-581680252ec9',
 	'niko.pietikainen@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:3b5f8abe-66c0-45ee-9f38-fa6be1b1d329',
 	'dori.amara@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:0ee29a96-6f8c-40fa-8f78-ce991e91bc70',

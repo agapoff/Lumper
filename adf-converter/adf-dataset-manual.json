@@ -74370,5 +74370,666 @@
         "created": 1728894910641
       }
     ]
+  },
+  {
+    "key": "SA-24305",
+    "description": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "When it actually has."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "e.g."
+            }
+          ]
+        },
+        {
+          "type": "codeBlock",
+          "attrs": {},
+          "content": [
+            {
+              "type": "text",
+              "text": "15:41:37 \n      2024-08-22T15:41:37,350397Z [INFO] [upgrade/appliance_sdpctl_upgrade] Preparing upgrade with image_url="
+            },
+            {
+              "type": "text",
+              "text": "https://got02-helvetest.agi.appgate.com:443/testsd/project/666/StratusImage_Build/release-6.4/artifact/appgate-6.4.0-38258-beta.img.zip?is-build-type-id"
+            },
+            {
+              "type": "text",
+              "text": "\n15:41:37 \n      2024-08-22T15:41:37,351059Z [INFO] [upgrade/appliance_sdpctl_upgrade] Running sdpctl command: /home/devops/buildAgent/temp/buildTmp/sdpctl_test_config_n0bv130y/sdpctl appliance upgrade prepare --image "
+            },
+            {
+              "type": "text",
+              "text": "https://got02-helvetest.agi.appgate.com:443/testsd/project/666/StratusImage_Build/release-6.4/artifact/appgate-6.4.0-38258-beta.img.zip?is-build-type-id"
+            },
+            {
+              "type": "text",
+              "text": " --force --dev-keyring --no-interactive --ci-mode\n15:41:37 \n  time=\"2024-08-22T17:41:37+02:00\" level=info COMMAND=\"sdpctl appliance upgrade prepare\" SDPCTL_VERSION=2024.08.16\n15:41:37 \n  time=\"2024-08-22T17:41:37+02:00\" level=info msg=\"version check disabled\"\n15:41:37 \n  time=\"2024-08-22T17:41:37+02:00\" level=debug msg=\"found docker registry address\" URL=\""
+            },
+            {
+              "type": "text",
+              "text": "https://got02-nexus01.agi.appgate.com:5001"
+            },
+            {
+              "type": "text",
+              "text": "\n15:41:37 \n  sdpctl_version: 2024.08.16\n15:41:37 \n  commit: eaa3a0c5a5795c5994802ad8a84c7cfff51ee1f7\n15:41:37 \n  build date: 2024-08-16T08:41:36Z\n15:41:37 \n  \n15:41:37 \n  time=\"2024-08-22T17:41:37+02:00\" level=info msg=\"primary controller\" appliance=controller-c9934ce3-f44e-4187-9128-c8f46b10ed74-site1\n15:41:37 \n  time=\"2024-08-22T17:41:37+02:00\" level=debug msg=\"upgrade version information\" primary-controller=controller-c9934ce3-f44e-4187-9128-c8f46b10ed74-site1 target-version=6.4.0-beta+38258 version=6.3.3-beta+38257\n15:41:37 \n  time=\"2024-08-22T17:41:37+02:00\" level=info msg=\"upgrade information\" current_version=6.3.3-beta+38257 skipping= target_version=6.4.0-beta+38258 upgrading=\"controller-c9934ce3-f44e-4187-9128-c8f46b10ed74-site1, controller2-c9934ce3-f44e-4187-9128-c8f46b10ed74-site1, gateway-c9934ce3-f44e-4187-9128-c8f46b10ed74-site1\"\n15:41:37 \n  \n15:41:37 \n  PREPARE SUMMARY\n15:41:37 \n  \n15:41:37 \n  1. Bundle and upload LogServer docker image\n15:41:37 \n  2. Upload upgrade image appgate-6.4.0-38258-beta.img.zip to Controller\n15:41:37 \n  3. Prepare upgrade on the following appliances:\n15:41:37 \n  \n15:41:37 \n    Appliance                                                 Online    Current version     Prepare version\n15:41:37 \n    ---------                                                 ------    ---------------     ---------------\n15:41:37 \n    controller-c9934ce3-f44e-4187-9128-c8f46b10ed74-site1     ✓         6.3.3-beta+38257    6.4.0-beta+38258\n15:41:37 \n    controller2-c9934ce3-f44e-4187-9128-c8f46b10ed74-site1    ✓         6.3.3-beta+38257    6.4.0-beta+38258\n15:41:37 \n    gateway-c9934ce3-f44e-4187-9128-c8f46b10ed74-site1        ✓         6.3.3-beta+38257    6.4.0-beta+38258\n15:41:37 \n  \n15:41:37 \n  \n15:41:37 \n  time=\"2024-08-22T17:41:37+02:00\" level=info msg=\"downloading image layers for logserver-latest.zip\"\n15:41:38 \n  time=\"2024-08-22T17:41:37+02:00\" level=debug msg=\"wrote layer\" path=cz-opensearch/latest.json size=948\n15:41:38 \n  time=\"2024-08-22T17:41:37+02:00\" level=debug msg=\"wrote layer\" path=cz-opensearchdashboards/latest.json size=948\n15:41:38 \n  time=\"2024-08-22T17:41:37+02:00\" level=debug msg=\"wrote layer\" path=cz-opensearchdashboards/07a08a2ab691a8983e91d2410ce9aec24420212d4aa9611202a0a5b18bdc3762.json size=6334\n15:41:38 \n  time=\"2024-08-22T17:41:37+02:00\" level=info msg=\"downloading image layer\" layer=4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1\n15:41:38 \n  time=\"2024-08-22T17:41:37+02:00\" level=info msg=\"downloading image layer\" layer=e4fff0779e6ddd22366469f08626c3ab1884b5cbe1719b26da238c95f247b305\n15:41:38 \n  time=\"2024-08-22T17:41:37+02:00\" level=info msg=\"downloading image layer\" layer=714926751fa783e638d2bf4d3880083b246acae60d08341a5f1a333babffb292\n15:41:38 \n  time=\"2024-08-22T17:41:37+02:00\" level=debug msg=\"wrote layer\" path=cz-opensearchdashboards/image.json size=77\n15:41:38 \n  time=\"2024-08-22T17:41:37+02:00\" level=debug msg=\"wrote layer\" path=cz-opensearch/01d8c16f03054d452569e7d785818edf7fff02625f6377d14850b697c49b7110.json size=6365\n15:41:38 \n  time=\"2024-08-22T17:41:37+02:00\" level=info msg=\"downloading image layer\" layer=4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1\n15:41:38 \n  time=\"2024-08-22T17:41:37+02:00\" level=info msg=\"downloading image layer\" layer=e4fff0779e6ddd22366469f08626c3ab1884b5cbe1719b26da238c95f247b305"
+            }
+          ]
+        }
+      ],
+      "version": 1
+    }
+  },
+  {
+    "key": "SA-24363",
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": ""
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "key": "SA-24429",
+    "description": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Every time I click download logs this happens"
+            }
+          ]
+        },
+        {
+          "type": "codeBlock",
+          "attrs": {},
+          "content": [
+            {
+              "type": "text",
+              "text": "WARN [ApplianceWebSocketStore] Appliance 'envy-10-98-151-2_devops' did not respond in time for 'status' method with ID '6'. InterruptedException - null\n192.168.100.99 - CN=3032626534354231a535633963613330,CN=admin,OU=local \"GET /admin/appliances/status?range=0-30 HTTP/1.0\" 200 1650 \""
+            },
+            {
+              "type": "text",
+              "text": "https://envy-10-98-151-2.devops:8443/ui/system/appl>"
+            },
+            {
+              "type": "text",
+              "text": "\n{\"id\":\"a082356a-eae4-450b-befa-6259fb9b69fc\",\"timestamp\":\"2024-09-11T12:22:03.988795377Z\",\"version\":21,\"distinguished_name\":\"CN=3032626534354231a535633963613330,CN=admin,OU=local\",\"cl>\n192.168.100.99 - CN=3032626534354231a535633963613330,CN=admin,OU=local \"GET /admin/admin-messages/summarize HTTP/1.0\" 200 387 \""
+            },
+            {
+              "type": "text",
+              "text": "https://envy-10-98-151-2.devops:8443/ui/system/appliance>"
+            },
+            {
+              "type": "text",
+              "text": "\n192.168.100.99 - CN=3032626534354231a535633963613330,CN=admin,OU=local \"GET /admin/my-preferences HTTP/1.0\" 200 30 \""
+            },
+            {
+              "type": "text",
+              "text": "https://envy-10-98-151-2.devops:8443/ui/system/appliances\""
+            },
+            {
+              "type": "text",
+              "text": " \"Mozilla>\nERROR[PeerWebSocketEndpoint] [/127.0.0.1:0] Error on websocket session.\njava.nio.channels.ClosedChannelException: null\n        at org.eclipse.jetty.websocket.core.internal.WebSocketSessionState.onEof(WebSocketSessionState.java:169)\n        at org.eclipse.jetty.websocket.core.internal.WebSocketCoreSession.onEof(WebSocketCoreSession.java:253)\n        at org.eclipse.jetty.websocket.core.internal.WebSocketConnection.fillAndParse(WebSocketConnection.java:491)\n        at org.eclipse.jetty.websocket.core.internal.WebSocketConnection.onFillable(WebSocketConnection.java:349)\n        at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:314)\n        at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:100)\n        at org.eclipse.jetty.io.SelectableChannelEndPoint$1.run(SelectableChannelEndPoint.java:53)\n        at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.runTask(AdaptiveExecutionStrategy.java:421)\n        at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.consumeTask(AdaptiveExecutionStrategy.java:390)\n        at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:277)\n        at org.eclipse.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:199)\n        at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:411)\n        at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:969)\n        at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1194)\n        at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1149)\n        at java.base/java.lang.Thread.run(Thread.java:1583)\nINFO [PeerWebSocketEndpoint] [/127.0.0.1:0] Websocket close. CloseReason[1006,Session Closed]\n{\"id\":\"8187799e-f4b6-4257-a137-e54a0947b40e\",\"timestamp\":\"2024-09-11T12:22:19.385111522Z\",\"version\":21,\"entity_type\":\"Appliance\",\"distinguished_name\":\"CN=3032626534354231a535633963613>\nINFO [ApplianceWebSocketStore] [a5bceda8-3dcb-4cb1-a663-b027c3819449] Appliance is offline. Cancelling the request 'status'.\n192.168.100.99 - CN=3032626534354231a535633963613330,CN=admin,OU=local \"GET /admin/appliances/status?range=0-30 HTTP/1.0\" 200 1648 \""
+            },
+            {
+              "type": "text",
+              "text": "https://envy-10-98-151-2.devops:8443/ui/system/appl>"
+            },
+            {
+              "type": "text",
+              "text": "\n - controller-324347bf-e6eb-42b7-824d-6b836ebe38d1-site1 \"POST /peer/files/8339be87-9cdf-4e68-917e-ba5e79f17f72 HTTP/1.1\" 204 0 \"-\" \"Python/3.10 aiohttp/3.8.1\" 134437\n192.168.100.99 - CN=3032626534354231a535633963613330,CN=admin,OU=local \"POST /admin/appliances/a5bceda8-3dcb-4cb1-a663-b027c3819449/logs HTTP/1.0\" 200 452182391 \""
+            },
+            {
+              "type": "text",
+              "text": "https://envy-10-98-15>"
+            },
+            {
+              "type": "text",
+              "text": "\n127.0.0.1 - - \"GET /peer/ws HTTP/1.1\" 101 0 \"-\" \"Python/3.10 aiohttp/3.8.1\" 9\nINFO [PeerWebSocketEndpoint] [[/127.0.0.1:0] New websocket connection"
+            }
+          ]
+        }
+      ],
+      "version": 1
+    },
+    "comments": [
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "aha missed this task. Fixed here "
+                },
+                {
+                  "type": "text",
+                  "text": "https://github.com/appgate-sdp-int/stratus-controller/pull/3987",
+                  "marks": [
+                    {
+                      "type": "link",
+                      "attrs": {
+                        "href": "https://github.com/appgate-sdp-int/stratus-controller/pull/3987"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "natan.abolafya",
+        "created": 1727870433162
+      }
+    ]
+  },
+  {
+    "key": "SA-24460",
+    "description": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "This can happen due to a crash or sudden network interruption."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "We have seen it on purple10: "
+            }
+          ]
+        },
+        {
+          "type": "codeBlock",
+          "attrs": {},
+          "content": [
+            {
+              "type": "text",
+              "text": "Sep 17 07:59:56 purple10.appgate.com cz-dbd@current[3265]: [INFO] Running now in node: purple10.appgate.com\nSep 17 07:59:56 purple10.appgate.com postgresql@current[3271]: [6-1] 2024-09-17 07:59:56.582 GMT   LOG:  checkpointer process (PID 10) was terminated by signal 39: Real-time signal 5\nSep 17 07:59:56 purple10.appgate.com postgresql@current[3271]: [7-1] 2024-09-17 07:59:56.582 GMT   LOG:  terminating any other active server processes\nSep 17 07:59:56 purple10.appgate.com postgresql@current[3271]: [8-1] 2024-09-17 07:59:56.598 GMT   LOG:  all server processes terminated; reinitializing\nSep 17 07:59:56 purple10.appgate.com postgresql@current[3379]: [9-1] 2024-09-17 07:59:56.649 GMT   LOG:  database system was interrupted; last known up at 2024-09-17 07:59:54 GMT\nSep 17 07:59:56 purple10.appgate.com postgresql@current[3380]: [9-1] 2024-09-17 07:59:56.649 GMT postgres controller FATAL:  the database system is in recovery mode\nSep 17 07:59:56 purple10.appgate.com cz-dbd@current[3265]: [ERROR] [run-on-all-nodes] Error running query SELECT bdr.wait_slot_confirm_lsn(NULL, NULL) on node purple10_appgate_com_1443000\n                                                           Traceback (most recent call last):\n                                                             File \"/usr/share/cz-dbd/dbd/bdr.py\", line 398, in run_on_all_nodes\n                                                               async with aiopg.connect(dsn) as conn:\n                                                             File \"/usr/lib/python3/dist-packages/aiopg/utils.py\", line 82, in __aenter__\n                                                               self._obj = await self._coro\n                                                             File \"/usr/lib/python3/dist-packages/aiopg/connection.py\", line 1225, in _connect\n                                                               await self._poll(self._waiter, self._timeout)  # type: ignore\n                                                             File \"/usr/lib/python3/dist-packages/aiopg/connection.py\", line 881, in _poll\n                                                               await asyncio.wait_for(self._waiter, timeout)\n                                                             File \"/usr/lib/python3.10/asyncio/tasks.py\", line 445, in wait_for\n                                                               return fut.result()\n                                                             File \"/usr/lib/python3/dist-packages/aiopg/connection.py\", line 788, in _ready\n                                                               state = self._conn.poll()\n                                                           psycopg2.OperationalError: FATAL:  the database system is in recovery mode"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "We should wait for the database to exit recovery mode in startup so we don't continue issuing commands too soon. In the best case this will cause an error and retry. In the worst case we have seen some SQL commands hang."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Slack thread, including purple10 log bundle "
+            },
+            {
+              "type": "text",
+              "text": "https://appgate.slack.com/archives/GUGM5LV62/p1726560044495549",
+              "marks": [
+                {
+                  "type": "link",
+                  "attrs": {
+                    "href": "https://appgate.slack.com/archives/GUGM5LV62/p1726560044495549"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "version": 1
+    },
+    "comments": [
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "It is possible to check if the database is in recovery mode using the following command: "
+                }
+              ]
+            },
+            {
+              "type": "codeBlock",
+              "attrs": {},
+              "content": [
+                {
+                  "type": "text",
+                  "text": "root@purple10:/home/cz# cz-dbs pg cli\nRunning: /usr/bin/sudo --preserve-env=HOME,TERM -u postgres pgcli -p 443 -h /run/cz-dbd/dbd-current controller\nServer: PostgreSQL 14.13 (Ubuntu 14.13-0ubuntu0.22.04.2)\nVersion: 3.3.1\nHome: "
+                },
+                {
+                  "type": "text",
+                  "text": "http://pgcli.com"
+                },
+                {
+                  "type": "text",
+                  "text": "\ncontroller> select pg_is_in_recovery();\n+-------------------+\n| pg_is_in_recovery |\n|-------------------|\n| False             |\n+-------------------+\nSELECT 1\nTime: 0.015s\ncontroller>                                                                                                                                                                              \nGoodbye!"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "See "
+                },
+                {
+                  "type": "text",
+                  "text": "https://www.postgresql.org/docs/14/functions-admin.html#FUNCTIONS-RECOVERY-CONTROL",
+                  "marks": [
+                    {
+                      "type": "link",
+                      "attrs": {
+                        "href": "https://www.postgresql.org/docs/14/functions-admin.html#FUNCTIONS-RECOVERY-CONTROL"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "thomas.cellerier",
+        "created": 1726561422091
+      }
+    ]
+  },
+  {
+    "key": "SA-24461",
+    "description": {
+      "type": "doc",
+      "content": [
+        {
+          "type": "heading",
+          "content": [
+            {
+              "type": "text",
+              "text": "Description"
+            }
+          ],
+          "attrs": {
+            "level": 3
+          }
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Ty reported a crash in lieu of the upĝrade screen"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "I saw it on my machine while being connected to purple UI"
+            }
+          ]
+        },
+        {
+          "type": "codeBlock",
+          "attrs": {},
+          "content": [
+            {
+              "type": "text",
+              "text": "Error: Minified React error #31; visit "
+            },
+            {
+              "type": "text",
+              "text": "https://reactjs.org/docs/error-decoder.html?invariant=31&args[]=object%20with%20keys%20%7Bdata%2C%20status%2C%20statusText%2C%20headers%2C%20config%2C%20request%7D"
+            },
+            {
+              "type": "text",
+              "text": " for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    va "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    e "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    ko "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    xi "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    bs "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    vs "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    gs "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    as "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    ls "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    O "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/9057.7660ff088aecbf0bd512.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    x "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/9057.7660ff088aecbf0bd512.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n2551.f4c84be5625bdf72ee4f.js:2:71408\nReact Router caught the following error during render Error: Minified React error #31; visit "
+            },
+            {
+              "type": "text",
+              "text": "https://reactjs.org/docs/error-decoder.html?invariant=31&args[]=object%20with%20keys%20%7Bdata%2C%20status%2C%20statusText%2C%20headers%2C%20config%2C%20request%7D"
+            },
+            {
+              "type": "text",
+              "text": " for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    va "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    e "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    ko "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    xi "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    bs "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    vs "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    gs "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    as "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    ls "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/2551.f4c84be5625bdf72ee4f.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    O "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/9057.7660ff088aecbf0bd512.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n    x "
+            },
+            {
+              "type": "text",
+              "text": "https://purple10.agi.appgate.com:8443/ui/9057.7660ff088aecbf0bd512.js:2"
+            },
+            {
+              "type": "text",
+              "text": "\n "
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": " Slack thread: "
+            },
+            {
+              "type": "text",
+              "text": "https://appgate.slack.com/archives/GTWMVPUSV/p1726559145315619",
+              "marks": [
+                {
+                  "type": "link",
+                  "attrs": {
+                    "href": "https://appgate.slack.com/archives/GTWMVPUSV/p1726559145315619"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "content": [
+            {
+              "type": "text",
+              "text": "To Reproduce"
+            }
+          ],
+          "attrs": {
+            "level": 3
+          }
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "I have not tried but his step is:"
+            }
+          ]
+        },
+        {
+          "type": "bulletList",
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Upgrade a collective"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "content": [
+            {
+              "type": "text",
+              "text": "DoD"
+            }
+          ],
+          "attrs": {
+            "level": 3
+          }
+        },
+        {
+          "type": "bulletList",
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "The upgrade screen is shown as expceted"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "version": 1
+    },
+    "comments": [
+      {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "this can be reproduced by just stopping controller on the appliance."
+                }
+              ]
+            }
+          ],
+          "version": 1
+        },
+        "author": "natan.abolafya",
+        "created": 1727096696546
+      }
+    ]
   }
 ]

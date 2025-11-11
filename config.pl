@@ -8,7 +8,7 @@ our $YTProject='SA';
 # The project ID to migrate to (eg FOO, BAR)
 our $JiraProject='ZT28';
 
-# When migrating ZTP after SA, use this as the offset between YouTRack ZTP project IDs and Jira issue IDs
+# When migrating ZTP after SA, use this as the offset between YouTrack ZTP project IDs and Jira issue IDs
 our $JiraIssueIdOffset=0;
 
 # Export tags from YT and import them as labels in Jira

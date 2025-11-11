@@ -25,11 +25,12 @@ my $display = display->new();
 
 $display->printTitle("Initialization");
 
-my ($skip, $notest, $first, $checkKeys, $cookieFile, $verbose);
+my ($skip, $notest, $first, $id, $checkKeys, $cookieFile, $verbose);
 Getopt::Long::Configure('bundling');
 GetOptions(
 	"first|f=i"       => \$first,
     "skip|s=i"        => \$skip,
+	"issueid|id=i"    => \$id,
 	"check-keys!"     => \$checkKeys,
     "no-test|t"       => \$notest,
     "cookie-file|c=s" => \$cookieFile,
@@ -64,8 +65,7 @@ unless ($jira) {
 print "Success\n";
 
 $display->printTitle("Getting YouTrack Issues");
-my $export = $yt->exportIssues(Project => $YTProject, Max => 0);
-print "Exported issues: ".scalar @{$export}."\n";
+my $export = $yt->exportIssues(Project => $YTProject, Max => 0, IssueId => $id);
 
 # Find active users from issues, comments and other YT activity
 my %users;
@@ -124,10 +124,9 @@ print "Ready to import into Jira using options:\n";
 print "\tfirst=$first\n";
 print "\tskip=$skip\n";
 print "\tcheck-keys=$checkKeys\n";
+print "\tissueid=$id\n";
 print "\tYouTrack Project=$YTProject\n";
 print "\tJira Project=$JiraProject\n";
-
-&ifProceed;
 
 my @sortedIssues = sort { $a->{numberInProject} <=> $b->{numberInProject} } @{$export};
 
@@ -138,12 +137,18 @@ if ($verbose){
 	print "count items sortedIssues: $length\n";
 }
 
-$first = $length if (not defined $first);
+my @firstNIssues;
+my $first;
+if (defined $id && $id > 0) {
+	$first = $id;
+} else {
+	$first = $length if (not defined $first);
+}
 print "Will process first $first issues\n";
 
 my @firstNIssues = grep { $_->{numberInProject} <= $first } @sortedIssues;
-print "Print this list of issues to help with troubleshooting\n";
 if ($verbose){
+	print "Print this list of issues to help with troubleshooting\n";
 	foreach my $issue (@firstNIssues) {
 		print "Issue ID: " . $issue->{idReadable} . "\tNumber in Project: " . $issue->{numberInProject} . "\n";
 	}
@@ -157,8 +162,8 @@ if ($verbose){
 	#Issue ID: SA-9		Number in Project: 9
 	#Issue ID: SA-11	Number in Project: 11
 	#Issue ID: SA-12	Number in Project: 12
-	&ifProceed;
 }
+&ifProceed;
 
 foreach my $issue (@firstNIssues) {
 	$display->printTitle($issue->{idReadable});

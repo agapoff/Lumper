@@ -201,10 +201,18 @@ sub exportIssues {
 	my $self = shift;
 	my %arg = @_;
 	my $max = $arg{Max} || 100000;
+	my $issueId = int($arg{IssueId}) || 0;
+	my $project = $arg{Project};
+
+	my $query = 'project:%20'.$project.'%20';
+	if ($issueId ne 0) {
+		my $nextIssueId = $issueId + 1;
+		$query = $project.'-'.$issueId.',%20'.$project.'-'.$nextIssueId;
+	}
 
 	my $issues = $self->sendRequestToYouTrack(	
 			Request => '/api/issues?'.
-										'query=project:%20'.$arg{Project}.'%20&'.
+										'query='.$query.'&'.
 										'$top='.$max.'&'.
 										'fields='.
 											'id,'.
@@ -236,6 +244,7 @@ sub exportIssues {
 											')',
 				ErrorMessage => "Got error while exporting issues\n",
 				CharacterSupport => 'true');
+	print scalar @{$issues}." issues exported from YouTrack\n";
 
 	my $file = './adf-converter/output/adf-dataset.json';
 	open my $fh, '<', $file or die "Could not open '$file': $!";
@@ -244,7 +253,7 @@ sub exportIssues {
 	close $fh;
 	my $ytOverrideData = decode_json($json_text);
 
-	my $manualFile = './adf-converter/output/adf-dataset-manual.json';
+	my $manualFile = './adf-converter/adf-dataset-manual.json';
 	open my $mfh, '<', $manualFile or die "Could not open '$manualFile': $!";
 	local $/;  # Enable 'slurp' mode
 	my $json_text_manual = <$mfh>;
@@ -256,6 +265,10 @@ sub exportIssues {
 			$ytIssue->{$field->{name}} = undef;
 			next if (not($field->{value}));
 			$ytIssue->{$field->{name}} = collectValuesFromCustomField($field);
+		}
+
+		if ($issueId ne 0) {
+			next if $ytIssue->{numberInProject} != $issueId;
 		}
 
 		foreach my $autoOverrideTicket (@$ytOverrideData) {
@@ -294,7 +307,7 @@ sub exportIssues {
 		}
 	}
 
-	print "Print this list of issues directly exported from YouTrack to help with troubleshooting";
+	print "Print this list of issues directly exported from YouTrack to help with troubleshooting\n";
 	#print Dumper($issues);
 
 	return $issues;

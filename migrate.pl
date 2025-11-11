@@ -141,7 +141,8 @@ my @firstNIssues;
 if (defined $id && $id > 0) {
 	$first = $id;
 } else {
-	$first = $length if (not defined $first);
+	my $max_number = $sortedIssues[-1]{numberInProject};
+	$first = $max_number if (not defined $first);
 }
 print "Will process first $first issues\n";
 

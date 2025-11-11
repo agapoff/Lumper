@@ -1,0 +1,10 @@
+{
+  "key": "SA-25779",
+  "scenarios": [
+    "Release note (code block)"
+  ],
+  "fields": {
+    "description": "Replace ntpd with Chrony for better time synchronization across our infrastructure. NTP warning has been a headache for support cases with not much resolution steps that we can offer. Chrony is a more modern and chosen library  for time synchronization used in many LInux distros and a more modern. ",
+    "releaseNote": "* `chrony` is replacing `ntp` for time synchronization\n* bat-signal does not listens on port 123 anymore - chrony is only accepting requests via UNIX socket"
+  }
+}

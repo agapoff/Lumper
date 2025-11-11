@@ -6,19 +6,19 @@ our $JiraUrl='https://appgateinc.atlassian.net';
 # The project ID to migrate from (eg FOO, BAR)
 our $YTProject='SA';
 # The project ID to migrate to (eg FOO, BAR)
-our $JiraProject='Z121';
+our $JiraProject='ZT27';
 
 # Export tags from YT and import them as labels in Jira
 our $exportTags='true';
 # This is quite obvious
 our $exportAttachments='true';
 our $exportLinks='true';
-our $exportWorkLog='true';
+our $exportWorkLog='false';
 # Creation date and time will be exported in Original Creation Time field
 our $exportCreationTime='true';
 # You can change the name of the creation date field if you want to :)
 #our $creationTimeCustomFieldName='Original Creation Date';
-our $creationTimeCustomFieldName='customfield_10752';
+our $creationTimeCustomFieldName='customfield_11084';
 # Jira can be configured to use diffrerent time formats. Recommended is ISO8601.
 # Currently there's a bug https://jira.atlassian.com/browse/JRACLOUD-61378
 # Jira is not able to parse exact ISO8601 format (see the link for details)
@@ -85,10 +85,10 @@ our %Status = (
 # Some statuses in YT can be mapped to Resolutions in Jira
 # In order to use this feature a field Resolution should be added to screens (and removed after the migration if not needed)
 our %StatusToResolution = (
-	"Verified" => "Fixed",
-	"Won't Fix" => "Won't Fix",
-	"Duplicate" => "Duplicate",
-	"Obsolete" => "Invalid"
+	#"Verified" => "Fixed",
+	#"Won't Fix" => "Won't Fix",
+	#"Duplicate" => "Duplicate",
+	#"Obsolete" => "Invalid"
 );
 
 # Custom fields mapping
@@ -321,20 +321,21 @@ our %JiraUserIds = (
 	'daniel.bailey@appgate.com' => '712020:9049c7d8-d374-4431-828f-becb505af54f',
 	'edwin.ramirez@appgate.com' => '609a9c379da6d500701e37f7',
 	'rafael.soto@appgate.com' => '712020:888c0b13-914d-4cb1-afee-a7c186c26581',
-	'torger.miller@appgate.com' => '712020:3521987c-cc06-4749-a870-e6e463baaab0',
-	'raven.creighton@appgate.com' => '712020:8702c639-87c3-4321-989c-5afce4144e53',
-	'freddy.ayuso-henson@appgate.com' => '712020:d35adf5b-f3d6-45f0-9f36-1849676fab6b',
-	'david.frogley@appgate.com' => '712020:10074ab0-e199-44d9-bac4-20ca3e3001ab',
+	'torger.miller@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:3521987c-cc06-4749-a870-e6e463baaab0',
+	'raven.creighton@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:8702c639-87c3-4321-989c-5afce4144e53',
+	'freddy.ayuso-henson@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:d35adf5b-f3d6-45f0-9f36-1849676fab6b',
+	'david.frogley@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:10074ab0-e199-44d9-bac4-20ca3e3001ab',
 	
-	'masaya.ando@appgate.com' => '712020:99d5c0bd-0e59-4b7d-a567-3be3274c30f8',
+	'masaya.ando@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:99d5c0bd-0e59-4b7d-a567-3be3274c30f8',
 	'kasper.gustavsson@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:37902401-efb2-4d3f-b84b-581680252ec9',
 	'niko.pietikainen@appgate.com' => '712020:3b5f8abe-66c0-45ee-9f38-fa6be1b1d329',
-	'dori.amara@appgate.com' => '712020:0ee29a96-6f8c-40fa-8f78-ce991e91bc70',
+	'dori.amara@appgate.com' => '712020:88025364-2a3c-4c70-8940-138ad451181c', #'712020:0ee29a96-6f8c-40fa-8f78-ce991e91bc70',
 	'herve.trutt@appgate.com' => '712020:ea1dec82-4404-4fe9-9519-1930300f6b73',
 	'max.wedenmark@appgate.com' => '712020:1b3f3f5d-42aa-4836-9322-db7bd58a3b4c',
 	
 	'mark.haase@appgate.com' => '712020:7b762c60-c811-4238-ae03-e51ef5eb45d6',
 	'samuel.crisanto@appgate.com' => '712020:ee9458df-584d-4f89-aff6-3c5ba80b0f2b',	
+	'julia.lee@appgate.com' => '712020:152daaad-c0a9-4b6b-93f4-d9cdccee99ee',
 	
 	# Outside R&D; employeed by AppGate
 	'aaron.palermo@appgate.com' => '',

@@ -4,7 +4,7 @@ use strict;
 use Data::Dumper;
 use LWP::UserAgent;
 #use LWP::Protocol::https; # Required for https support
-use JSON qw( decode_json );
+use JSON qw( encode_json decode_json );
 use File::Temp qw ( tempdir );
 use List::Util qw( first );
 use File::Basename;
@@ -72,7 +72,11 @@ sub downloadAttachments {
   		my ($filename, $dirs, $suffix) = fileparse($attachment->{name}, qr/\.[^.]*$/);
 
 		my $localizedFileName = decode_utf8($attachment->{name});
-		$oldFileNamesDirectory{$localizedFileName} = "attachment$counter$suffix";
+		my $sanitizedFileName = $localizedFileName;
+		$sanitizedFileName =~ s#[/:\x00-\x1F]##g; # Remove invalid macOS filename characters (/, :, control chars)
+		$sanitizedFileName =~ s/[\\\/"%:\$\?\*]//g; #strip out characters that Jira does not allow in attachment names
+		$sanitizedFileName =~ s/[\x{200B}\x{200C}\x{200D}\x{FEFF}]//g; #strip out zero-width characters
+		$oldFileNamesDirectory{$localizedFileName} = $sanitizedFileName;
 		
 		# Rename the file to avoid problems with exotic file names
 		open my $fh, ">", "$tempdir/".$oldFileNamesDirectory{$localizedFileName};
@@ -233,15 +237,65 @@ sub exportIssues {
 				ErrorMessage => "Got error while exporting issues\n",
 				CharacterSupport => 'true');
 
-	foreach my $issue (@{$issues}) {
-		foreach my $field (@{$issue->{customFields}}) {	
+	my $file = './adf-converter/output/adf-dataset.json';
+	open my $fh, '<', $file or die "Could not open '$file': $!";
+	local $/;  # Enable 'slurp' mode
+	my $json_text = <$fh>;
+	close $fh;
+	my $ytOverrideData = decode_json($json_text);
 
-			$issue->{$field->{name}} = undef;
+	my $manualFile = './adf-converter/output/adf-dataset-manual.json';
+	open my $mfh, '<', $manualFile or die "Could not open '$manualFile': $!";
+	local $/;  # Enable 'slurp' mode
+	my $json_text_manual = <$mfh>;
+	close $mfh;
+	my $ytManualOverrideData = decode_json($json_text_manual);
+
+	foreach my $ytIssue (@{$issues}) {
+		foreach my $field (@{$ytIssue->{customFields}}) {
+			$ytIssue->{$field->{name}} = undef;
 			next if (not($field->{value}));
+			$ytIssue->{$field->{name}} = collectValuesFromCustomField($field);
+		}
 
-			$issue->{$field->{name}} = collectValuesFromCustomField(\%{$field});
+		foreach my $autoOverrideTicket (@$ytOverrideData) {
+			next if $autoOverrideTicket->{key} ne $ytIssue->{idReadable};
+
+			my $overrideTicket = $autoOverrideTicket;
+			foreach my $manualOverrideTicket (@$ytManualOverrideData) {
+				next if $manualOverrideTicket->{key} ne $ytIssue->{idReadable};
+				$overrideTicket = $manualOverrideTicket;
+				print "Overriding automatic with manual for issue ".$ytIssue->{idReadable}."\n";
+				last;
+			}
+
+			#print "Overriding fields for issue ".$ytIssue->{idReadable}."\n";
+			if (defined $overrideTicket->{description}) {
+				#print "Overriding description for issue ".$ytIssue->{idReadable}."\n";
+				$ytIssue->{description} = $overrideTicket->{description};
+			}
+			if (defined $overrideTicket->{'Release note'}) {
+				#print "Overriding description for issue ".$ytIssue->{idReadable}." with release_note\n";
+				$ytIssue->{'Release note'} = $overrideTicket->{'Release note'};
+			}
+
+			next if !defined $overrideTicket->{comments};
+			next if !defined $ytIssue->{comments};
+			foreach my $comment (@{$ytIssue->{comments}}) {
+				foreach my $overrideComment (@{$overrideTicket->{comments}}) {
+					if ($comment->{created} == $overrideComment->{created}) {
+						#print "Overriding comment ".$overrideComment->{created}." for issue ".$ytIssue->{idReadable}."\n";
+						$comment->{text} = $overrideComment->{body};
+						last;
+					}
+				}
+			}
+			last;
 		}
 	}
+
+	print "Print this list of issues directly exported from YouTrack to help with troubleshooting";
+	#print Dumper($issues);
 
 	return $issues;
 }

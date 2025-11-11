@@ -1,0 +1,9 @@
+{
+  "key": "SA-26610",
+  "scenarios": [
+    "Parent & Subtask"
+  ],
+  "fields": {
+    "description": "**Background:**\nNullable reference types are currently enabled, allowing potential null reference issues to pass undetected. Disabling nullable will require explicit use of `?` for nullable types (see [Microsoft documentation](https://internal-system/en-us/dotnet/csharp/nullable-references#nullable-context)). This will make null handling more explicit, reduce runtime exceptions, and improve code clarity. Initially, this change will introduce many warnings and require `SomeClass?` annotations across the codebase, but over time, it will lead to better null safety and higher code quality.\n\n**Acceptance Criteria:**\n\n* Nullable context is disabled project-wide (using `#nullable disable` or project configuration).\n* Code compiles with all new nullable warnings addressed or tracked for cleanup.\n* Documentation or guidelines added for how to handle nullable types consistently going forward.\n\n**Expected Outcome:**\n\n* Codebase explicitly marks nullable references using `?`.\n* Reduced null-related runtime errors.\n* Improved long-term maintainability and clarity in null handling."
+  }
+}

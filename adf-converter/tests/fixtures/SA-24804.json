@@ -1,0 +1,9 @@
+{
+  "key": "SA-24804",
+  "scenarios": [
+    "Team, Subsystem, Fix versions"
+  ],
+  "fields": {
+    "description": "\nHopefully to warn customers and avoid issues like this:\n\nhttps://internal-system/archives/CU926BAP8/p1732183401138889\n\nAdmin guide says to only have retention of up to 6 months"
+  }
+}

@@ -138,7 +138,6 @@ if ($verbose){
 }
 
 my @firstNIssues;
-my $first;
 if (defined $id && $id > 0) {
 	$first = $id;
 } else {
